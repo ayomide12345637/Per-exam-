@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Successful</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f7f7f7; display:flex; justify-content:center; align-items:center; height:100vh; }
+  .container { background:#fff; padding:2rem; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1); text-align:center; }
+  h1 { color: #4caf50; }
+  p { font-size: 1.1rem; margin: 1rem 0; }
+  button { padding: 0.7rem 1.5rem; font-size: 1rem; background:#4caf50; color:#fff; border:none; border-radius:5px; cursor:pointer; }
+  button:hover { background:#45a049; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Payment Successful!</h1>
+  <p>Thank you for your payment. You will be redirected to your exam shortly.</p>
+  <button id="startExamBtn" style="display:none;">Start Exam Now</button>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQzBX4m70zI-koaHJlWEYsRSU2MBnXwwk",
+    authDomain: "melox-pre-exam.firebaseapp.com",
+    projectId: "melox-pre-exam",
+    storageBucket: "melox-pre-exam.firebasestorage.app",
+    messagingSenderId: "461617469136",
+    appId: "1:461617469136:web:7f0f262894f88a89fdf0d5",
+    measurementId: "G-DN7682VZ0T"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Helper to get URL params
+  function getQueryParams() {
+    const params = {};
+    window.location.search.substring(1).split("&").forEach(pair => {
+      const [key, value] = pair.split("=");
+      if (key) params[key] = decodeURIComponent(value);
+    });
+    return params;
+  }
+
+  async function recordPayment(quizId, userId, amount = 100) {
+    try {
+      await db.collection('payments').add({
+        quizId,
+        userId,
+        amount,
+        status: 'success',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log("Payment recorded successfully");
+    } catch(err) {
+      console.error("Failed to record payment:", err);
+    }
+  }
+
+  // Main
+  const params = getQueryParams();
+  const quizId = params.quizId;
+  const userId = params.userId;
+
+  if (!quizId || !userId) {
+    alert("Invalid payment redirect URL");
+  } else {
+    recordPayment(quizId, userId);
+
+    // Redirect to quiz after 5 seconds
+    setTimeout(() => {
+      window.location.href = `index.html?paymentSuccess=1&quizId=${quizId}&userId=${userId}`;
+    }, 5000);
+
+    // Optional: show a manual button
+    const btn = document.getElementById('startExamBtn');
+    btn.style.display = 'inline-block';
+    btn.onclick = () => {
+      window.location.href = `index.html?paymentSuccess=1&quizId=${quizId}&userId=${userId}`;
+    };
+  }
+</script>
+</body>
+</html>

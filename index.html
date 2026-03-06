@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MELOX PRE EXAM - Professional CBT Platform</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://checkout.squadco.com/widget/squad.min.js"></script>
+    <style>
+   :root {
+    --primary: #007bff;
+    --yellow: #ffc107;
+    --yellow-dark: #e0a800;
+    --green: #28a745;
+    --red: #dc3545;
+    --gray: #6c757d;
+    --light: #f8f9fa;
+    --border: #dee2e6;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #212529;
+    line-height: 1.45;
+    font-size: 15px;                /* smaller base for mobile */
+}
+
+header {
+    background: var(--yellow);
+    color: #212529;
+    text-align: center;
+    padding: 0.8rem 1rem 1.1rem;    /* very small height \~1.5-2 cm */
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+.logo {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    margin: 0 auto 0.5rem;
+    display: block;
+}
+
+header h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0.6rem 0.7rem 1rem;
+    padding: 1.1rem 1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+}
+
+h2 {
+    color: var(--primary);
+    text-align: center;
+    font-size: 1.25rem;
+    margin: 0.4rem 0 1rem;
+}
+
+.hidden { display: none !important; }
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;                   /* tight spacing */
+}
+
+input, select {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.97rem;
+    background: #fdfdfd;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2.5px rgba(0,123,255,0.15);
+}
+
+button {
+    padding: 0.85rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    background: var(--yellow);
+    color: #212529;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: var(--yellow-dark);
+}
+
+button.blue {
+    background: var(--primary);
+    color: white;
+}
+
+button.green {
+    background: var(--green);
+    color: white;
+}
+
+/* Quiz section - compact */
+#timer {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--red);
+    text-align: center;
+    margin: 0.6rem 0;
+    padding: 0.4rem;
+    background: #fff5f5;
+    border-radius: 8px;
+}
+
+#question-progress {
+    font-size: 0.95rem;
+    color: #555;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+#question-text {
+    font-size: 1.05rem;
+    margin: 0.8rem 0 1.1rem;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.option-label {
+    display: flex;
+    align-items: center;
+    padding: 0.9rem 1rem;
+    background: var(--light);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 0.98rem;
+    min-height: 48px;               /* good tap target */
+}
+
+.option-label:hover {
+    background: #e9ecef;
+}
+
+input[type="radio"] {
+    margin-right: 0.8rem;
+    accent-color: var(--primary);
+    transform: scale(1.25);
+}
+
+.option-label.selected {
+    background: #e6ffed;
+    border-color: var(--green);
+}
+
+.navigation {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 1.3rem;
+}
+
+.navigation button {
+    flex: 1;
+    padding: 0.85rem;
+    font-size: 1rem;
+}
+
+#submit-btn {
+    background: var(--green) !important;
+}
+
+/* Results - compact */
+#results-card {
+    background: #f8f9fa;
+    padding: 1.3rem 1rem;
+    border-radius: 10px;
+    margin: 1rem 0;
+    border: 1px solid var(--border);
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.6rem 0;
+    font-size: 1.02rem;
+}
+
+/* Loading */
+#loading {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    color: white;
+    display: none;
+    place-items: center;
+    font-size: 1.5rem;
+    z-index: 9999;
+}
+
+/* Admin */
+.admin-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1rem 0;
+}
+
+.admin-nav button {
+    flex: 1 1 45%;
+    min-width: 110px;
+}
+
+/* Mobile - make everything smaller & tighter */
+@media (max-width: 600px) {
+    header { padding: 0.7rem 0.8rem 0.9rem; }
+    .logo { width: 65px; height: 65px; margin-bottom: 0.4rem; }
+    .container { margin: 0.5rem 0.6rem 0.8rem; padding: 1rem 0.9rem; }
+    h2 { font-size: 1.18rem; margin: 0.3rem 0 0.9rem; }
+    form { gap: 0.65rem; }
+    input, select, button { padding: 0.75rem 0.9rem; font-size: 0.95rem; }
+    .options { gap: 0.6rem; }
+    .option-label { padding: 0.85rem 0.95rem; font-size: 0.96rem; }
+    .navigation { gap: 0.6rem; margin-top: 1.1rem; }
+    #question-text { font-size: 1.02rem; margin: 0.7rem 0; }
+    #timer { font-size: 1.2rem; margin: 0.5rem 0; }
+}
+
+.nav-text {
+    cursor: pointer;             /* Pointer on hover */
+    color: #007BFF;              /* Blue text */
+    text-decoration: underline;  /* Underline for link look */
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+.nav-text:hover {
+    color: #0056b3;
+}
+    </style>
+</head>
+<body>
+    <div id="loading">Loading...</div>
+
+<header>
+    <div class="logo-container">
+        <div class="logo-glow"></div>
+        <img src="https://i.imgur.com/sWN7pYD.png" alt="MELOX PRE EXAM Logo" class="logo">
+    </div>
+    <h1>MELOX PRE EXAM</h1>
+</header>
+       <div class="container">
+
+       <!-- Sign-up Section -->
+<section id="signup-section">
+    <h2>Create Account</h2>
+    <form id="signup-form">
+        <input type="text" id="firstName" placeholder="First Name" required>
+        <input type="text" id="middleName" placeholder="Middle Name (Optional)">
+        <input type="text" id="lastName" placeholder="Surname (Last Name)" required>
+        <input type="text" id="matricNumber" placeholder="Matric Number (e.g. CSP/23/9123)" required>
+        <select id="level" required>
+            <option value="" disabled selected>Select Level</option>
+            <option value="100">100 Level</option>
+            <option value="200">200 Level</option>
+        </select>
+        <input type="password" id="password" placeholder="Password (Auto-set to UPPERCASE Surname)" readonly>
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+        <button type="submit">Sign Up</button>
+    </form>
+    <p>
+        Have an account? 
+        <span style="cursor:pointer;color:blue;text-decoration:underline;" onclick="showSection('login-section')">
+            Login
+        </span>
+    </p>
+</section>
+
+      <!-- Login Section -->
+<section id="login-section" class="hidden">
+    <h2>Student Login</h2>
+    <form id="login-form">
+        <input type="text" id="loginMatric" placeholder="Matric Number (e.g. CSP/23/9123)" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <!-- Login button submits the form -->
+        <button type="submit" class="blue">Login</button>
+    </form>
+    <span class="nav-text" onclick="showSection('admin-login-section')">Admin Login</span>
+    <p>New user? <span class="nav-text" onclick="showSection('signup-section')">Sign Up</span></p>
+</section>
+
+<!-- Admin Login -->
+<section id="admin-login-section" class="hidden">
+    <h2>Admin Access</h2>
+    <form id="admin-login-form">
+        <input type="password" id="adminPassword" placeholder="Admin Password" required>
+        <!-- Text-only login -->
+        <span class="nav-text" onclick="document.getElementById('admin-login-form').dispatchEvent(new Event('submit'))">
+            Enter
+        </span>
+    </form>
+    <span class="nav-text" onclick="showSection('login-section')">Back to Student Login</span>
+</section>
+
+        <!-- Student Dashboard -->
+        <section id="student-dashboard" class="hidden">
+            <h2>Welcome, <span id="student-name"></span></h2>
+            <h3>Available Pre-Exams</h3>
+            <div id="course-list" style="display: grid; gap: 1rem;"></div>
+            <button type="button" onclick="logout()">Logout</button>
+        </section>
+
+        <!-- Quiz Section (FIXED) -->
+        <section id="quiz-section" class="hidden">
+            <h2 id="quiz-course-name"></h2>
+            <div id="timer">Time remaining: --:--</div>
+            <div id="question-progress">Question <span id="question-number">1</span> of <span id="q-total">0</span></div>
+            <div id="question-text"></div>
+
+            <div class="options" id="options-container"></div>
+
+            <div class="navigation">
+                <button id="prev-btn" onclick="prevQuestion()">Previous</button>
+                <button id="next-btn" onclick="nextQuestion()">Next</button>
+                <button id="submit-btn" class="green hidden" onclick="submitQuiz()">Finish & Submit</button>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="hidden">
+            <h2>Exam Results</h2>
+            <div id="results-card">
+                <h2 id="result-title">Security and Compliance Fundamentals</h2>
+                <div class="result-row"><span>Points:</span> <strong><span id="score">0</span> / <span id="total-q">0</span></strong></div>
+                <div class="result-row"><span>Percentage:</span> <strong><span id="percentage">0</span>%</strong></div>
+                <div class="result-row"><span>Duration:</span> <strong><span id="duration">--:--</span></strong></div>
+                <div class="result-row" style="margin-top:1.5rem;">
+                    <span>Feedback:</span>
+                    <strong id="feedback" style="color: var(--green);">Congratulations, you passed the compliance exam.</strong>
+                </div>
+            </div>
+            <button type="button" onclick="showSection('student-dashboard')">Back to Dashboard</button>
+        </section>
+
+        <!-- Admin Dashboard -->
+        <section id="admin-dashboard" class="hidden">
+            <h2>Admin Panel</h2>
+            <div class="admin-nav">
+                <button onclick="showAdminTab('activities')">Activities</button>
+                <button onclick="showAdminTab('question-bank')">Question Bank</button>
+                <button onclick="showAdminTab('set-quiz')">Set / Publish Quiz</button>
+                <button onclick="showAdminTab('payments')">Payments Overview</button>
+            </div>
+            <div id="admin-content"></div>
+            <button type="button" onclick="logout()">Logout</button>
+        </section>
+<div id="paymentStats"></div>
+    </div>
+
+<script>
+// Firebase Config
+const firebaseConfig = {
+apiKey: "AIzaSyBQzBX4m70zI-koaHJlWEYsRSU2MBnXwwk",
+authDomain: "melox-pre-exam.firebaseapp.com",
+projectId: "melox-pre-exam",
+storageBucket: "melox-pre-exam.firebasestorage.app",
+messagingSenderId: "461617469136",
+appId: "1:461617469136:web:7f0f262894f88a89fdf0d5",
+measurementId: "G-DN7682VZ0T"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+let currentQuiz = null;
+let currentQuestions = [];
+let currentQuestionIndex = 0;
+let selectedAnswers = [];
+let quizStartTime = null;
+let timerInterval = null;
+
+const adminPass = "Anjorin$2008";
+const loading = document.getElementById('loading');
+
+function showLoading(){ loading.style.display='flex'; }
+function hideLoading(){ loading.style.display='none'; }
+
+function showSection(id){
+document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
+const section=document.getElementById(id);
+if(section) section.classList.remove('hidden');
+}
+
+/* =====================
+SIGNUP
+===================== */
+document.getElementById('signup-form')?.addEventListener('submit',async e=>{
+e.preventDefault();
+showLoading();
+
+const first=document.getElementById('firstName')?.value.trim()||'';
+const middle=document.getElementById('middleName')?.value.trim()||'';
+const last=document.getElementById('lastName')?.value.trim().toUpperCase()||'';
+
+const fullName=[first,middle,last].filter(Boolean).join(' ');
+const matric=document.getElementById('matricNumber')?.value.trim()||'';
+const level=document.getElementById('level')?.value||'';
+
+const password=last;
+const confirm=document.getElementById('confirmPassword')?.value||'';
+
+if(!matric||!level||!password||!confirm){
+hideLoading();
+return alert('Please fill all required fields');
+}
+
+if(!/^[A-Z]{3}\/\d+\/\d+$/.test(matric)){
+hideLoading();
+return alert('Matric number must be like CSP/23/9123');
+}
+
+if(password!==confirm){
+hideLoading();
+return alert("Passwords don't match!");
+}
+
+try{
+
+const cred=await auth.createUserWithEmailAndPassword(matric+'@melox.com',password);
+
+await db.collection('users').doc(cred.user.uid).set({
+
+fullName,
+matricNumber:matric,
+level,
+role:'student',
+
+createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+lastLogin:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+alert('Account created! Please login.');
+showSection('login-section');
+
+}catch(err){
+alert(err.message||'Signup failed');
+}
+
+hideLoading();
+});
+
+
+/* =====================
+LOGIN
+===================== */
+document.getElementById('login-form')?.addEventListener('submit',async e=>{
+
+e.preventDefault();
+showLoading();
+
+const matric=document.getElementById('loginMatric')?.value.trim()||'';
+const pw=document.getElementById('loginPassword')?.value||'';
+
+try{
+
+const cred=await auth.signInWithEmailAndPassword(matric+'@melox.com',pw);
+
+const userRef=db.collection('users').doc(cred.user.uid);
+const userDoc=await userRef.get();
+
+if(!userDoc.exists) throw new Error("User profile not found");
+
+await userRef.update({
+lastLogin:firebase.firestore.FieldValue.serverTimestamp()
+});
+
+currentUser=userDoc.data();
+currentUser.id=cred.user.uid;
+
+document.getElementById('student-name').textContent=currentUser.fullName||'Student';
+
+loadCourses();
+showSection('student-dashboard');
+
+}catch(err){
+alert(err.message||'Login failed');
+}
+
+hideLoading();
+
+});
+
+
+/* =====================
+ADMIN LOGIN
+===================== */
+document.getElementById('admin-login-form')?.addEventListener('submit',e=>{
+
+e.preventDefault();
+showLoading();
+
+if(document.getElementById('adminPassword')?.value===adminPass){
+
+currentUser={role:'admin'};
+
+showSection('admin-dashboard');
+showAdminTab('activities');
+
+}else{
+alert('Invalid admin password');
+}
+
+hideLoading();
+
+});
+
+
+function logout(){
+
+showLoading();
+
+auth.signOut().then(()=>{
+
+currentUser=null;
+showSection('signup-section');
+
+}).catch(err=>alert(err.message));
+
+hideLoading();
+
+}
+
+
+/* =====================
+LOAD COURSES
+===================== */
+
+async function loadCourses(){
+
+const list=document.getElementById('course-list');
+if(!list) return;
+
+list.innerHTML='<p>Loading courses...</p>';
+
+try{
+
+const snaps=await db.collection('quizzes')
+.where('status','==','published')
+.where('level','==',currentUser.level)
+.get();
+
+list.innerHTML=snaps.empty?'<p>No pre-exams available.</p>':'';
+
+snaps.forEach(doc=>{
+
+const d=doc.data();
+
+const div=document.createElement('div');
+
+div.style.cssText='padding:1rem;border:1px solid #dee2e6;border-radius:10px;background:#fff;margin-bottom:1rem;';
+
+div.innerHTML=`
+<h3>${d.courseName||'Unnamed Quiz'}</h3>
+<p>Time: ${d.timeLimit||'?'} mins</p>
+<button class="blue" onclick="checkPaymentAndStart('${doc.id}')">Begin Pre-Exam</button>
+`;
+
+list.appendChild(div);
+
+});
+
+}catch(err){
+
+list.innerHTML='<p>Error loading courses.</p>';
+console.error(err);
+
+}
+
+}
+
+async function checkPaymentAndStart(quizId){
+
+const doc = await db.collection('quizzes').doc(quizId).get();
+
+if(!doc.exists){
+alert("Quiz not found");
+return;
+}
+
+const quiz = doc.data();
+
+if (quiz.payment === "YES") {
+    // Save course & user info before payment
+    localStorage.setItem("courseName", quiz.courseName);
+    localStorage.setItem("userId", currentUser?.id || "");
+
+    // Redirect user to SquadCo payment page with return URL
+    // Replace YOURDOMAIN.com with your actual domain
+    window.location.href = "https://pay.squadco.com/5N8DPA?redirect_url=https://YOURDOMAIN.com/payment-success.html";
+
+    // Stop further execution until payment is completed
+    return;
+} else {
+        startQuiz(quizId);
+    }
+
+} // 
+
+/* =====================
+START QUIZ
+===================== */
+
+async function startQuiz(quizId){
+
+showLoading();
+
+try{
+
+
+const quizDoc = await db.collection('quizzes').doc(quizId).get();
+const quizData = quizDoc.data();
+
+if(quizData.payment === "YES"){
+    const paidSnap = await db.collection("payments")
+        .where("userId", "==", currentUser.id)
+        .where("course", "==", quizData.courseName)
+        .get();
+
+    if(paidSnap.empty){
+        alert("You must complete payment before starting this exam.");
+        return;
+    }
+}
+
+
+
+const doc=await db.collection('quizzes').doc(quizId).get();
+
+if(!doc.exists) throw new Error("Quiz not found");
+
+currentQuiz=doc.data();
+currentQuiz.id=doc.id;
+
+currentQuestions=currentQuiz.questions||[];
+
+if(currentQuestions.length===0)
+throw new Error("No questions in this quiz");
+
+currentQuestionIndex=0;
+selectedAnswers=new Array(currentQuestions.length).fill(null);
+
+quizStartTime=Date.now();
+
+document.getElementById('quiz-course-name').textContent=currentQuiz.courseName||'Quiz';
+document.getElementById('q-total').textContent=currentQuestions.length;
+
+showSection('quiz-section');
+
+startTimer();
+loadQuestion();
+
+}catch(err){
+
+alert(err.message||"Failed to load quiz");
+console.error(err);
+
+}
+
+hideLoading();
+
+}
+
+
+/* =====================
+TIMER
+===================== */
+
+function startTimer(){
+
+if(timerInterval) clearInterval(timerInterval);
+
+let timeLeft=(currentQuiz.timeLimit||30)*60;
+
+const timerEl=document.getElementById("timer");
+
+timerInterval=setInterval(()=>{
+
+let min=String(Math.floor(timeLeft/60)).padStart(2,"0");
+let sec=String(timeLeft%60).padStart(2,"0");
+
+timerEl.textContent=`Time Left: ${min}:${sec}`;
+
+if(timeLeft<=0){
+
+clearInterval(timerInterval);
+
+alert("Time is up!");
+submitQuiz();
+
+}
+
+timeLeft--;
+
+},1000);
+
+}
+
+function stopTimer(){
+
+if(timerInterval){
+clearInterval(timerInterval);
+timerInterval=null;
+}
+
+}
+
+
+/* =====================
+LOAD QUESTION
+===================== */
+
+function loadQuestion(){
+
+const q=currentQuestions[currentQuestionIndex];
+if(!q) return;
+
+document.getElementById('question-number').textContent=currentQuestionIndex+1;
+document.getElementById('question-text').textContent=q.question;
+
+const container=document.getElementById('options-container');
+container.innerHTML='';
+
+['A','B','C','D'].forEach(letter=>{
+
+const text=q[`option${letter}`];
+if(!text) return;
+
+const label=document.createElement('label');
+
+label.className='option-label';
+
+label.innerHTML=`
+<input type="radio" name="answer" value="${letter}"
+${selectedAnswers[currentQuestionIndex]===letter?'checked':''}>
+<span>${letter}) ${text}</span>
+`;
+
+label.onclick=()=>{
+
+selectedAnswers[currentQuestionIndex]=letter;
+
+container.querySelectorAll('.option-label').forEach(l=>l.classList.remove('selected'));
+label.classList.add('selected');
+
+};
+
+if(selectedAnswers[currentQuestionIndex]===letter)
+label.classList.add('selected');
+
+container.appendChild(label);
+
+});
+
+document.getElementById('prev-btn').disabled=currentQuestionIndex===0;
+
+document.getElementById('next-btn')
+.classList.toggle('hidden',currentQuestionIndex===currentQuestions.length-1);
+
+document.getElementById('submit-btn')
+.classList.toggle('hidden',currentQuestionIndex!==currentQuestions.length-1);
+
+}
+
+
+function nextQuestion(){
+
+if(currentQuestionIndex<currentQuestions.length-1){
+currentQuestionIndex++;
+loadQuestion();
+}
+
+}
+
+function prevQuestion(){
+
+if(currentQuestionIndex>0){
+currentQuestionIndex--;
+loadQuestion();
+}
+
+}
+
+
+/* =====================
+SUBMIT QUIZ
+===================== */
+
+function submitQuiz(){
+
+if(!confirm("Submit quiz now?")) return;
+
+stopTimer();
+
+let score=0;
+
+currentQuestions.forEach((q,i)=>{
+
+const correct=q.correctOption||q.correctAnswer||q.answer;
+
+if(selectedAnswers[i]===correct){
+score++;
+}
+
+});
+
+const total=currentQuestions.length;
+const percentage=((score/total)*100).toFixed(1);
+
+const durationSec=Math.floor((Date.now()-quizStartTime)/1000);
+
+const min=String(Math.floor(durationSec/60)).padStart(2,'0');
+const sec=String(durationSec%60).padStart(2,'0');
+
+document.getElementById('score').textContent=score;
+document.getElementById('total-q').textContent=total;
+document.getElementById('percentage').textContent=percentage;
+document.getElementById('duration').textContent=`${min}:${sec}`;
+
+let feedbackText="Good effort.";
+
+if(currentQuiz.feedback){
+
+if(percentage<50) feedbackText=currentQuiz.feedback.low;
+else if(percentage<70) feedbackText=currentQuiz.feedback.mid;
+else feedbackText=currentQuiz.feedback.high;
+
+}
+
+document.getElementById('feedback').textContent=feedbackText;
+document.getElementById('result-title').textContent=currentQuiz.courseName;
+
+if(currentUser?.id){
+
+db.collection('quizResults').add({
+
+userId:currentUser.id,
+quizId:currentQuiz.id,
+courseName:currentQuiz.courseName,
+score,
+percentage:Number(percentage),
+totalQuestions:total,
+
+timestamp:firebase.firestore.FieldValue.serverTimestamp(),
+answers:selectedAnswers,
+passed:percentage>=50
+
+});
+
+}
+
+showSection('results-section');
+
+}
+
+
+/* =====================
+ADMIN PANEL
+===================== */
+
+function showAdminTab(tab) {
+    const cont = document.getElementById('admin-content');
+    cont.innerHTML = ''; // clear previous content
+
+    /* ===== ACTIVITIES ===== */
+    if (tab === 'activities') {
+        cont.innerHTML = '<h3>Recent Activities</h3><p>Loading...</p>';
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayStartTs = firebase.firestore.Timestamp.fromDate(todayStart);
+
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+        const todayEndTs = firebase.firestore.Timestamp.fromDate(todayEnd);
+
+        Promise.all([
+            db.collection('users').get().then(snap => snap.size), // total users
+            db.collection('users')
+                .where('createdAt', '>=', todayStartTs)
+                .where('createdAt', '<=', todayEndTs)
+                .get().then(snap => snap.size), // new accounts today
+            db.collection('users')
+                .where('lastLogin', '>=', todayStartTs)
+                .where('lastLogin', '<=', todayEndTs)
+                .get().then(snap => snap.size), // logins today
+            db.collection('quizResults')
+                .where('timestamp', '>=', todayStartTs)
+                .where('timestamp', '<=', todayEndTs)
+                .get().then(snap => snap.size) // quizzes today
+        ])
+        .then(([totalUsers, newToday, loginsToday, quizzesToday]) => {
+            cont.innerHTML = `
+                <h3>System Stats</h3>
+                <ul style="line-height:2">
+                    <li>Total Users: ${totalUsers}</li>
+                    <li>New Accounts Today: ${newToday}</li>
+                    <li>Student Logins Today: ${loginsToday}</li>
+                    <li>Quizzes Taken Today: ${quizzesToday}</li>
+                </ul>
+            `;
+        })
+        .catch(err => {
+            cont.innerHTML = `<p style="color:red;">Failed to load activities: ${err.message}</p>`;
+            console.error(err);
+        });
+    }
+
+    /* ===== QUESTION BANK ===== */
+    else if (tab === 'question-bank') {
+        cont.innerHTML = `
+            <input type="file" id="excelFile" accept=".xlsx,.xls">
+            <button onclick="uploadQuestionBank()">Upload Question Bank</button>
+            <div id="bank-list"></div>
+        `;
+        loadQuestionBanks();
+    }
+
+    /* ===== SET / PUBLISH QUIZ ===== */
+    else if (tab === 'set-quiz') {
+        cont.innerHTML = '<p>Loading banks...</p>';
+
+        db.collection('questionBank').get().then(snap => {
+            if (snap.empty) {
+                cont.innerHTML = '<p style="color:red;">No banks uploaded yet</p>';
+                return;
+            }
+
+            let html = `<select id="bankSelect"><option value="">Select Bank</option>`;
+            snap.forEach(d => {
+                html += `<option value="${d.id}">${d.data().courseName}</option>`;
+            });
+            html += `</select>
+                <select id="quizLevel">
+                    <option value="100">100 Level</option>
+                    <option value="200">200 Level</option>
+                </select>
+                <button onclick="publishQuiz()">Publish Quiz</button>
+            `;
+            cont.innerHTML = html;
+        });
+    }
+
+    /* ===== PAYMENTS OVERVIEW ===== */
+    else if (tab === 'payments') {
+        cont.innerHTML = '<h3>Payment Overview</h3><p>Loading payment stats...</p>';
+
+        db.collection("payments").get().then(snap => {
+            const totalUsers = snap.size;
+            const totalRevenue = totalUsers * 100; // constant payment amount
+
+            cont.innerHTML = `
+                <h3>Payment Overview</h3>
+                <p><strong>Users Paid:</strong> ${totalUsers}</p>
+                <p><strong>Total Revenue:</strong> ₦${totalRevenue}</p>
+            `;
+        }).catch(err => {
+            cont.innerHTML = `<p style="color:red;">Failed to load payment stats: ${err.message}</p>`;
+            console.error(err);
+        });
+    }
+}
+
+
+/* =====================
+QUESTION BANK LIST
+===================== */
+
+async function loadQuestionBanks(){
+
+const list=document.getElementById('bank-list');
+if(!list) return;
+
+const snaps=await db.collection('questionBank').get();
+
+list.innerHTML='';
+
+snaps.forEach(doc=>{
+
+const div=document.createElement('div');
+div.textContent=doc.data().courseName;
+
+list.appendChild(div);
+
+});
+
+}
+
+
+/* =====================
+UPLOAD EXCEL
+===================== */
+
+async function uploadQuestionBank(){
+
+const file=document.getElementById("excelFile").files[0];
+
+if(!file){
+alert("Choose Excel file");
+return;
+}
+
+const reader=new FileReader();
+
+reader.onload=async function(e){
+
+const data=new Uint8Array(e.target.result);
+
+const workbook=XLSX.read(data,{type:"array"});
+
+const sheet=workbook.Sheets[workbook.SheetNames[0]];
+
+const rows=XLSX.utils.sheet_to_json(sheet);
+
+if(!rows.length){
+alert("Excel file is empty");
+return;
+}
+
+if(!rows[0].Course){
+alert("Excel must contain a 'Course' column");
+return;
+}
+const questions = rows.map(r=>({
+question:r.Question,
+optionA:r.A,
+optionB:r.B,
+optionC:r.C,
+optionD:r.D,
+correctOption:r.Answer
+}));
+
+await db.collection("questionBank").add({
+
+courseName:rows[0].Course,
+level:rows[0].Level,
+timeLimit:rows[0].Time,
+payment:rows[0].Payment, // NEW
+
+feedback:{
+low:rows[0].FeedbackLow,
+mid:rows[0].FeedbackMid,
+high:rows[0].FeedbackHigh
+},
+
+questions:questions,
+
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+alert("Question bank uploaded!");
+
+};
+
+reader.readAsArrayBuffer(file);
+
+}
+
+
+/* =====================
+PUBLISH QUIZ
+===================== */
+
+async function publishQuiz(){
+
+const id=document.getElementById('bankSelect').value;
+const level=document.getElementById('quizLevel').value;
+
+if(!id) return alert("Select bank");
+
+const doc=await db.collection('questionBank').doc(id).get();
+
+await db.collection('quizzes').add({
+
+...doc.data(),
+
+level,
+status:'published',
+
+publishedAt:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+alert("Quiz Published!");
+
+}
+
+
+showSection('signup-section');
+
+</script>
+</body>
+</html>
