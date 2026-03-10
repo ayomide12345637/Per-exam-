@@ -240,6 +240,25 @@ input[type="radio"] {
     min-width: 110px;
 }
 
+.team-card{
+    background:#f5f5f5;
+    padding:15px 25px;
+    border-radius:10px;
+    text-align:center;
+    min-width:120px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.team-card h4{
+    margin:0;
+    color:var(--green);
+}
+
+.team-card p{
+    font-size:0.85rem;
+    color:#555;
+}
+
 /* Mobile - make everything smaller & tighter */
 @media (max-width: 600px) {
     header { padding: 0.7rem 0.8rem 0.9rem; }
@@ -298,7 +317,7 @@ input[type="radio"] {
         <input type="password" id="password" placeholder="Password (Auto-set to UPPERCASE Surname)" readonly>
         <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
         <button type="submit">Sign Up</button>
-    </form>
+    </form><!-- <!--  --> 
     <p>
         Have an account? 
         <span style="cursor:pointer;color:blue;text-decoration:underline;" onclick="showSection('login-section')">
@@ -370,6 +389,32 @@ input[type="radio"] {
                     <strong id="feedback" style="color: var(--green);">Congratulations, you passed the compliance exam.</strong>
                 </div>
             </div>
+            
+            <!-- Team Members -->
+<div id="team-section" style="margin-top:2rem;">
+    <h3 style="text-align:center;">Project Team</h3>
+
+    <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:1rem;">
+
+        <div class="team-card">
+            <h4>Polokay</h4>
+            <p>Team Member</p>
+        </div>
+
+        <div class="team-card">
+            <h4>BTO</h4>
+            <p>Team Member</p>
+        </div>
+
+        <div class="team-card">
+            <h4>Don Emzy</h4>
+            <p>Team Member</p>
+        </div>
+
+    </div>
+</div>
+            
+            
             <button type="button" onclick="showSection('student-dashboard')">Back to Dashboard</button>
         </section>
 
@@ -630,7 +675,7 @@ if (quiz.payment === "YES") {
 
     // Redirect user to SquadCo payment page with return URL
     // Replace YOURDOMAIN.com with your actual domain
-    window.location.href = "https://pay.squadco.com/5N8DPA?redirect_url=https://YOURDOMAIN.com/payment-success.html";
+    window.location.href = "https://pay.squadco.com/5N8DPA?redirect_url=https://https://meloxpreexam.onrender.com/payment-success.html";
 
     // Stop further execution until payment is completed
     return;
@@ -647,7 +692,17 @@ START QUIZ
 async function startQuiz(quizId){
 
 showLoading();
+// Check if student already took this quiz
+const resultCheck = await db.collection("quizResults")
+.where("userId","==",currentUser.id)
+.where("quizId","==",quizId)
+.get();
 
+if(!resultCheck.empty){
+hideLoading();
+alert("You have already completed this exam. You cannot take it again.");
+return;
+}
 try{
 
 
