@@ -454,7 +454,7 @@ input[type="radio"] {
         <div class="notice-card">
             <h4>Next Exam Update</h4>
             <p>
-                The next pre-exam that will be conducted after <strong>BIO 103</strong> 
+                The next pre-exam that will be conducted after <strong>This present exam</strong> 
                 will be uploaded <strong>one day before your exam</strong>. 
                 This will continue for all upcoming exams on this platform.
                 <br><br>
@@ -755,9 +755,16 @@ const resultCheck = await db.collection("quizResults")
 .get();
 
 if(!resultCheck.empty){
-hideLoading();
-alert("You have already completed this exam. You cannot take it again.");
-return;
+
+ hideLoading();
+
+ const resultData = resultCheck.docs[0].data();
+
+ if(confirm("You have already completed this exam. Click OK to view your previous result.")){
+     showOldResult(resultData);
+ }
+
+ return;
 }
 try{
 
@@ -859,6 +866,30 @@ timerInterval=null;
 
 }
 
+async function showOldResult(data){
+
+const quizDoc = await db.collection('quizzes').doc(data.quizId).get();
+
+if(!quizDoc.exists){
+alert("Quiz data not found");
+return;
+}
+
+currentQuestions = quizDoc.data().questions;
+selectedAnswers = data.answers || [];
+
+document.getElementById('score').textContent = data.score;
+document.getElementById('total-q').textContent = data.totalQuestions;
+document.getElementById('percentage').textContent = data.percentage;
+document.getElementById('duration').textContent = "--:--";
+document.getElementById('result-title').textContent = data.courseName;
+
+document.getElementById('feedback').textContent =
+data.passed ? "Congratulations, you passed." : "Keep practicing.";
+
+showSection('results-section');
+
+}
 
 function viewAnswers() {
     const container = document.getElementById('answers-container');
