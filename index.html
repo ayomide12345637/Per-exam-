@@ -454,7 +454,7 @@ input[type="radio"] {
         <div class="notice-card">
             <h4>Next Exam Update</h4>
             <p>
-                The next pre-exam that will be conducted after <strong>This exam you took</strong> 
+                The next pre-exam that will be conducted after <strong>BIO 103</strong> 
                 will be uploaded <strong>one day before your exam</strong>. 
                 This will continue for all upcoming exams on this platform.
                 <br><br>
@@ -468,8 +468,11 @@ input[type="radio"] {
 
     </div>
 </div>
-            <button type="button" onclick="showSection('student-dashboard')">Back to Dashboard</button>
-        </section>
+         <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+    <button type="button" onclick="showSection('student-dashboard')">Back to Dashboard</button>
+    <button type="button" onclick="viewAnswers()" class="blue">View Answers</button>
+</div>
+<div id="answers-container" class="hidden" style="margin-top:1rem;"></div>
 
         <!-- Admin Dashboard -->
         <section id="admin-dashboard" class="hidden">
@@ -856,6 +859,40 @@ timerInterval=null;
 
 }
 
+
+function viewAnswers() {
+    const container = document.getElementById('answers-container');
+    container.innerHTML = ''; // clear previous content
+    container.classList.remove('hidden');
+
+    if (!currentQuestions.length || !selectedAnswers.length) {
+        container.innerHTML = '<p>No answers available.</p>';
+        return;
+    }
+
+    currentQuestions.forEach((q, i) => {
+        const userAnswer = selectedAnswers[i] || 'No answer';
+        const correctAnswer = q.correctOption || q.correctAnswer || q.answer || 'Not set';
+
+        const div = document.createElement('div');
+        div.style.padding = '0.8rem';
+        div.style.marginBottom = '0.5rem';
+        div.style.border = '1px solid #dee2e6';
+        div.style.borderRadius = '8px';
+        div.style.background = '#f9f9f9';
+
+        div.innerHTML = `
+            <p><strong>Q${i+1}:</strong> ${q.question}</p>
+            <p>Your Answer: <span style="color:${userAnswer===correctAnswer?'green':'red'}">${userAnswer}</span></p>
+            <p>Correct Answer: <strong>${correctAnswer}</strong></p>
+        `;
+
+        container.appendChild(div);
+    });
+
+    // Scroll to answers
+    container.scrollIntoView({behavior:'smooth'});
+}
 
 /* =====================
 LOAD QUESTION
