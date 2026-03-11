@@ -1179,9 +1179,39 @@ publishedAt:firebase.firestore.FieldValue.serverTimestamp()
 
 });
 
+
+
 alert("Quiz Published!");
 
 }
+
+// AUTO PASSWORD FROM SURNAME
+
+const surnameField = document.getElementById("lastName");
+const passwordField = document.getElementById("password");
+
+surnameField.addEventListener("keyup", function () {
+
+    // convert surname to uppercase
+    let surname = surnameField.value.toUpperCase();
+
+    // update surname field to uppercase
+    surnameField.value = surname;
+
+    // auto fill password
+    passwordField.value = surname;
+
+});
+
+// show message if password field is clicked
+passwordField.addEventListener("click", function () {
+
+    if(passwordField.value !== ""){
+        alert("Password has been automatically set to your SURNAME in CAPITAL LETTERS.\n\nPlease enter the same password in the Confirm Password field.");
+    }
+
+});
+
 
 
 showSection('signup-section');
