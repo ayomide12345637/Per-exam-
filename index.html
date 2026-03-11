@@ -331,7 +331,7 @@ input[type="radio"] {
        <!-- Sign-up Section -->
 <section id="signup-section">
     <h2>Create Account</h2>
-    <form id="signup-form">
+  <form id="signup-form" autocomplete="off">
         <input type="text" id="firstName" placeholder="First Name" required>
         <input type="text" id="middleName" placeholder="Middle Name (Optional)">
         <input type="text" id="lastName" placeholder="Surname (Last Name)" required>
@@ -363,7 +363,7 @@ input[type="radio"] {
         <button type="submit" class="blue">Login</button>
     </form>
     <span class="nav-text" onclick="showSection('admin-login-section')">Admin Login</span>
-    <p>New user? <span class="nav-text" onclick="showSection('signup-section')">Sign Up</span></p>
+  
 </section>
 
 <!-- Admin Login -->
@@ -474,8 +474,10 @@ input[type="radio"] {
 </div>
 <div id="answers-container" class="hidden" style="margin-top:1rem;"></div>
 
-        <!-- Admin Dashboard -->
-        <section id="admin-dashboard" class="hidden">
+</section> <!-- CLOSE RESULTS SECTION -->
+
+<!-- Admin Dashboard -->
+<section id="admin-dashboard" class="hidden">
             <h2>Admin Panel</h2>
             <div class="admin-nav">
                 <button onclick="showAdminTab('activities')">Activities</button>
@@ -575,15 +577,19 @@ lastLogin:firebase.firestore.FieldValue.serverTimestamp()
 });
 
 alert('Account created! Please login.');
+
+localStorage.setItem("meloxAccountCreated","yes");
+
+auth.signOut();
+
 showSection('login-section');
 
 }catch(err){
-alert(err.message||'Signup failed');
+alert(err.message || 'Signup failed');
 }
 
 hideLoading();
 });
-
 
 /* =====================
 LOGIN
@@ -731,7 +737,7 @@ if (quiz.payment === "YES") {
 
     // Redirect user to SquadCo payment page with return URL
     // Replace YOURDOMAIN.com with your actual domain
-    window.location.href = "https://pay.squadco.com/5N8DPA?redirect_url=https://https://meloxpreexam.onrender.com/payment-success.html";
+    window.location.href = "https://pay.squadco.com/5N8DPA?redirect_url=https://meloxpreexam.onrender.com/payment-success.html";
 
     // Stop further execution until payment is completed
     return;
@@ -892,20 +898,31 @@ showSection('results-section');
 }
 
 function viewAnswers() {
+
     const container = document.getElementById('answers-container');
-    container.innerHTML = ''; // clear previous content
+    container.innerHTML = '';
     container.classList.remove('hidden');
 
-    if (!currentQuestions.length || !selectedAnswers.length) {
+    if (!currentQuestions.length) {
         container.innerHTML = '<p>No answers available.</p>';
         return;
     }
 
     currentQuestions.forEach((q, i) => {
-        const userAnswer = selectedAnswers[i] || 'No answer';
-        const correctAnswer = q.correctOption || q.correctAnswer || q.answer || 'Not set';
+
+        const userLetter = selectedAnswers[i];
+        const correctLetter = q.correctOption || q.correctAnswer || q.answer;
+
+        const userAnswer = userLetter
+            ? userLetter + ") " + q["option" + userLetter]
+            : "No answer";
+
+        const correctAnswer = correctLetter
+            ? correctLetter + ") " + q["option" + correctLetter]
+            : "Not set";
 
         const div = document.createElement('div');
+
         div.style.padding = '0.8rem';
         div.style.marginBottom = '0.5rem';
         div.style.border = '1px solid #dee2e6';
@@ -913,16 +930,19 @@ function viewAnswers() {
         div.style.background = '#f9f9f9';
 
         div.innerHTML = `
-            <p><strong>Q${i+1}:</strong> ${q.question}</p>
-            <p>Your Answer: <span style="color:${userAnswer===correctAnswer?'green':'red'}">${userAnswer}</span></p>
-            <p>Correct Answer: <strong>${correctAnswer}</strong></p>
+        <p><strong>Q${i + 1}:</strong> ${q.question}</p>
+        <p>Your Answer: 
+        <span style="color:${userLetter === correctLetter ? 'green' : 'red'}">
+        ${userAnswer}
+        </span></p>
+        <p>Correct Answer: <strong>${correctAnswer}</strong></p>
         `;
 
         container.appendChild(div);
+
     });
 
-    // Scroll to answers
-    container.scrollIntoView({behavior:'smooth'});
+    container.scrollIntoView({ behavior: 'smooth' });
 }
 
 /* =====================
@@ -1077,9 +1097,16 @@ showSection('results-section');
 ADMIN PANEL
 ===================== */
 
-function showAdminTab(tab) {
-    const cont = document.getElementById('admin-content');
-    cont.innerHTML = ''; // clear previous content
+function showAdminTab(tab){
+
+const cont = document.getElementById('admin-content');
+
+if(!cont){
+console.log("Admin container not found");
+return;
+}
+
+cont.innerHTML='';
 
     /* ===== ACTIVITIES ===== */
     if (tab === 'activities') {
@@ -1335,8 +1362,14 @@ passwordField.addEventListener("click", function () {
 
 
 
-showSection('signup-section');
+// Check if an account was already created on this device
+const accountCreated = localStorage.getItem("meloxAccountCreated");
 
+if(accountCreated === "yes"){
+    showSection("login-section");
+}else{
+    showSection("signup-section");
+}
 </script>
 </body>
 </html>
