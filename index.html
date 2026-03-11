@@ -287,6 +287,33 @@ input[type="radio"] {
 .nav-text:hover {
     color: #0056b3;
 }
+
+.notice-card{
+    background:#fff3cd;
+    padding:18px 25px;
+    border-radius:10px;
+    text-align:center;
+    max-width:420px;
+    border:1px solid #ffeeba;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.notice-card h4{
+    margin-bottom:8px;
+    color:#856404;
+}
+
+.notice-card p{
+    font-size:0.9rem;
+    color:#6c5700;
+    line-height:1.5;
+}
+
+.notice-card a{
+    color:#0a7cff;
+    font-weight:600;
+    text-decoration:underline;
+}
     </style>
 </head>
 <body>
@@ -418,8 +445,29 @@ input[type="radio"] {
 
     </div>
 </div>
-            
-            
+            <!-- Exam Notice -->
+<div id="exam-notice" style="margin-top:2rem;">
+    <h3 style="text-align:center;">Important Notice</h3>
+
+    <div style="display:flex; justify-content:center; margin-top:1rem;">
+
+        <div class="notice-card">
+            <h4>Next Exam Update</h4>
+            <p>
+                The next pre-exam that will be conducted after <strong>BIO 103</strong> 
+                will be uploaded <strong>one day before your exam</strong>. 
+                This will continue for all upcoming exams on this platform.
+                <br><br>
+                For quick updates and announcements, please follow our channel:
+                <br>
+                <a href="https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x" target="_blank">
+                    Join our WhatsApp Update Channel
+                </a>
+            </p>
+        </div>
+
+    </div>
+</div>
             <button type="button" onclick="showSection('student-dashboard')">Back to Dashboard</button>
         </section>
 
