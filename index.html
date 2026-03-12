@@ -905,42 +905,6 @@ hideLoading();
 
 
 
-function startCountdown(id, release){
-
-const el=document.getElementById("timer-"+id);
-
-if(!el) return;
-
-const interval=setInterval(()=>{
-
-const now = new Date().toLocaleString("en-US",{timeZone:"Africa/Lagos"});
-const nowTime = new Date(now).getTime();
-
-const diff = release - nowTime;
-
-if(diff <= 0){
-
-clearInterval(interval);
-
-el.innerHTML="Available Now";
-loadCourses();
-
-return;
-
-}
-
-const d=Math.floor(diff/(1000*60*60*24));
-const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-const m=Math.floor((diff%(1000*60*60))/(1000*60));
-const s=Math.floor((diff%(1000*60))/1000);
-
-el.innerHTML=`Available in ${d}d ${h}h ${m}m ${s}s`;
-
-},1000);
-
-}
-
-
 /* =====================
 TIMER
 ===================== */
@@ -1385,32 +1349,27 @@ if(!rows[0].Course){
 alert("Excel must contain a 'Course' column");
 return;
 }
-const questions = rows.map(r=>({
-question:r.Question,
-optionA:r.A,
-optionB:r.B,
-optionC:r.C,
-optionD:r.D,
-correctOption:r.Answer
+const questions = rows.map(r => ({
+  question: r.Question || '',
+  optionA: r.A || '',
+  optionB: r.B || '',
+  optionC: r.C || '',
+  optionD: r.D || '',
+  correctOption: r.Answer || ''
 }));
 
 await db.collection("questionBank").add({
-
-courseName:rows[0].Course,
-level:rows[0].Level,
-timeLimit:rows[0].Time,
-payment:rows[0].Payment, // NEW
-
-feedback:{
-low:rows[0].FeedbackLow,
-mid:rows[0].FeedbackMid,
-high:rows[0].FeedbackHigh
-},
-
-questions:questions,
-
-createdAt:firebase.firestore.FieldValue.serverTimestamp()
-
+  courseName: rows[0].Course || 'Unnamed Course',
+  level: rows[0].Level || '100',
+  timeLimit: rows[0].Time || 30,
+  payment: rows[0].Payment || 'NO',
+  feedback: {
+    low: rows[0].FeedbackLow || 'Needs improvement',
+    mid: rows[0].FeedbackMid || 'Fair effort',
+    high: rows[0].FeedbackHigh || 'Excellent performance'
+  },
+  questions: questions,
+  createdAt: firebase.firestore.FieldValue.serverTimestamp()
 });
 alert("Question bank uploaded!");
 
