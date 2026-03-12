@@ -472,7 +472,7 @@ input[type="radio"] {
     <button type="button" onclick="showSection('student-dashboard')">Back to Dashboard</button>
     <button type="button" onclick="viewAnswers()" class="blue">View Answers</button>
 </div>
-<div id="answers-container" class="hidden" style="margin-top:1rem;"></div>
+<div id="answers-container" style="margin-top:1rem; display: none;"></div>
 
 </section> <!-- CLOSE RESULTS SECTION -->
 
@@ -908,280 +908,275 @@ hideLoading();
 /* =====================
 TIMER
 ===================== */
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
 
-function startTimer(){
+    const timeLimitMin = Number(currentQuiz?.timeLimit) || 30;
+    let timeLeft = timeLimitMin * 60;
 
-if(timerInterval) clearInterval(timerInterval);
+    const timerEl = document.getElementById("timer");
+    if (!timerEl) {
+        console.error("Timer element #timer not found");
+        return;
+    }
 
-let timeLeft=(currentQuiz.timeLimit||30)*60;
+    // Initial display
+    let min = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+    let sec = String(timeLeft % 60).padStart(2, "0");
+    timerEl.textContent = `Time Left: \( {min}: \){sec}`;
 
-const timerEl=document.getElementById("timer");
+    timerInterval = setInterval(() => {
+        timeLeft--;
 
-timerInterval=setInterval(()=>{
+        min = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+        sec = String(timeLeft % 60).padStart(2, "0");
 
-let min=String(Math.floor(timeLeft/60)).padStart(2,"0");
-let sec=String(timeLeft%60).padStart(2,"0");
+        timerEl.textContent = `Time Left: \( {min}: \){sec}`;
 
-timerEl.textContent=`Time Left: ${min}:${sec}`;
-
-if(timeLeft<=0){
-
-clearInterval(timerInterval);
-
-alert("Time is up!");
-submitQuiz();
-
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerEl.textContent = "Time Left: 00:00";
+            alert("Time is up!");
+            submitQuiz();
+        }
+    }, 1000);
+}
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
 }
 
-timeLeft--;
+/* =====================
+SHOW PREVIOUS RESULT
+===================== */
+async function showOldResult(data) {
+    try {
+        const quizDoc = await db.collection('quizzes').doc(data.quizId).get();
 
-},1000);
+        if (!quizDoc.exists) {
+            alert("Quiz data not found");
+            return;
+        }
 
+        currentQuestions = quizDoc.data().questions || [];
+        selectedAnswers = data.answers || [];
+
+        document.getElementById('score').textContent = data.score || 0;
+        document.getElementById('total-q').textContent = data.totalQuestions || 0;
+        document.getElementById('percentage').textContent = data.percentage || 0;
+        document.getElementById('duration').textContent = "--:--";
+        document.getElementById('result-title').textContent = data.courseName || "Previous Exam";
+
+        document.getElementById('feedback').textContent =
+            data.passed ? "Congratulations, you passed." : "Keep practicing.";
+
+        showSection('results-section');
+    } catch (err) {
+        console.error("Error loading old result:", err);
+        alert("Could not load previous result. Please try again.");
+    }
 }
 
-function stopTimer(){
-
-if(timerInterval){
-clearInterval(timerInterval);
-timerInterval=null;
-}
-
-}
-
-async function showOldResult(data){
-
-const quizDoc = await db.collection('quizzes').doc(data.quizId).get();
-
-if(!quizDoc.exists){
-alert("Quiz data not found");
-return;
-}
-
-currentQuestions = quizDoc.data().questions;
-selectedAnswers = data.answers || [];
-
-document.getElementById('score').textContent = data.score;
-document.getElementById('total-q').textContent = data.totalQuestions;
-document.getElementById('percentage').textContent = data.percentage;
-document.getElementById('duration').textContent = "--:--";
-document.getElementById('result-title').textContent = data.courseName;
-
-document.getElementById('feedback').textContent =
-data.passed ? "Congratulations, you passed." : "Keep practicing.";
-
-showSection('results-section');
-
-}
-
+/* =====================
+VIEW ANSWERS (Fixed & Improved)
+===================== */
 function viewAnswers() {
+    const container = document.getElementById('answers-container');
+    if (!container) {
+        console.error("Answers container not found");
+        return;
+    }
+
+    container.innerHTML = '';           // Clear old content
+    container.style.display = 'block';  // Make it visible
+
+    if (!currentQuestions || currentQuestions.length === 0) {
+        container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">No questions loaded yet.</p>';
+        return;
+    }
 
     currentQuestions.forEach((q, i) => {
+        const div = document.createElement('div');
+        div.style.padding = '0.8rem';
+        div.style.marginBottom = '0.5rem';
+        div.style.border = '1px solid #dee2e6';
+        div.style.borderRadius = '8px';
+        div.style.background = '#f9f9f9';
 
-    const div = document.createElement('div');
+        const questionText = q.question || "[Question text missing]";
 
-    div.style.padding = '0.8rem';
-    div.style.marginBottom = '0.5rem';
-    div.style.border = '1px solid #dee2e6';
-    div.style.borderRadius = '8px';
-    div.style.background = '#f9f9f9';
+        if ((q.type || '').toLowerCase() === 'theory') {
+            const userAnswer = selectedAnswers[i] || "No answer provided";
+            div.innerHTML = `
+                <p><strong>Q${i + 1}:</strong> ${questionText}</p>
+                <p><strong>Your Answer:</strong></p>
+                <div style="background:white; padding:12px; border:1px solid #ccc; border-radius:6px; white-space:pre-wrap;">
+                    ${userAnswer}
+                </div>
+                <p><strong>Expected Keywords:</strong> ${q.keywords || "Not provided"}</p>
+            `;
+        } else {
+          // Objective question block
+const userLetter = selectedAnswers[i];
+const correctLetter = q.correctOption;
 
-    /* THEORY QUESTION */
-    if(q.type === "theory"){
+const userAnswerText = userLetter && q[`option${userLetter}`]
+    ? `${userLetter}) ${q[`option${userLetter}`]}`
+    : "No selection";
 
-        const userAnswer = selectedAnswers[i] || "No answer";
+const correctAnswerText = correctLetter && q[`option${correctLetter}`]
+    ? `${correctLetter}) ${q[`option${correctLetter}`]}`
+    : "Not set";
 
-        div.innerHTML = `
-        <p><strong>Q${i+1}:</strong> ${q.question}</p>
-
-        <p>Your Answer:</p>
-        <div style="background:white;padding:8px;border-radius:6px;border:1px solid #ccc;">
-        ${userAnswer}
-        </div>
-
-        <p>Expected Keywords:</p>
-        <div style="font-weight:bold;color:black;">
-        ${q.keywords || "Not provided"}
-        </div>
-        `;
-
-    }
-
-    /* OBJECTIVE QUESTION */
-    else{
-
-        const userLetter = selectedAnswers[i];
-        const correctLetter = q.correctOption;
-
-        const userAnswer = userLetter
-            ? userLetter + ") " + q["option" + userLetter]
-            : "No answer";
-
-        const correctAnswer = correctLetter
-            ? correctLetter + ") " + q["option" + correctLetter]
-            : "Not set";
-
-        div.innerHTML = `
-        <p><strong>Q${i+1}:</strong> ${q.question}</p>
-        <p>Your Answer:
-        <span style="color:${userLetter === correctLetter ? 'green' : 'red'}">
-        ${userAnswer}
-        </span></p>
-        <p>Correct Answer: <strong>${correctAnswer}</strong></p>
-        `;
-    }
-
-    container.appendChild(div);
-
-});
-
-    container.scrollIntoView({ behavior: 'smooth' });
-}
-
-/* =====================
-LOAD QUESTION
-===================== */
-
-function loadQuestion(){
-
-const q = currentQuestions[currentQuestionIndex];
-if(!q) return;
-
-document.getElementById('question-number').textContent = currentQuestionIndex + 1;
-document.getElementById('question-text').textContent = q.question;
-
-const container = document.getElementById('options-container');
-container.innerHTML = '';
-
-/* =====================
-THEORY QUESTION
-===================== */
-
-if(q.type === "theory"){
-
-const label = document.createElement("p");
-label.innerHTML = "<strong>Type your answer below:</strong>";
-
-const textarea = document.createElement("textarea");
-
-textarea.placeholder = "Type your answer here...";
-textarea.style.width = "100%";
-textarea.style.minHeight = "120px";
-textarea.style.padding = "10px";
-textarea.style.border = "1px solid #ccc";
-textarea.style.borderRadius = "8px";
-textarea.style.fontSize = "15px";
-
-textarea.value = selectedAnswers[currentQuestionIndex] || "";
-
-textarea.oninput = ()=>{
-selectedAnswers[currentQuestionIndex] = textarea.value;
-};
-
-container.appendChild(label);
-container.appendChild(textarea);
-}
-
-/* =====================
-OBJECTIVE QUESTION
-===================== */
-
-else{
-
-['A','B','C','D'].forEach(letter=>{
-
-const text = q[`option${letter}`];
-if(!text) return;
-
-const label = document.createElement('label');
-label.className = 'option-label';
-
-label.innerHTML = `
-<input type="radio" name="answer" value="${letter}"
-${selectedAnswers[currentQuestionIndex]===letter?'checked':''}>
-<span>${letter}) ${text}</span>
+div.innerHTML = `
+    <p><strong>Q${i + 1}:</strong> ${questionText}</p>
+    <p>Your Answer: 
+        <span style="color:${userLetter === correctLetter ? 'green' : 'red'}; font-weight:bold;">
+            ${userAnswerText}
+        </span>
+    </p>
+    <p>Correct Answer: <strong>${correctAnswerText}</strong></p>
 `;
+        }
 
-/* When option clicked */
-label.onclick = ()=>{
+        container.appendChild(div);
+    });
 
-selectedAnswers[currentQuestionIndex] = letter;
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+/* =====================
+LOAD QUESTION (More robust version)
+===================== */
+function loadQuestion() {
+    const q = currentQuestions[currentQuestionIndex];
+    if (!q) return;
 
-/* remove highlight from other options */
-container.querySelectorAll('.option-label')
-.forEach(l=>l.classList.remove('selected'));
+    document.getElementById('question-number').textContent = currentQuestionIndex + 1;
+    document.getElementById('question-text').textContent = q.question || "[Question text missing]";
 
-/* highlight selected option */
-label.classList.add('selected');
+    const container = document.getElementById('options-container');
+    if (!container) return;
 
-};
+    container.innerHTML = '';
 
-/* restore highlight when returning to question */
-if(selectedAnswers[currentQuestionIndex]===letter)
-label.classList.add('selected');
+    const qType = (q.type || '').toString().trim().toLowerCase();
 
-container.appendChild(label);
+    // Theory / essay / descriptive
+    if (qType === 'theory' || qType === 'essay' || qType === 'descriptive') {
+        const label = document.createElement("p");
+        label.innerHTML = "<strong>Type your answer below:</strong>";
+        container.appendChild(label);
 
-});
+        const textarea = document.createElement("textarea");
+        textarea.placeholder = "Type your answer here...";
+        textarea.style.width = "100%";
+        textarea.style.minHeight = "120px";
+        textarea.style.padding = "10px";
+        textarea.style.border = "1px solid #ccc";
+        textarea.style.borderRadius = "8px";
+        textarea.style.fontSize = "15px";
+        textarea.value = selectedAnswers[currentQuestionIndex] || "";
+        textarea.oninput = () => {
+            selectedAnswers[currentQuestionIndex] = textarea.value.trim();
+        };
 
+        container.appendChild(textarea);
+    }
+    // Objective (multiple choice)
+    else {
+        let hasOptions = false;
+
+        ['A', 'B', 'C', 'D'].forEach(letter => {
+            const text = (q[`option${letter}`] || '').trim();
+            if (!text) return;
+
+            hasOptions = true;
+
+            const label = document.createElement('label');
+            label.className = 'option-label';
+
+            label.innerHTML = `
+                <input type="radio" name="answer" value="${letter}"
+                    ${selectedAnswers[currentQuestionIndex] === letter ? 'checked' : ''}>
+                <span>${letter}) ${text}</span>
+            `;
+
+            label.onclick = () => {
+                selectedAnswers[currentQuestionIndex] = letter;
+                container.querySelectorAll('.option-label')
+                    .forEach(l => l.classList.remove('selected'));
+                label.classList.add('selected');
+            };
+
+            if (selectedAnswers[currentQuestionIndex] === letter) {
+                label.classList.add('selected');
+            }
+
+            container.appendChild(label);
+        });
+
+        if (!hasOptions) {
+            container.innerHTML = `
+                <p style="color:red; text-align:center; padding:1rem;">
+                    <strong>Question configuration error:</strong><br>
+                    No answer options found and type is not set to "theory".
+                </p>
+            `;
+        }
+    }
+
+    // Navigation controls
+    document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+    document.getElementById('next-btn')
+        .classList.toggle('hidden', currentQuestionIndex === currentQuestions.length - 1);
+    document.getElementById('submit-btn')
+        .classList.toggle('hidden', currentQuestionIndex !== currentQuestions.length - 1);
 }
 
 /* =====================
-NAVIGATION CONTROLS
+NAVIGATION
 ===================== */
-
-document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
-
-document.getElementById('next-btn')
-.classList.toggle('hidden', currentQuestionIndex === currentQuestions.length - 1);
-
-document.getElementById('submit-btn')
-.classList.toggle('hidden', currentQuestionIndex !== currentQuestions.length - 1);
-
+function nextQuestion() {
+    if (currentQuestionIndex < currentQuestions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+    }
 }
 
-
-function nextQuestion(){
-
-if(currentQuestionIndex<currentQuestions.length-1){
-currentQuestionIndex++;
-loadQuestion();
+function prevQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        loadQuestion();
+    }
 }
 
+/* =====================
+THEORY ANSWER CHECK
+===================== */
+function checkTheoryAnswer(studentAnswer, keywords) {
+    if (!studentAnswer || !keywords) return false;
+
+    studentAnswer = (studentAnswer || '').toUpperCase().trim();
+
+    const keyList = (keywords || '')
+        .split(',')
+        .map(k => k.trim().toUpperCase())
+        .filter(Boolean);
+
+    if (keyList.length === 0) return false;
+
+    let matches = 0;
+    keyList.forEach(word => {
+        if (studentAnswer.includes(word)) {
+            matches++;
+        }
+    });
+
+    return matches >= Math.ceil(keyList.length / 2);
 }
-
-function prevQuestion(){
-
-if(currentQuestionIndex>0){
-currentQuestionIndex--;
-loadQuestion();
-}
-
-}
-
-
-function checkTheoryAnswer(studentAnswer, keywords){
-
-if(!studentAnswer || !keywords) return false;
-
-studentAnswer = studentAnswer.toUpperCase();
-
-const keyList = keywords.split(",");
-
-let matches = 0;
-
-keyList.forEach(word => {
-
-if(studentAnswer.includes(word.trim().toUpperCase())){
-matches++;
-}
-
-});
-
-return matches >= Math.ceil(keyList.length/2); 
-}
-
-
-
+    
 /* =====================
 SUBMIT QUIZ
 ===================== */
@@ -1549,3 +1544,4 @@ if(accountCreated === "yes"){
 </script>
 </body>
 </html>
+    
