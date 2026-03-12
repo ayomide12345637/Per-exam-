@@ -1027,39 +1027,78 @@ LOAD QUESTION
 
 function loadQuestion(){
 
-const q=currentQuestions[currentQuestionIndex];
+const q = currentQuestions[currentQuestionIndex];
 if(!q) return;
 
-document.getElementById('question-number').textContent=currentQuestionIndex+1;
-document.getElementById('question-text').textContent=q.question;
+document.getElementById('question-number').textContent = currentQuestionIndex + 1;
+document.getElementById('question-text').textContent = q.question;
 
-const container=document.getElementById('options-container');
-container.innerHTML='';
+const container = document.getElementById('options-container');
+container.innerHTML = '';
+
+/* =====================
+THEORY QUESTION
+===================== */
+
+if(q.type === "theory"){
+
+const textarea = document.createElement("textarea");
+
+textarea.placeholder = "Type your answer here...";
+textarea.style.width = "100%";
+textarea.style.minHeight = "120px";
+textarea.style.padding = "10px";
+textarea.style.border = "1px solid #ccc";
+textarea.style.borderRadius = "8px";
+textarea.style.fontSize = "15px";
+
+/* Restore saved answer */
+textarea.value = selectedAnswers[currentQuestionIndex] || "";
+
+/* Save answer when typing */
+textarea.oninput = ()=>{
+selectedAnswers[currentQuestionIndex] = textarea.value;
+};
+
+container.appendChild(textarea);
+
+}
+
+/* =====================
+OBJECTIVE QUESTION
+===================== */
+
+else{
 
 ['A','B','C','D'].forEach(letter=>{
 
-const text=q[`option${letter}`];
+const text = q[`option${letter}`];
 if(!text) return;
 
-const label=document.createElement('label');
+const label = document.createElement('label');
+label.className = 'option-label';
 
-label.className='option-label';
-
-label.innerHTML=`
+label.innerHTML = `
 <input type="radio" name="answer" value="${letter}"
 ${selectedAnswers[currentQuestionIndex]===letter?'checked':''}>
 <span>${letter}) ${text}</span>
 `;
 
-label.onclick=()=>{
+/* When option clicked */
+label.onclick = ()=>{
 
-selectedAnswers[currentQuestionIndex]=letter;
+selectedAnswers[currentQuestionIndex] = letter;
 
-container.querySelectorAll('.option-label').forEach(l=>l.classList.remove('selected'));
+/* remove highlight from other options */
+container.querySelectorAll('.option-label')
+.forEach(l=>l.classList.remove('selected'));
+
+/* highlight selected option */
 label.classList.add('selected');
 
 };
 
+/* restore highlight when returning to question */
 if(selectedAnswers[currentQuestionIndex]===letter)
 label.classList.add('selected');
 
@@ -1067,13 +1106,19 @@ container.appendChild(label);
 
 });
 
-document.getElementById('prev-btn').disabled=currentQuestionIndex===0;
+}
+
+/* =====================
+NAVIGATION CONTROLS
+===================== */
+
+document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
 
 document.getElementById('next-btn')
-.classList.toggle('hidden',currentQuestionIndex===currentQuestions.length-1);
+.classList.toggle('hidden', currentQuestionIndex === currentQuestions.length - 1);
 
 document.getElementById('submit-btn')
-.classList.toggle('hidden',currentQuestionIndex!==currentQuestions.length-1);
+.classList.toggle('hidden', currentQuestionIndex !== currentQuestions.length - 1);
 
 }
 
@@ -1097,6 +1142,29 @@ loadQuestion();
 }
 
 
+function checkTheoryAnswer(studentAnswer, keywords){
+
+if(!studentAnswer || !keywords) return false;
+
+studentAnswer = studentAnswer.toUpperCase();
+
+const keyList = keywords.split(",");
+
+let matches = 0;
+
+keyList.forEach(word => {
+
+if(studentAnswer.includes(word.trim().toUpperCase())){
+matches++;
+}
+
+});
+
+return matches >= Math.ceil(keyList.length/2); 
+}
+
+
+
 /* =====================
 SUBMIT QUIZ
 ===================== */
@@ -1111,14 +1179,25 @@ let score=0;
 
 currentQuestions.forEach((q,i)=>{
 
-const correct=q.correctOption||q.correctAnswer||q.answer;
+if(q.type === "theory"){
+
+if(checkTheoryAnswer(selectedAnswers[i], q.keywords)){
+score++;
+}
+
+    
+
+}else{
+
+const correct=q.correctOption;
 
 if(selectedAnswers[i]===correct){
 score++;
 }
 
-});
+}
 
+});
 const total=currentQuestions.length;
 const percentage=((score/total)*100).toFixed(1);
 
@@ -1355,7 +1434,9 @@ const questions = rows.map(r => ({
   optionB: r.B || '',
   optionC: r.C || '',
   optionD: r.D || '',
-  correctOption: r.Answer || ''
+  correctOption: r.Answer || '',
+  type: (r.Type || 'objective').toLowerCase(),
+  keywords: r.Keywords || ''
 }));
 
 await db.collection("questionBank").add({
