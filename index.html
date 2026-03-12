@@ -975,19 +975,42 @@ showSection('results-section');
 
 function viewAnswers() {
 
-    const container = document.getElementById('answers-container');
-    container.innerHTML = '';
-    container.classList.remove('hidden');
-
-    if (!currentQuestions.length) {
-        container.innerHTML = '<p>No answers available.</p>';
-        return;
-    }
-
     currentQuestions.forEach((q, i) => {
 
+    const div = document.createElement('div');
+
+    div.style.padding = '0.8rem';
+    div.style.marginBottom = '0.5rem';
+    div.style.border = '1px solid #dee2e6';
+    div.style.borderRadius = '8px';
+    div.style.background = '#f9f9f9';
+
+    /* THEORY QUESTION */
+    if(q.type === "theory"){
+
+        const userAnswer = selectedAnswers[i] || "No answer";
+
+        div.innerHTML = `
+        <p><strong>Q${i+1}:</strong> ${q.question}</p>
+
+        <p>Your Answer:</p>
+        <div style="background:white;padding:8px;border-radius:6px;border:1px solid #ccc;">
+        ${userAnswer}
+        </div>
+
+        <p>Expected Keywords:</p>
+        <div style="font-weight:bold;color:black;">
+        ${q.keywords || "Not provided"}
+        </div>
+        `;
+
+    }
+
+    /* OBJECTIVE QUESTION */
+    else{
+
         const userLetter = selectedAnswers[i];
-        const correctLetter = q.correctOption || q.correctAnswer || q.answer;
+        const correctLetter = q.correctOption;
 
         const userAnswer = userLetter
             ? userLetter + ") " + q["option" + userLetter]
@@ -997,26 +1020,19 @@ function viewAnswers() {
             ? correctLetter + ") " + q["option" + correctLetter]
             : "Not set";
 
-        const div = document.createElement('div');
-
-        div.style.padding = '0.8rem';
-        div.style.marginBottom = '0.5rem';
-        div.style.border = '1px solid #dee2e6';
-        div.style.borderRadius = '8px';
-        div.style.background = '#f9f9f9';
-
         div.innerHTML = `
-        <p><strong>Q${i + 1}:</strong> ${q.question}</p>
-        <p>Your Answer: 
+        <p><strong>Q${i+1}:</strong> ${q.question}</p>
+        <p>Your Answer:
         <span style="color:${userLetter === correctLetter ? 'green' : 'red'}">
         ${userAnswer}
         </span></p>
         <p>Correct Answer: <strong>${correctAnswer}</strong></p>
         `;
+    }
 
-        container.appendChild(div);
+    container.appendChild(div);
 
-    });
+});
 
     container.scrollIntoView({ behavior: 'smooth' });
 }
@@ -1042,6 +1058,9 @@ THEORY QUESTION
 
 if(q.type === "theory"){
 
+const label = document.createElement("p");
+label.innerHTML = "<strong>Type your answer below:</strong>";
+
 const textarea = document.createElement("textarea");
 
 textarea.placeholder = "Type your answer here...";
@@ -1052,16 +1071,14 @@ textarea.style.border = "1px solid #ccc";
 textarea.style.borderRadius = "8px";
 textarea.style.fontSize = "15px";
 
-/* Restore saved answer */
 textarea.value = selectedAnswers[currentQuestionIndex] || "";
 
-/* Save answer when typing */
 textarea.oninput = ()=>{
 selectedAnswers[currentQuestionIndex] = textarea.value;
 };
 
+container.appendChild(label);
 container.appendChild(textarea);
-
 }
 
 /* =====================
@@ -1435,7 +1452,7 @@ const questions = rows.map(r => ({
   optionC: r.C || '',
   optionD: r.D || '',
   correctOption: r.Answer || '',
-  type: (r.Type || 'objective').toLowerCase(),
+  type: (r.Type || 'objective').toString().trim().toLowerCase(),
   keywords: r.Keywords || ''
 }));
 
