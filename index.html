@@ -703,8 +703,7 @@ async function loadCourses() {
             const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
             const nowTime = new Date(now).getTime();
 
-            const release = d.releaseTime ? d.releaseTime.toDate().getTime() : 0;
-
+            const release = d.releaseTime || 0; // already a number
             let buttonHTML = "";
             let countdownHTML = "";
 
@@ -766,7 +765,7 @@ async function checkPaymentAndStart(quizId) {
     const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
     const nowTime = new Date(now).getTime();
 
-    const release = quiz.releaseTime ? quiz.releaseTime.toDate().getTime() : 0;
+    const release = quiz.releaseTime || 0; // already a number
 
     // Prevent starting before release
     if (nowTime < release) {
