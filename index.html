@@ -676,76 +676,152 @@ hideLoading();
 LOAD COURSES
 ===================== */
 
-async function loadCourses(){
+async function loadCourses() {
 
-const list=document.getElementById('course-list');
-if(!list) return;
+    const list = document.getElementById('course-list');
+    if (!list) return;
 
-list.innerHTML='<p>Loading courses...</p>';
+    list.innerHTML = '<p>Loading courses...</p>';
 
-try{
+    try {
 
-const snaps=await db.collection('quizzes')
-.where('status','==','published')
-.where('level','==',currentUser.level)
-.get();
+        const snaps = await db.collection('quizzes')
+            .where('status', '==', 'published')
+            .where('level', '==', currentUser.level)
+            .get();
 
-list.innerHTML=snaps.empty?'<p>No pre-exams available.</p>':'';
+        list.innerHTML = snaps.empty ? '<p>No pre-exams available.</p>' : '';
 
-snaps.forEach(doc=>{
+        snaps.forEach(doc => {
 
-const d=doc.data();
+            const d = doc.data();
+            const div = document.createElement('div');
 
-const div=document.createElement('div');
+            div.style.cssText = 'padding:1rem;border:1px solid #dee2e6;border-radius:10px;background:#fff;margin-bottom:1rem;';
 
-div.style.cssText='padding:1rem;border:1px solid #dee2e6;border-radius:10px;background:#fff;margin-bottom:1rem;';
+            // Current Lagos time
+            const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
+            const nowTime = new Date(now).getTime();
 
-div.innerHTML=`
-<h3>${d.courseName||'Unnamed Quiz'}</h3>
-<p>Time: ${d.timeLimit||'?'} mins</p>
-<button class="blue" onclick="checkPaymentAndStart('${doc.id}')">Begin Pre-Exam</button>
-`;
+            const release = d.releaseTime ? d.releaseTime.toDate().getTime() : 0;
 
-list.appendChild(div);
+            let buttonHTML = "";
+            let countdownHTML = "";
 
-});
+            if (nowTime < release) {
 
-}catch(err){
+                buttonHTML = `<button disabled>Locked</button>`;
+                countdownHTML = `<p id="timer-${doc.id}" style="color:red;font-weight:bold"></p>`;
 
-list.innerHTML='<p>Error loading courses.</p>';
-console.error(err);
+                // Start countdown for this quiz
+                setTimeout(() => startCountdown(doc.id, release), 100);
 
-}
+            } else {
 
-}
+                buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')">Begin Pre-Exam</button>`;
+                countdownHTML = `<p style="color:green;font-weight:bold">Available Now</p>`;
 
-async function checkPaymentAndStart(quizId){
+            }
 
-const doc = await db.collection('quizzes').doc(quizId).get();
+            const paidBadge = d.payment === "YES"
+                ? `<span style="background:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAID</span>`
+                : "";
 
-if(!doc.exists){
-alert("Quiz not found");
-return;
-}
+            div.innerHTML = `
+                <h3>${d.courseName || 'Unnamed Quiz'} ${paidBadge}</h3>
+                <p>Time: ${d.timeLimit || '?'} mins</p>
+                ${countdownHTML}
+                ${buttonHTML}
+            `;
 
-const quiz = doc.data();
+            list.appendChild(div);
 
-if (quiz.payment === "YES") {
-    // Save course & user info before payment
-    localStorage.setItem("courseName", quiz.courseName);
-    localStorage.setItem("userId", currentUser?.id || "");
+        });
 
-    // Redirect user to SquadCo payment page with return URL
-    // Replace YOURDOMAIN.com with your actual domain
-    window.location.href = "https://pay.squadco.com/5N8DPA?redirect_url=https://meloxpreexam.onrender.com/payment-success.html";
+    } catch (err) {
 
-    // Stop further execution until payment is completed
-    return;
-} else {
-        startQuiz(quizId);
+        list.innerHTML = '<p>Error loading courses.</p>';
+        console.error(err);
+
     }
 
-} // 
+}
+
+/* =====================
+CHECK PAYMENT & START QUIZ
+===================== */
+
+async function checkPaymentAndStart(quizId) {
+
+    const doc = await db.collection('quizzes').doc(quizId).get();
+
+    if (!doc.exists) {
+        alert("Quiz not found");
+        return;
+    }
+
+    const quiz = doc.data();
+
+    // Current Lagos time
+    const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
+    const nowTime = new Date(now).getTime();
+
+    const release = quiz.releaseTime ? quiz.releaseTime.toDate().getTime() : 0;
+
+    // Prevent starting before release
+    if (nowTime < release) {
+        const diffSec = Math.floor((release - nowTime) / 1000);
+        const hours = Math.floor(diffSec / 3600);
+        const minutes = Math.floor((diffSec % 3600) / 60);
+        const seconds = diffSec % 60;
+        alert(`This quiz is locked.\nAvailable in: ${hours}h ${minutes}m ${seconds}s`);
+        return;
+    }
+
+    // Payment check
+    if (quiz.payment === "YES") {
+        // Save course & user info before payment
+        localStorage.setItem("courseName", quiz.courseName);
+        localStorage.setItem("userId", currentUser?.id || "");
+
+        // Redirect to SquadCo payment page with return URL
+        window.location.href = "https://pay.squadco.com/5N8DPA?redirect_url=https://meloxpreexam.onrender.com/payment-success.html";
+        return;
+    }
+
+    // Start quiz if payment not required
+    startQuiz(quizId);
+
+}
+
+/* =====================
+COUNTDOWN FUNCTION
+===================== */
+
+function startCountdown(docId, releaseTime) {
+    const timerEl = document.getElementById(`timer-${docId}`);
+    if (!timerEl) return;
+
+    const interval = setInterval(() => {
+        const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
+        const nowTime = new Date(now).getTime();
+
+        let diff = Math.floor((releaseTime - nowTime) / 1000);
+
+        if (diff <= 0) {
+            clearInterval(interval);
+            timerEl.textContent = "Available Now";
+            timerEl.nextElementSibling.querySelector("button")?.removeAttribute("disabled");
+            return;
+        }
+
+        const hours = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = diff % 60;
+
+        timerEl.textContent = `Available in: ${hours}h ${minutes}m ${seconds}s`;
+    }, 1000);
+}
 
 /* =====================
 START QUIZ
@@ -825,6 +901,43 @@ console.error(err);
 }
 
 hideLoading();
+
+}
+
+
+
+function startCountdown(id, release){
+
+const el=document.getElementById("timer-"+id);
+
+if(!el) return;
+
+const interval=setInterval(()=>{
+
+const now = new Date().toLocaleString("en-US",{timeZone:"Africa/Lagos"});
+const nowTime = new Date(now).getTime();
+
+const diff = release - nowTime;
+
+if(diff <= 0){
+
+clearInterval(interval);
+
+el.innerHTML="Available Now";
+loadCourses();
+
+return;
+
+}
+
+const d=Math.floor(diff/(1000*60*60*24));
+const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+const m=Math.floor((diff%(1000*60*60))/(1000*60));
+const s=Math.floor((diff%(1000*60))/1000);
+
+el.innerHTML=`Available in ${d}d ${h}h ${m}m ${s}s`;
+
+},1000);
 
 }
 
@@ -1172,18 +1285,24 @@ cont.innerHTML='';
                 return;
             }
 
-            let html = `<select id="bankSelect"><option value="">Select Bank</option>`;
-            snap.forEach(d => {
-                html += `<option value="${d.id}">${d.data().courseName}</option>`;
-            });
-            html += `</select>
-                <select id="quizLevel">
-                    <option value="100">100 Level</option>
-                    <option value="200">200 Level</option>
-                </select>
-                <button onclick="publishQuiz()">Publish Quiz</button>
-            `;
-            cont.innerHTML = html;
+       let html = `<select id="bankSelect"><option value="">Select Bank</option>`;
+snap.forEach(d => {
+    html += `<option value="${d.id}">${d.data().courseName}</option>`;
+});
+html += `</select>
+
+<select id="quizLevel">
+    <option value="100">100 Level</option>
+    <option value="200">200 Level</option>
+</select>
+
+<label>Release Date & Time (Nigeria)</label>
+<input type="datetime-local" id="releaseTime">
+
+<button onclick="publishQuiz()">Publish Quiz</button>
+`;
+
+cont.innerHTML = html;
         });
     }
 
@@ -1311,8 +1430,10 @@ async function publishQuiz(){
 
 const id=document.getElementById('bankSelect').value;
 const level=document.getElementById('quizLevel').value;
+const releaseTime=document.getElementById('releaseTime').value;
 
 if(!id) return alert("Select bank");
+if(!releaseTime) return alert("Set release date & time");
 
 const doc=await db.collection('questionBank').doc(id).get();
 
@@ -1323,16 +1444,15 @@ await db.collection('quizzes').add({
 level,
 status:'published',
 
+releaseTime:new Date(releaseTime).getTime(), // NEW
+
 publishedAt:firebase.firestore.FieldValue.serverTimestamp()
 
 });
 
-
-
 alert("Quiz Published!");
 
 }
-
 // AUTO PASSWORD FROM SURNAME
 
 const surnameField = document.getElementById("lastName");
