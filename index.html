@@ -380,12 +380,37 @@ input[type="radio"] {
 </section>
 
         <!-- Student Dashboard -->
-        <section id="student-dashboard" class="hidden">
-            <h2>Welcome, <span id="student-name"></span></h2>
-            <h3>Available Pre-Exams</h3>
-            <div id="course-list" style="display: grid; gap: 1rem;"></div>
-            <button type="button" onclick="logout()">Logout</button>
-        </section>
+<section id="student-dashboard" class="hidden">
+    <h2>Welcome, <span id="student-name"></span></h2>
+    <h3>Available Pre-Exams</h3>
+    <div id="course-list" style="display: grid; gap: 1rem;"></div>
+
+    <!-- PASTE THE TACTICAL CARD HERE ↓↓↓ -->
+    <div id="tactical-card" style="display: none; margin: 20px 0; padding: 20px; background: #fff9e6; border: 2px solid #ffc107; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+        <h3 style="text-align: center; color: #e0a800; margin-bottom: 10px; font-size: 22px;">
+            🔥 MEE101 Tactical Pre-Exam Session
+        </h3>
+        <p style="text-align: center; color: #856404; margin-bottom: 15px; font-size: 16px;">
+            Special access • Strictly 100 Level only • Opens soon!
+        </p>
+
+        <div id="countdown" style="font-size: 24px; font-weight: bold; color: #dc3545; text-align: center; margin: 20px 0; padding: 12px; background: white; border-radius: 10px; border: 1px solid #ffd966;">
+            Loading countdown...
+        </div>
+
+        <button id="start-btn" 
+                onclick="openTactical()"
+                style="width: 100%; padding: 14px; font-size: 18px; background: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; display: none;">
+            ▶️ Start Tactical Now
+        </button>
+
+        <p style="text-align: center; font-size: 14px; color: #666; margin-top: 15px;">
+            Opens 22nd March 2026 • 
+        </p>
+    </div>
+
+    <button type="button" onclick="logout()">Logout</button>
+</section>
 
         <!-- Quiz Section (FIXED) -->
         <section id="quiz-section" class="hidden">
@@ -480,7 +505,7 @@ input[type="radio"] {
 <section id="admin-dashboard" class="hidden">
             <h2>Admin Panel</h2>
             <div class="admin-nav">
-                <button onclick="showAdminTab('activities')">Activities</button>
+               <button onclick="showAdminTab('activities')">Activities</button>
                 <button onclick="showAdminTab('question-bank')">Question Bank</button>
                 <button onclick="showAdminTab('set-quiz')">Set / Publish Quiz</button>
                 <button onclick="showAdminTab('payments')">Payments Overview</button>
@@ -491,6 +516,7 @@ input[type="radio"] {
 <div id="paymentStats"></div>
     </div>
 <div id="squad-payment-container" style="display: none;"></div>
+
 <script>
 // Firebase Config
 const firebaseConfig = {
@@ -622,7 +648,7 @@ document.getElementById('student-name').textContent=currentUser.fullName||'Stude
 
 loadCourses();
 showSection('student-dashboard');
-
+showTacticalCard();
 }catch(err){
 alert(err.message||'Login failed');
 }
@@ -1664,6 +1690,68 @@ if(accountCreated === "yes"){
 }else{
     showSection("signup-section");
 }
+
+// ────────────────────────────────────────────────
+// Tactical Session Integration (MEE101 special)
+const tacticalOpenTime = new Date("2026-03-22T08:00:00+01:00"); // 8 AM WAT
+
+function updateTacticalCountdown() {
+    const now = new Date();
+    const diff = tacticalOpenTime - now;
+
+    const countdownEl = document.getElementById('countdown');
+    const btn = document.getElementById('start-btn');
+
+    if (!countdownEl || !btn) return;
+
+    if (diff <= 0) {
+        countdownEl.innerHTML = 'Now Open!';
+        countdownEl.style.color = '#28a745';
+        btn.style.display = 'block';
+        return;
+    }
+
+    const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    let display = '';
+    if (days > 0) display += days + 'd ';
+    if (hours > 0 || days > 0) display += hours + 'h ';
+    display += minutes + 'm ' + seconds + 's';
+
+    countdownEl.innerHTML = display + ' remaining';
+}
+
+function showTacticalCard() {
+    if (!currentUser) return;
+
+    const level = (currentUser.level || "").toString().trim().toLowerCase();
+
+    if (level === '100' || level.includes('100')) {
+        const card = document.getElementById('tactical-card');
+        if (card) {
+            card.style.display = 'block';
+            setInterval(updateTacticalCountdown, 1000);
+            updateTacticalCountdown(); // immediate run
+        }
+    }
+}
+
+function openTactical() {
+    window.open('https://mee101preexam.onrender.com', '_blank');
+}
+
+// Add this call inside your login success handler, right after loadCourses();
+//
+// In your login-form submit listener, after:
+// loadCourses();
+// showSection('student-dashboard');
+//
+// Insert:
+// showTacticalCard();
+ 
 </script>
 </body>
 </html>
