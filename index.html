@@ -490,7 +490,7 @@ input[type="radio"] {
         </section>
 <div id="paymentStats"></div>
     </div>
-
+<div id="squad-payment-container" style="display: none;"></div>
 <script>
 // Firebase Config
 const firebaseConfig = {
@@ -692,9 +692,16 @@ async function loadCourses() {
 
         list.innerHTML = snaps.empty ? '<p>No pre-exams available.</p>' : '';
 
-        snaps.forEach(doc => {
+        for (const doc of snaps.docs) {
 
             const d = doc.data();
+            const payCheck = await db.collection("payments")
+.where("userId","==",currentUser.id)
+.where("quizId","==",doc.id)
+.get();
+
+const hasPaid = !payCheck.empty;
+            
             const div = document.createElement('div');
 
             div.style.cssText = 'padding:1rem;border:1px solid #dee2e6;border-radius:10px;background:#fff;margin-bottom:1rem;';
@@ -722,9 +729,15 @@ async function loadCourses() {
 
             }
 
-            const paidBadge = d.payment === "YES"
-                ? `<span style="background:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAID</span>`
-                : "";
+            let paidBadge = "";
+
+if (d.payment === "YES") {
+
+paidBadge = hasPaid
+? `<span style="background:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAID</span>`
+: `<span style="background:#dc3545;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAYMENT REQUIRED</span>`;
+
+}
 
             div.innerHTML = `
                 <h3>${d.courseName || 'Unnamed Quiz'} ${paidBadge}</h3>
@@ -735,7 +748,7 @@ async function loadCourses() {
 
             list.appendChild(div);
 
-        });
+      }
 
     } catch (err) {
 
@@ -777,22 +790,133 @@ async function checkPaymentAndStart(quizId) {
         return;
     }
 
-    // Payment check
-    if (quiz.payment === "YES") {
-        // Save course & user info before payment
-        localStorage.setItem("courseName", quiz.courseName);
-        localStorage.setItem("userId", currentUser?.id || "");
+// Inside checkPaymentAndStart(quizId), replace the if (quiz.payment === "YES") block with:
 
-        // Redirect to SquadCo payment page with return URL
-        window.location.href = "https://pay.squadco.com/5N8DPA?redirect_url=https://meloxpreexam.onrender.com/payment-success.html";
+if (quiz.payment === "YES") {
+
+    const paidSnap = await db.collection("payments")
+        .where("userId", "==", currentUser.id)
+        .where("quizId", "==", quizId)
+        .get();
+
+    if (!paidSnap.empty) {
+        // user already paid
+        startQuiz(quizId);
         return;
     }
 
-    // Start quiz if payment not required
-    startQuiz(quizId);
+    // if not paid, show payment popup
+    const amountNaira = 100;
+    const amountInKobo = amountNaira * 100; // 10000
 
+    const courseName = quiz.courseName || "this pre-exam";
+    const confirmMsg = "Are you sure you want to pay ₦" + amountNaira + 
+                       " to start \"" + courseName + "\"?\n\n" +
+                       "This is a one-time payment for this pre-exam.";
+
+    if (!confirm(confirmMsg)) {
+        alert("Payment cancelled. You can try again later.");
+        return;
+    }
+
+    console.log("User confirmed payment – initializing Squad widget");
+
+    function tryInitSquad() {
+        if (typeof squad === 'undefined' || typeof squad !== 'function') {
+            console.log("Squad script not loaded yet – retrying in 500ms");
+            setTimeout(tryInitSquad, 500);
+            return;
+        }
+
+        console.log("Squad script loaded successfully");
+
+        try {
+            let userEmail = currentUser?.email;
+            if (!userEmail || !userEmail.includes('@') || userEmail.includes('/') || userEmail.includes(' ')) {
+                const cleanMatric = (currentUser.matricNumber || "unknown")
+                    .replace(/[^a-zA-Z0-9]/g, '')
+                    .toLowerCase();
+                userEmail = "student." + cleanMatric + "@melox.com";
+            }
+
+            console.log("Using email for Squad:", userEmail);
+
+            const squadInstance = new squad({
+                key: "pk_cb3dfacd4666ddefe368d173d1b4a23e840c0f72",  // ← your live key
+
+                email: userEmail,
+                amount: amountInKobo,
+                currency_code: "NGN",
+
+                first_name: currentUser.fullName?.split(' ')[0] || "Student",
+                last_name: currentUser.fullName?.split(' ').slice(1).join(' ') || "User",
+
+                onClose: () => {
+                    console.log("Squad modal was closed");
+                },
+
+                onSuccess: (response) => {
+                    console.log("Squad onSuccess triggered – payment likely completed");
+                    console.log("FULL RESPONSE OBJECT:", JSON.stringify(response, null, 2));
+
+                    const txRef = response.transaction_ref || 
+                                  response.reference || 
+                                  (response.formattedTransactionAmount ? "SQ-" + Date.now() : null);
+
+                    const receivedAmount = response.transaction_amount || response.amount || 0;
+
+                    if (txRef && receivedAmount >= amountInKobo) {
+                        console.log("Payment confirmed successful – ref:", txRef);
+
+                        db.collection("payments").add({
+    userId: currentUser.id,
+    quizId: quizId,
+    transactionRef: txRef || "",
+    amount: amountInKobo || 0,
+    currency: "NGN",
+    status: "success",
+    paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+    courseName: quiz.courseName || "",
+    squadReference: response.reference || "",
+    squadTransactionRef: response.transaction_ref || ""
+})
+                        .then(() => {
+                            alert("Payment of ₦100 successful! Starting your pre-exam now...");
+                            startQuiz(quizId);
+                        })
+                        .catch(err => {
+                            console.error("Firestore save failed:", err);
+                            alert("Payment completed (Ref: " + txRef + 
+                                  "), but we couldn't save it. Contact support with this reference.");
+                        });
+                    } else {
+                        console.warn("onSuccess called but missing critical fields");
+                        alert("Payment attempted but could not confirm details. Check Squad dashboard.");
+                    }
+                }
+            });
+
+            console.log("Squad instance created");
+
+            // Try this combination first – most common for Squad widget
+            squadInstance.setup();
+            squadInstance.open();
+
+            console.log("Attempted to open Squad modal");
+        } catch (err) {
+            console.error("Squad initialization failed:", err);
+            alert("Error preparing payment: " + (err.message || "Check console for details"));
+        }
+    }
+
+    tryInitSquad();
+    return;
 }
 
+// If no payment required → just start the quiz
+startQuiz(quizId);
+}
+    
 /* =====================
 COUNTDOWN FUNCTION
 ===================== */
@@ -856,7 +980,7 @@ const quizData = quizDoc.data();
 if(quizData.payment === "YES"){
     const paidSnap = await db.collection("payments")
         .where("userId", "==", currentUser.id)
-        .where("course", "==", quizData.courseName)
+      .where("quizId", "==", quizId)
         .get();
 
     if(paidSnap.empty){
@@ -923,7 +1047,7 @@ function startTimer() {
     // Initial display
     let min = String(Math.floor(timeLeft / 60)).padStart(2, "0");
     let sec = String(timeLeft % 60).padStart(2, "0");
-    timerEl.textContent = `Time Left: \( {min}: \){sec}`;
+    timerEl.textContent = `Time Left: ${min}:${sec}`;
 
     timerInterval = setInterval(() => {
         timeLeft--;
@@ -931,8 +1055,7 @@ function startTimer() {
         min = String(Math.floor(timeLeft / 60)).padStart(2, "0");
         sec = String(timeLeft % 60).padStart(2, "0");
 
-        timerEl.textContent = `Time Left: \( {min}: \){sec}`;
-
+        timerEl.textContent = `Time Left: ${min}:${sec}`;
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             timerEl.textContent = "Time Left: 00:00";
