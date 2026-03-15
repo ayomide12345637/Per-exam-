@@ -1154,18 +1154,28 @@ function viewAnswers() {
 
         const qType = (q.type || '').toLowerCase().trim();
 
-        if (qType === 'theory') {
-            const userAns   = selectedAnswers[i] || '— no answer —';
-            const keywords  = q.keywords || '— no keywords set —';
+       if (qType === 'theory') {
+    const userAns    = selectedAnswers[i] || '— no answer —';
+    const keywords   = q.keywords || '— no keywords set —';
 
-            html += `
-                <p><strong>Your answer:</strong></p>
-                <div style="background:white; padding:10px; border:1px solid #ccc; border-radius:6px; white-space:pre-wrap; min-height:60px;">
-                    ${userAns}
-                </div>
-                <p><strong>Expected keywords:</strong> ${keywords}</p>
-            `;
-        } else {
+    // Decide color based on whether it was marked correct
+    // We use the SAME checkTheoryAnswer() function that was used during scoring
+    const isCorrect  = checkTheoryAnswer(userAns, keywords);
+
+    const answerColor = isCorrect ? 'green' : 'red';
+    const answerLabel = isCorrect ? 'Correct' : 'Incorrect';
+
+    html += `
+        <p>
+            Your answer: 
+            <strong style="color: \( {answerColor};"> \){answerLabel}</strong>
+        </p>
+        <div style="background:white; padding:10px; border:1px solid #ccc; border-radius:6px; white-space:pre-wrap; min-height:60px; border-color: ${answerColor};">
+            ${userAns || '— no answer —'}
+        </div>
+        <p><strong>Expected keywords:</strong> ${keywords}</p>
+    `;
+} else {
        // Objective question
 const userLetter = selectedAnswers[i];                      // 'A', 'B', null, ...
 const correctLetter = (q.correctOption || '').trim().toUpperCase();
