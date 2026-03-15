@@ -1133,67 +1133,73 @@ VIEW ANSWERS (Fixed & Improved)
 ===================== */
 function viewAnswers() {
     const container = document.getElementById('answers-container');
-    if (!container) {
-        console.error("Answers container not found");
-        return;
-    }
+    if (!container) return;
 
-    container.innerHTML = '';           // Clear old content
-    container.style.display = 'block';  // Make it visible
+    container.innerHTML = '';
+    container.style.display = 'block';
 
-    if (!currentQuestions || currentQuestions.length === 0) {
-        container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">No questions loaded yet.</p>';
+    if (!currentQuestions?.length) {
+        container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">No questions available to show.</p>';
         return;
     }
 
     currentQuestions.forEach((q, i) => {
         const div = document.createElement('div');
-        div.style.padding = '0.8rem';
-        div.style.marginBottom = '0.5rem';
-        div.style.border = '1px solid #dee2e6';
-        div.style.borderRadius = '8px';
-        div.style.background = '#f9f9f9';
+        div.style.cssText = 'padding:12px; margin-bottom:12px; border:1px solid #dee2e6; border-radius:8px; background:#f9f9f9;';
 
-        const questionText = q.question || "[Question text missing]";
+        const qNum  = i + 1;
+        const qText = q.question || '[Question text missing]';
 
-        if ((q.type || '').toLowerCase() === 'theory') {
-            const userAnswer = selectedAnswers[i] || "No answer provided";
-            div.innerHTML = `
-                <p><strong>Q${i + 1}:</strong> ${questionText}</p>
-                <p><strong>Your Answer:</strong></p>
-                <div style="background:white; padding:12px; border:1px solid #ccc; border-radius:6px; white-space:pre-wrap;">
-                    ${userAnswer}
+        let html = `<p><strong>Q${qNum}:</strong> ${qText}</p>`;
+
+        const qType = (q.type || '').toLowerCase().trim();
+
+        if (qType === 'theory') {
+            const userAns   = selectedAnswers[i] || '— no answer —';
+            const keywords  = q.keywords || '— no keywords set —';
+
+            html += `
+                <p><strong>Your answer:</strong></p>
+                <div style="background:white; padding:10px; border:1px solid #ccc; border-radius:6px; white-space:pre-wrap; min-height:60px;">
+                    ${userAns}
                 </div>
-                <p><strong>Expected Keywords:</strong> ${q.keywords || "Not provided"}</p>
+                <p><strong>Expected keywords:</strong> ${keywords}</p>
             `;
         } else {
-          // Objective question block
-const userLetter = selectedAnswers[i];
-const correctLetter = q.correctOption;
+       // Objective question
+const userLetter = selectedAnswers[i];                      // 'A', 'B', null, ...
+const correctLetter = (q.correctOption || '').trim().toUpperCase();
 
-const userAnswerText = userLetter && q[`option${userLetter}`]
-    ? `${userLetter}) ${q[`option${userLetter}`]}`
-    : "No selection";
+let userText = "No selection";
+let userColor = "#666";
 
-const correctAnswerText = correctLetter && q[`option${correctLetter}`]
-    ? `${correctLetter}) ${q[`option${correctLetter}`]}`
-    : "Not set";
+if (userLetter) {
+    const opt = q[`option${userLetter}`] || '[option missing]';
+    userText = `${userLetter}) ${opt}`;
+    userColor = (userLetter.toUpperCase() === correctLetter) ? 'green' : 'red';
+}
 
-div.innerHTML = `
-    <p><strong>Q${i + 1}:</strong> ${questionText}</p>
-    <p>Your Answer: 
-        <span style="color:${userLetter === correctLetter ? 'green' : 'red'}; font-weight:bold;">
-            ${userAnswerText}
-        </span>
+// ─── This MUST be the version you use ────────────────────────────────────────
+let correctText = "— not set —";
+
+if (correctLetter && q[`option${correctLetter}`]) {
+    correctText = `${correctLetter}) ${q[`option${correctLetter}`]}`;
+}
+
+html += `
+    <p>
+        Your answer: 
+        <span style="color: ${userColor}; font-weight:bold;">${userText}</span>
     </p>
-    <p>Correct Answer: <strong>${correctAnswerText}</strong></p>
+    <p>Correct answer: <strong>${correctText}</strong></p>
 `;
         }
 
+        div.innerHTML = html;
         container.appendChild(div);
     });
 
-    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    container.scrollIntoView({ behavior: 'smooth' });
 }
 /* =====================
 LOAD QUESTION (More robust version)
@@ -1302,112 +1308,158 @@ function prevQuestion() {
 }
 
 /* =====================
-THEORY ANSWER CHECK
+THEORY ANSWER CHECK - VERY FORGIVING VERSION
 ===================== */
 function checkTheoryAnswer(studentAnswer, keywords) {
-    if (!studentAnswer || !keywords) return false;
+    // Reject empty / too short answers
+    if (!studentAnswer || 
+        typeof studentAnswer !== 'string' || 
+        studentAnswer.trim().length < 3) {
+        return false;
+    }
 
-    studentAnswer = (studentAnswer || '').toUpperCase().trim();
+    // Normalize student answer: uppercase, remove extra spaces, remove common punctuation
+    let studentText = studentAnswer.toUpperCase()
+        .replace(/[^A-Z0-9/ ]/g, ' ')          // keep letters, numbers, slash, space
+        .replace(/\s+/g, ' ')
+        .trim();
 
-    const keyList = (keywords || '')
-        .split(',')
-        .map(k => k.trim().toUpperCase())
-        .filter(Boolean);
+    // Normalize keywords string
+    let keyText = (keywords || '').toUpperCase()
+        .replace(/[^A-Z0-9/ ]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (!keyText) return false;
+
+    // Split into individual keyword/phrase parts (by comma)
+    const keyList = keyText.split(',')
+        .map(k => k.trim())
+        .filter(k => k.length > 0);
 
     if (keyList.length === 0) return false;
 
-    let matches = 0;
-    keyList.forEach(word => {
-        if (studentAnswer.includes(word)) {
-            matches++;
-        }
-    });
+    // For each keyword/phrase → extract the most important words
+    for (let phrase of keyList) {
+        // Clean phrase again + split into words
+        let phraseWords = phrase.split(' ')
+            .filter(w => w.length > 1)          // ignore very short words like "is", "an"
+            .map(w => w.trim());
 
-    return matches >= Math.ceil(keyList.length / 2);
+        if (phraseWords.length === 0) continue;
+
+        // Very forgiving: match if AT LEAST ONE meaningful word from the phrase appears
+        for (let word of phraseWords) {
+            if (word.length >= 3 && studentText.includes(word)) {
+                return true;  // ← success: give point
+            }
+        }
+
+        // Special case: check cleaned full phrase (without punctuation/spaces issues)
+        let cleanPhrase = phrase.replace(/\s+/g, '');
+        let cleanStudent = studentText.replace(/\s+/g, '');
+        if (cleanPhrase.length > 5 && cleanStudent.includes(cleanPhrase)) {
+            return true;
+        }
+    }
+
+    return false;
 }
     
 /* =====================
 SUBMIT QUIZ
 ===================== */
 
-function submitQuiz(){
+/* =====================
+SUBMIT QUIZ
+===================== */
+function submitQuiz() {
 
-if(!confirm("Submit quiz now?")) return;
+    if (!confirm("Submit quiz now? You cannot go back after this.")) {
+        return;
+    }
 
-stopTimer();
+    stopTimer();
 
-let score=0;
+    let score = 0;
+    const total = currentQuestions.length;
 
-currentQuestions.forEach((q,i)=>{
+    currentQuestions.forEach((q, i) => {
+        let isCorrect = false;
 
-if(q.type === "theory"){
+        const questionType = (q.type || '').toString().trim().toLowerCase();
 
-if(checkTheoryAnswer(selectedAnswers[i], q.keywords)){
-score++;
+        if (questionType === 'theory' || questionType === 'essay' || questionType === 'descriptive') {
+            // Theory / open-ended question
+            const studentAnswer = selectedAnswers[i] || '';
+            isCorrect = checkTheoryAnswer(studentAnswer, q.keywords || '');
+        } 
+        else {
+            // Objective / multiple choice
+            const selected = selectedAnswers[i];                    // e.g. 'A', 'B', null
+            const correct  = (q.correctOption || '').trim().toUpperCase();   // normalize to uppercase
+
+            // Only count as correct if something was selected AND it matches
+            if (selected && correct && selected.toUpperCase() === correct) {
+                isCorrect = true;
+            }
+        }
+
+        if (isCorrect) {
+            score++;
+        }
+    });
+
+    // ─── Calculate results ────────────────────────────────
+    const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : '0.0';
+
+    const durationSec = Math.floor((Date.now() - quizStartTime) / 1000);
+    const min = String(Math.floor(durationSec / 60)).padStart(2, '0');
+    const sec = String(durationSec % 60).padStart(2, '0');
+
+    // ─── Update result screen ────────────────────────────────
+    document.getElementById('score').textContent     = score;
+    document.getElementById('total-q').textContent   = total;
+    document.getElementById('percentage').textContent = percentage;
+    document.getElementById('duration').textContent   = `\( {min}: \){sec}`;
+
+    // Feedback logic (with fallback)
+    let feedbackText = "Keep practicing!";
+    if (currentQuiz?.feedback) {
+        const percentNum = Number(percentage);
+        if (percentNum < 50) {
+            feedbackText = currentQuiz.feedback.low  || feedbackText;
+        } else if (percentNum < 70) {
+            feedbackText = currentQuiz.feedback.mid || feedbackText;
+        } else {
+            feedbackText = currentQuiz.feedback.high || "Excellent job!";
+        }
+    }
+    document.getElementById('feedback').textContent = feedbackText;
+
+    document.getElementById('result-title').textContent = currentQuiz.courseName || "Quiz Results";
+
+    // ─── Save result to Firestore ────────────────────────────────
+    if (currentUser?.id && currentQuiz?.id) {
+        db.collection('quizResults').add({
+            userId: currentUser.id,
+            quizId: currentQuiz.id,
+            courseName: currentQuiz.courseName || 'Unnamed Quiz',
+            score,
+            percentage: Number(percentage),
+            totalQuestions: total,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            answers: selectedAnswers,
+            passed: Number(percentage) >= 50,
+            durationSeconds: durationSec
+        }).catch(err => {
+            console.error("Failed to save quiz result:", err);
+        });
+    }
+
+    // Show results screen
+    showSection('results-section');
 }
-
-    
-
-}else{
-
-const correct=q.correctOption;
-
-if(selectedAnswers[i]===correct){
-score++;
-}
-
-}
-
-});
-const total=currentQuestions.length;
-const percentage=((score/total)*100).toFixed(1);
-
-const durationSec=Math.floor((Date.now()-quizStartTime)/1000);
-
-const min=String(Math.floor(durationSec/60)).padStart(2,'0');
-const sec=String(durationSec%60).padStart(2,'0');
-
-document.getElementById('score').textContent=score;
-document.getElementById('total-q').textContent=total;
-document.getElementById('percentage').textContent=percentage;
-document.getElementById('duration').textContent=`${min}:${sec}`;
-
-let feedbackText="Good effort.";
-
-if(currentQuiz.feedback){
-
-if(percentage<50) feedbackText=currentQuiz.feedback.low;
-else if(percentage<70) feedbackText=currentQuiz.feedback.mid;
-else feedbackText=currentQuiz.feedback.high;
-
-}
-
-document.getElementById('feedback').textContent=feedbackText;
-document.getElementById('result-title').textContent=currentQuiz.courseName;
-
-if(currentUser?.id){
-
-db.collection('quizResults').add({
-
-userId:currentUser.id,
-quizId:currentQuiz.id,
-courseName:currentQuiz.courseName,
-score,
-percentage:Number(percentage),
-totalQuestions:total,
-
-timestamp:firebase.firestore.FieldValue.serverTimestamp(),
-answers:selectedAnswers,
-passed:percentage>=50
-
-});
-
-}
-
-showSection('results-section');
-
-}
-
 
 /* =====================
 ADMIN PANEL
