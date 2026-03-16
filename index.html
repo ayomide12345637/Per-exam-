@@ -910,15 +910,24 @@ async function loadCourses() {
         for (const doc of snaps.docs) {
 
             const d = doc.data();
+
+            // Check how many attempts the student has already made
+            const resultCheck = await db.collection("quizResults")
+                .where("userId", "==", currentUser.id)
+                .where("quizId", "==", doc.id)
+                .get();
+
+            const attempts = resultCheck.size; // number of attempts
+
+            // Check payment status
             const payCheck = await db.collection("payments")
-.where("userId","==",currentUser.id)
-.where("quizId","==",doc.id)
-.get();
+                .where("userId", "==", currentUser.id)
+                .where("quizId", "==", doc.id)
+                .get();
 
-const hasPaid = !payCheck.empty;
-            
+            const hasPaid = !payCheck.empty;
+
             const div = document.createElement('div');
-
             div.style.cssText = 'padding:1rem;border:1px solid #dee2e6;border-radius:10px;background:#fff;margin-bottom:1rem;';
 
             // Current Lagos time
@@ -939,21 +948,34 @@ const hasPaid = !payCheck.empty;
 
             } else {
 
-                buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')">Begin Pre-Exam</button>`;
-                countdownHTML = `<p style="color:green;font-weight:bold">Available Now</p>`;
+                // Decide button based on attempts
+                if (attempts >= 2) {
 
+                    buttonHTML = `<button disabled style="background:#ccc;">Attempts Finished</button>`;
+                    countdownHTML = `<p style="color:red;font-weight:bold;">MAXIMUM 2 ATTEMPTS USED</p>`;
+
+                } else if (attempts === 1) {
+
+                    buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')">Second Attempt</button>`;
+                    countdownHTML = `<p style="color:orange;font-weight:bold;">1 Attempt Used — 1 Remaining</p>`;
+
+                } else {
+
+                    buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')">Begin Pre-Exam</button>`;
+                    countdownHTML = `<p style="color:green;font-weight:bold">Available Now</p>`;
+
+                }
             }
 
+            // Paid badge display
             let paidBadge = "";
+            if (d.payment === "YES") {
+                paidBadge = hasPaid
+                    ? `<span style="background:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAID</span>`
+                    : `<span style="background:#dc3545;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAYMENT REQUIRED</span>`;
+            }
 
-if (d.payment === "YES") {
-
-paidBadge = hasPaid
-? `<span style="background:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAID</span>`
-: `<span style="background:#dc3545;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAYMENT REQUIRED</span>`;
-
-}
-
+            // Build the course block
             div.innerHTML = `
                 <h3>${d.courseName || 'Unnamed Quiz'} ${paidBadge}</h3>
                 <p>Time: ${d.timeLimit || '?'} mins</p>
@@ -963,7 +985,7 @@ paidBadge = hasPaid
 
             list.appendChild(div);
 
-      }
+        }
 
     } catch (err) {
 
