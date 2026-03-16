@@ -888,114 +888,144 @@ async function checkGlobalLock() {
 }
 
 /* =====================
-LOAD COURSES
+LOAD COURSES - Improved version
+Shows published quizzes for student's level + proper attempt/payment/availability logic
 ===================== */
-
 async function loadCourses() {
-
     const list = document.getElementById('course-list');
     if (!list) return;
 
-    list.innerHTML = '<p>Loading courses...</p>';
+    list.innerHTML = '<p style="text-align:center; color:#555;">Loading available pre-exams...</p>';
 
     try {
-
         const snaps = await db.collection('quizzes')
             .where('status', '==', 'published')
             .where('level', '==', currentUser.level)
             .get();
 
-        list.innerHTML = snaps.empty ? '<p>No pre-exams available.</p>' : '';
+        if (snaps.empty) {
+            list.innerHTML = '<p style="text-align:center; color:#666; padding:2rem;">No pre-exams available at this time.</p>';
+            return;
+        }
+
+        list.innerHTML = ''; // clear loading message
+
+        const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
+        const nowTime = new Date(now).getTime();
 
         for (const doc of snaps.docs) {
+            try {
+                const d = doc.data();
 
-            const d = doc.data();
+                // ─── Attempts check ────────────────────────────────
+                const resultSnap = await db.collection("quizResults")
+                    .where("userId", "==", currentUser.id)
+                    .where("quizId", "==", doc.id)
+                    .get();
 
-            // Check how many attempts the student has already made
-            const resultCheck = await db.collection("quizResults")
-                .where("userId", "==", currentUser.id)
-                .where("quizId", "==", doc.id)
-                .get();
+                const attempts = resultSnap.size;
 
-            const attempts = resultCheck.size; // number of attempts
+                // ─── Payment check ────────────────────────────────
+                let hasPaid = false;
+                if (d.payment === "YES") {
+                    const paySnap = await db.collection("payments")
+                        .where("userId", "==", currentUser.id)
+                        .where("quizId", "==", doc.id)
+                        .get();
+                    hasPaid = !paySnap.empty;
+                }
 
-            // Check payment status
-            const payCheck = await db.collection("payments")
-                .where("userId", "==", currentUser.id)
-                .where("quizId", "==", doc.id)
-                .get();
+                // ─── Create card ────────────────────────────────
+                const card = document.createElement('div');
+                card.style.cssText = `
+                    padding: 1.2rem;
+                    border: 1px solid #dee2e6;
+                    border-radius: 12px;
+                    background: white;
+                    margin-bottom: 1.2rem;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                `;
 
-            const hasPaid = !payCheck.empty;
+                // Release / countdown logic
+                const releaseTime = d.releaseTime || 0;
+                const isAvailableNow = nowTime >= releaseTime;
 
-            const div = document.createElement('div');
-            div.style.cssText = 'padding:1rem;border:1px solid #dee2e6;border-radius:10px;background:#fff;margin-bottom:1rem;';
+                let statusHTML = '';
+                let buttonHTML = '';
 
-            // Current Lagos time
-            const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
-            const nowTime = new Date(now).getTime();
+                if (!isAvailableNow) {
+                    // Future release
+                    statusHTML = `
+                        <p id="timer-${doc.id}" style="color:#dc3545; font-weight:bold; text-align:center; margin:0.8rem 0;">
+                            Loading countdown...
+                        </p>
+                    `;
+                    buttonHTML = `<button disabled style="background:#ccc; width:100%;">Locked – Opens Later</button>`;
 
-            const release = d.releaseTime || 0; // already a number
-            let buttonHTML = "";
-            let countdownHTML = "";
-
-            if (nowTime < release) {
-
-                buttonHTML = `<button disabled>Locked</button>`;
-                countdownHTML = `<p id="timer-${doc.id}" style="color:red;font-weight:bold"></p>`;
-
-                // Start countdown for this quiz
-                setTimeout(() => startCountdown(doc.id, release), 100);
-
-            } else {
-
-                // Decide button based on attempts
-                if (attempts >= 2) {
-
-                    buttonHTML = `<button disabled style="background:#ccc;">Attempts Finished</button>`;
-                    countdownHTML = `<p style="color:red;font-weight:bold;">MAXIMUM 2 ATTEMPTS USED</p>`;
-
-                } else if (attempts === 1) {
-
-                    buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')">Second Attempt</button>`;
-                    countdownHTML = `<p style="color:orange;font-weight:bold;">1 Attempt Used — 1 Remaining</p>`;
+                    // Start countdown
+                    setTimeout(() => {
+                        startCountdown(doc.id, releaseTime);
+                    }, 150);
 
                 } else {
-
-                    buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')">Begin Pre-Exam</button>`;
-                    countdownHTML = `<p style="color:green;font-weight:bold">Available Now</p>`;
-
+                    // Quiz is released → apply attempt & payment rules
+                    if (attempts >= 2) {
+                        statusHTML = `<p style="color:#dc3545; font-weight:bold; text-align:center;">Maximum 2 attempts used</p>`;
+                        buttonHTML = `<button disabled style="background:#ccc; width:100%;">No More Attempts</button>`;
+                    } 
+                    else if (d.payment === "YES" && !hasPaid) {
+                        statusHTML = `<p style="color:#dc3545; font-weight:bold; text-align:center;">Payment Required (₦100)</p>`;
+                        buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;">Pay & Start</button>`;
+                    } 
+                    else {
+                        // Can actually start
+                        if (attempts === 1) {
+                            statusHTML = `<p style="color:#fd7e14; font-weight:bold; text-align:center;">1 attempt used – Final attempt</p>`;
+                            buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;">Start 2nd Attempt</button>`;
+                        } else {
+                            statusHTML = `<p style="color:#28a745; font-weight:bold; text-align:center;">Ready to begin</p>`;
+                            buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;">Start Pre-Exam</button>`;
+                        }
+                    }
                 }
+
+                // Paid badge (only show if payment is required)
+                let paidBadge = '';
+                if (d.payment === "YES") {
+                    paidBadge = hasPaid
+                        ? `<span style="background:#28a745; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;">PAID</span>`
+                        : `<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;">₦100</span>`;
+                }
+
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                        <h3 style="margin:0; font-size:1.15rem;">${d.courseName || 'Pre-Exam'}</h3>
+                        ${paidBadge}
+                    </div>
+                    <p style="color:#555; margin:0.4rem 0;">
+                        Duration: ${d.timeLimit || '?'} minutes
+                    </p>
+                    ${statusHTML}
+                    ${buttonHTML}
+                `;
+
+                list.appendChild(card);
+
+            } catch (innerErr) {
+                console.warn(`Error processing quiz ${doc.id}:`, innerErr);
+                // Optional: add a small error note in UI
             }
-
-            // Paid badge display
-            let paidBadge = "";
-            if (d.payment === "YES") {
-                paidBadge = hasPaid
-                    ? `<span style="background:#28a745;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAID</span>`
-                    : `<span style="background:#dc3545;color:white;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;">PAYMENT REQUIRED</span>`;
-            }
-
-            // Build the course block
-            div.innerHTML = `
-                <h3>${d.courseName || 'Unnamed Quiz'} ${paidBadge}</h3>
-                <p>Time: ${d.timeLimit || '?'} mins</p>
-                ${countdownHTML}
-                ${buttonHTML}
-            `;
-
-            list.appendChild(div);
-
         }
 
     } catch (err) {
-
-        list.innerHTML = '<p>Error loading courses.</p>';
-        console.error(err);
-
+        list.innerHTML = `
+            <p style="color:#dc3545; text-align:center; padding:2rem;">
+                Sorry, couldn't load pre-exams right now.<br>Please try again later.
+            </p>
+        `;
+        console.error("loadCourses failed:", err);
     }
-
 }
-
 /* =====================
 CHECK PAYMENT & START QUIZ
 ===================== */
@@ -1010,6 +1040,20 @@ async function checkPaymentAndStart(quizId) {
     }
 
     const quiz = doc.data();
+
+    // --- NEW: check number of attempts ---
+    const resultCheck = await db.collection("quizResults")
+        .where("userId", "==", currentUser.id)
+        .where("quizId", "==", quizId)
+        .get();
+
+    const attempts = resultCheck.size;
+
+    if (attempts >= 2) { // limit is 2 attempts
+        alert("You have already used your 2 attempts. Please view your previous result.");
+        return;
+    }
+    // --- END NEW ---
 
     // Current Lagos time
     const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
@@ -1184,86 +1228,100 @@ function startCountdown(docId, releaseTime) {
 }
 
 /* =====================
-START QUIZ
+START QUIZ - Fixed version (allows exactly 2 attempts)
 ===================== */
+async function startQuiz(quizId) {
+    showLoading();
 
-async function startQuiz(quizId){
+    try {
+        // 1. Get quiz document once (we'll reuse it)
+        const quizDoc = await db.collection('quizzes').doc(quizId).get();
+        
+        if (!quizDoc.exists) {
+            throw new Error("Quiz not found");
+        }
 
-showLoading();
-// Check if student already took this quiz
-const resultCheck = await db.collection("quizResults")
-.where("userId","==",currentUser.id)
-.where("quizId","==",quizId)
-.get();
+        const quizData = quizDoc.data();
 
-if(!resultCheck.empty){
+        // 2. Count how many times this student has already taken this quiz
+        const resultCheck = await db.collection("quizResults")
+            .where("userId", "==", currentUser.id)
+            .where("quizId", "==", quizId)
+            .get();
 
- hideLoading();
+        const attempts = resultCheck.size;
 
- const resultData = resultCheck.docs[0].data();
+        // 3. Block if already used 2 attempts
+        if (attempts >= 2) {
+            hideLoading();
+            alert("You have already used your maximum of 2 attempts for this pre-exam.");
+            
+            // Optional: show the most recent result automatically
+            if (resultCheck.docs.length > 0) {
+                // Sort by timestamp descending → get latest
+                const latestResult = resultCheck.docs
+                    .sort((a, b) => (b.data().timestamp?.seconds || 0) - (a.data().timestamp?.seconds || 0))[0];
+                
+                if (confirm("Would you like to view your most recent result?")) {
+                    showOldResult(latestResult.data());
+                }
+            }
+            return;
+        }
 
- if(confirm("You have already completed this exam. Click OK to view your previous result.")){
-     showOldResult(resultData);
- }
+        // 4. Payment check (only if payment is required)
+        if (quizData.payment === "YES") {
+            const paidSnap = await db.collection("payments")
+                .where("userId", "==", currentUser.id)
+                .where("quizId", "==", quizId)
+                .get();
 
- return;
-}
-try{
+            if (paidSnap.empty) {
+                hideLoading();
+                alert("This pre-exam requires payment. Please complete payment first.");
+                // You could also redirect to payment flow here if you want
+                return;
+            }
+        }
 
+        // 5. All checks passed → prepare and start the quiz
+        currentQuiz = quizData;
+        currentQuiz.id = quizId;
 
-const quizDoc = await db.collection('quizzes').doc(quizId).get();
-const quizData = quizDoc.data();
+        currentQuestions = currentQuiz.questions || [];
 
-if(quizData.payment === "YES"){
-    const paidSnap = await db.collection("payments")
-        .where("userId", "==", currentUser.id)
-      .where("quizId", "==", quizId)
-        .get();
+        if (currentQuestions.length === 0) {
+            throw new Error("No questions available in this quiz");
+        }
 
-    if(paidSnap.empty){
-        alert("You must complete payment before starting this exam.");
-        return;
+        currentQuestionIndex = 0;
+        selectedAnswers = new Array(currentQuestions.length).fill(null);
+
+        quizStartTime = Date.now();
+
+        // Update UI
+        document.getElementById('quiz-course-name').textContent = currentQuiz.courseName || 'Pre-Exam';
+        document.getElementById('q-total').textContent = currentQuestions.length;
+
+        showSection('quiz-section');
+
+        startTimer();
+        loadQuestion();
+
+        // Optional: nice message for second attempt
+        if (attempts === 1) {
+            setTimeout(() => {
+                alert("This is your second and final attempt. Good luck! 💪");
+            }, 800);
+        }
+
+    } catch (err) {
+        alert(err.message || "Failed to start the quiz. Please try again.");
+        console.error("startQuiz error:", err);
     }
+
+    hideLoading();
 }
-
-
-
-const doc=await db.collection('quizzes').doc(quizId).get();
-
-if(!doc.exists) throw new Error("Quiz not found");
-
-currentQuiz=doc.data();
-currentQuiz.id=doc.id;
-
-currentQuestions=currentQuiz.questions||[];
-
-if(currentQuestions.length===0)
-throw new Error("No questions in this quiz");
-
-currentQuestionIndex=0;
-selectedAnswers=new Array(currentQuestions.length).fill(null);
-
-quizStartTime=Date.now();
-
-document.getElementById('quiz-course-name').textContent=currentQuiz.courseName||'Quiz';
-document.getElementById('q-total').textContent=currentQuestions.length;
-
-showSection('quiz-section');
-
-startTimer();
-loadQuestion();
-
-}catch(err){
-
-alert(err.message||"Failed to load quiz");
-console.error(err);
-
-}
-
-hideLoading();
-
-}
-
 
 
 /* =====================
