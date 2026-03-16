@@ -389,7 +389,8 @@ input[type="radio"] {
             <option value="SBMS">SBMS</option>
             <option value="SPS">SPS</option>
             <option value="SOC">SOC</option>
-            <option value="SET">SET</option>
+           <option value="SET">SET</option>
+<option value="SLS">SLS</option>
         </select>
         <button class="green" onclick="saveFaculty()" style="margin-top:1.5rem;">Confirm Faculty</button>
     </div>
@@ -642,7 +643,7 @@ let timerInterval = null;
 const adminPass = "Anjorin$2008";
 // NEW constants
 
-const FACULTIES = ["SEET","SAAT","SEMS","SLIT","SBMS","SPS","SOC","SET"];
+const FACULTIES = ["SEET","SAAT","SEMS","SLIT","SBMS","SPS","SOC","SET","SLS"];
 const CHANNEL_LINK = "https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x";
 const loading = document.getElementById('loading');
 
@@ -751,6 +752,11 @@ document.getElementById('student-name').textContent=currentUser.fullName||'Stude
 loadCourses();
 showSection('student-dashboard');
 showTacticalCard();
+
+// 🔹 Show faculty modal if not set
+if (!currentUser.faculty) {
+    document.getElementById('faculty-modal').style.display = 'flex';
+}
 }catch(err){
 alert(err.message||'Login failed');
 }
