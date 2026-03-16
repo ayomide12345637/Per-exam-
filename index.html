@@ -259,6 +259,63 @@ input[type="radio"] {
     color:#555;
 }
 
+/* NEW: Faculty Modal + Lock Screen styles */
+#faculty-modal, #channel-lock-screen {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    color: white;
+}
+
+.modal-content, .lock-content {
+    background: white;
+    color: #212529;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 90%;
+    width: 420px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.modal-content select, .lock-content button {
+    width: 100%;
+    margin: 1.2rem 0;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+#countdown-lock {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--red);
+    margin: 1.5rem 0;
+}
+
+/* NEW: Admin stats cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.stat-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.stat-card h4 { margin: 0 0 0.6rem; color: var(--primary); font-size: 1.1rem; }
+.stat-card p { font-size: 1.8rem; font-weight: bold; margin: 0; }
+
 /* Mobile - make everything smaller & tighter */
 @media (max-width: 600px) {
     header { padding: 0.7rem 0.8rem 0.9rem; }
@@ -318,6 +375,40 @@ input[type="radio"] {
 </head>
 <body>
     <div id="loading">Loading...</div>
+    <!-- Faculty Selection Modal (appears once) -->
+<div id="faculty-modal">
+    <div class="modal-content">
+        <h2>Welcome! One-time Setup</h2>
+        <p style="margin:1rem 0;">Please select your faculty. This helps us improve content for your area.</p>
+        <select id="faculty-select" required>
+            <option value="" disabled selected>-- Choose Faculty --</option>
+            <option value="SEET">SEET</option>
+            <option value="SAAT">SAAT</option>
+            <option value="SEMS">SEMS</option>
+            <option value="SLIT">SLIT</option>
+            <option value="SBMS">SBMS</option>
+            <option value="SPS">SPS</option>
+            <option value="SOC">SOC</option>
+            <option value="SET">SET</option>
+        </select>
+        <button class="green" onclick="saveFaculty()" style="margin-top:1.5rem;">Confirm Faculty</button>
+    </div>
+</div>
+
+<!-- Global Channel Lock Screen -->
+<div id="channel-lock-screen">
+    <div class="lock-content">
+        <h2 style="color:var(--primary);">Platform Update</h2>
+        <p style="margin:1.2rem 0; font-size:1.1rem;">Please follow our WhatsApp channel for important updates and announcements.</p>
+        <button id="follow-channel-btn" class="blue" style="font-size:1.3rem; padding:1.2rem;">
+            Follow WhatsApp Channel Now
+        </button>
+        <div id="countdown-lock">Waiting...</div>
+        <p style="font-size:0.95rem; color:#555; margin-top:1.5rem;">
+            After following, wait 15 seconds — access will unlock automatically.
+        </p>
+    </div>
+</div>
 
 <header>
     <div class="logo-container">
@@ -503,21 +594,28 @@ input[type="radio"] {
 
 <!-- Admin Dashboard -->
 <section id="admin-dashboard" class="hidden">
-            <h2>Admin Panel</h2>
-            <div class="admin-nav">
-               <button onclick="showAdminTab('activities')">Activities</button>
-                <button onclick="showAdminTab('question-bank')">Question Bank</button>
-                <button onclick="showAdminTab('set-quiz')">Set / Publish Quiz</button>
-                <button onclick="showAdminTab('payments')">Payments Overview</button>
-            </div>
-            <div id="admin-content"></div>
-            <button type="button" onclick="logout()">Logout</button>
-        </section>
-<div id="paymentStats"></div>
+    <h2>Admin Panel</h2>
+
+    <!-- NEW: Global Toggle Switch -->
+    <div style="margin:1rem 0; padding:1rem; background:#fff3cd; border-radius:10px; text-align:center;">
+        <h3>Maintenance / Channel Mode</h3>
+        <label style="font-size:1.1rem; margin-right:1rem;">Force Channel Follow:</label>
+        <input type="checkbox" id="global-lock-toggle" onchange="toggleGlobalLock(this.checked)">
     </div>
-<div id="squad-payment-container" style="display: none;"></div>
+
+    <div class="admin-nav">
+        <button onclick="showAdminTab('activities')">Activities</button>
+        <button onclick="showAdminTab('question-bank')">Question Bank</button>
+        <button onclick="showAdminTab('set-quiz')">Set / Publish Quiz</button>
+        <button onclick="showAdminTab('payments')">Payments Overview</button>
+    </div>
+    <div id="admin-content"></div>
+    <button type="button" onclick="logout()">Logout</button>
+</section>
 
 <script>
+    // NEW: Check global lock on every page load
+window.addEventListener('load', checkGlobalLock);
 // Firebase Config
 const firebaseConfig = {
 apiKey: "AIzaSyBQzBX4m70zI-koaHJlWEYsRSU2MBnXwwk",
@@ -542,6 +640,10 @@ let quizStartTime = null;
 let timerInterval = null;
 
 const adminPass = "Anjorin$2008";
+// NEW constants
+
+const FACULTIES = ["SEET","SAAT","SEMS","SLIT","SBMS","SPS","SOC","SET"];
+const CHANNEL_LINK = "https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x";
 const loading = document.getElementById('loading');
 
 function showLoading(){ loading.style.display='flex'; }
@@ -697,6 +799,87 @@ hideLoading();
 
 }
 
+// NEW: Save selected faculty
+async function saveFaculty() {
+    const select = document.getElementById('faculty-select');
+    const faculty = select.value;
+
+    if (!faculty || !FACULTIES.includes(faculty)) {
+        return alert("Please select a valid faculty.");
+    }
+
+    try {
+        await db.collection('users').doc(currentUser.id).update({
+            faculty: faculty,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        currentUser.faculty = faculty;
+        document.getElementById('faculty-modal').style.display = 'none';
+        loadCourses();
+        showSection('student-dashboard');
+        showTacticalCard();
+    } catch(err) {
+        alert("Error saving faculty: " + err.message);
+    }
+}
+
+// NEW: Toggle global lock mode (admin only)
+async function toggleGlobalLock(enabled) {
+    if (currentUser?.role !== 'admin') return;
+
+    try {
+        await db.collection('config').doc('global').set({
+            lockEnabled: enabled,
+            channelLink: CHANNEL_LINK,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedBy: currentUser.id || 'admin'
+        }, { merge: true });
+
+        alert(`Global channel mode ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    } catch(err) {
+        alert("Failed to update: " + err.message);
+    }
+}
+
+// NEW: Check & show lock screen if needed
+async function checkGlobalLock() {
+    const configSnap = await db.collection('config').doc('global').get();
+    if (!configSnap.exists) return;
+
+    const data = configSnap.data();
+    if (!data.lockEnabled) {
+        document.getElementById('channel-lock-screen').style.display = 'none';
+        return;
+    }
+
+    if (currentUser?.channelFollowed) return;
+
+    document.getElementById('channel-lock-screen').style.display = 'flex';
+
+    document.getElementById('follow-channel-btn').onclick = () => {
+        window.open(CHANNEL_LINK, '_blank');
+
+        let seconds = 15;
+        const countdownEl = document.getElementById('countdown-lock');
+        countdownEl.textContent = `${seconds} seconds`;
+
+        const interval = setInterval(() => {
+            seconds--;
+            countdownEl.textContent = `${seconds} seconds`;
+            if (seconds <= 0) {
+                clearInterval(interval);
+                if (currentUser?.id) {
+                    db.collection('users').doc(currentUser.id).update({
+                        channelFollowed: true
+                    });
+                    currentUser.channelFollowed = true;
+                }
+                document.getElementById('channel-lock-screen').style.display = 'none';
+            }
+        }, 1000);
+    };
+}
 
 /* =====================
 LOAD COURSES
@@ -1192,7 +1375,7 @@ if (userLetter) {
 // ─── This MUST be the version you use ────────────────────────────────────────
 let correctText = "— not set —";
 
-if (correctLetter && q[`option${correctLetter}`]) {
+if ( q[`option${correctLetter}`]) {
     correctText = `${correctLetter}) ${q[`option${correctLetter}`]}`;
 }
 
@@ -1434,19 +1617,19 @@ function submitQuiz() {
     document.getElementById('duration').textContent   = `\( {min}: \){sec}`;
 
     // Feedback logic (with fallback)
-    let feedbackText = "Keep practicing!";
-    if (currentQuiz?.feedback) {
-        const percentNum = Number(percentage);
-        if (percentNum < 50) {
-            feedbackText = currentQuiz.feedback.low  || feedbackText;
-        } else if (percentNum < 70) {
-            feedbackText = currentQuiz.feedback.mid || feedbackText;
-        } else {
-            feedbackText = currentQuiz.feedback.high || "Excellent job!";
-        }
-    }
-    document.getElementById('feedback').textContent = feedbackText;
+  let feedbackText;
 
+const percent = Number(percentage);
+
+if (percent < 50) {
+    feedbackText = "Oga you no Sabi book at all like your head just dry try dey read naaa omooooooooor nawa for you oooo";
+} else if (percent < 70) {
+    feedbackText = "Haffa try dey read you try Sha but put more effort";
+} else {
+    feedbackText = "sharp you sabi book";
+}
+
+document.getElementById('feedback').textContent = feedbackText;
     document.getElementById('result-title').textContent = currentQuiz.courseName || "Quiz Results";
 
     // ─── Save result to Firestore ────────────────────────────────
@@ -1487,48 +1670,63 @@ return;
 cont.innerHTML='';
 
     /* ===== ACTIVITIES ===== */
-    if (tab === 'activities') {
-        cont.innerHTML = '<h3>Recent Activities</h3><p>Loading...</p>';
+ if (tab === 'activities') {
+    cont.innerHTML = '<h3>Recent Activities & Statistics</h3><p>Loading...</p>';
 
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const todayStartTs = firebase.firestore.Timestamp.fromDate(todayStart);
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todayEnd   = new Date(); todayEnd.setHours(23,59,59,999);
 
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
-        const todayEndTs = firebase.firestore.Timestamp.fromDate(todayEnd);
+    const todayStartTs = firebase.firestore.Timestamp.fromDate(todayStart);
+    const todayEndTs   = firebase.firestore.Timestamp.fromDate(todayEnd);
 
-        Promise.all([
-            db.collection('users').get().then(snap => snap.size), // total users
-            db.collection('users')
-                .where('createdAt', '>=', todayStartTs)
-                .where('createdAt', '<=', todayEndTs)
-                .get().then(snap => snap.size), // new accounts today
-            db.collection('users')
-                .where('lastLogin', '>=', todayStartTs)
-                .where('lastLogin', '<=', todayEndTs)
-                .get().then(snap => snap.size), // logins today
-            db.collection('quizResults')
-                .where('timestamp', '>=', todayStartTs)
-                .where('timestamp', '<=', todayEndTs)
-                .get().then(snap => snap.size) // quizzes today
-        ])
-        .then(([totalUsers, newToday, loginsToday, quizzesToday]) => {
-            cont.innerHTML = `
-                <h3>System Stats</h3>
-                <ul style="line-height:2">
-                    <li>Total Users: ${totalUsers}</li>
-                    <li>New Accounts Today: ${newToday}</li>
-                    <li>Student Logins Today: ${loginsToday}</li>
-                    <li>Quizzes Taken Today: ${quizzesToday}</li>
-                </ul>
-            `;
-        })
-        .catch(err => {
-            cont.innerHTML = `<p style="color:red;">Failed to load activities: ${err.message}</p>`;
-            console.error(err);
+    Promise.all([
+        db.collection('users').get(),
+        db.collection('users').where('createdAt', '>=', todayStartTs).where('createdAt', '<=', todayEndTs).get(),
+        db.collection('users').where('lastLogin', '>=', todayStartTs).where('lastLogin', '<=', todayEndTs).get(),
+        db.collection('quizResults').where('timestamp', '>=', todayStartTs).where('timestamp', '<=', todayEndTs).get(),
+        db.collection('users').get(),           // for faculty
+        db.collection('users').get(),           // for idle
+        db.collection('users').where('level', '==', '100').get(),
+        db.collection('users').where('level', '==', '200').get()
+    ])
+    .then(async ([total, newToday, logins, quizzes, allUsers, allForIdle, lvl100, lvl200]) => {
+        // Faculty count
+        const facultyCount = {};
+        FACULTIES.forEach(f => facultyCount[f] = 0);
+        allUsers.docs.forEach(doc => {
+            const fac = doc.data().faculty;
+            if (fac && facultyCount[fac] !== undefined) facultyCount[fac]++;
         });
-    }
+
+        let facultyHTML = '<h4>Faculty Distribution</h4><ul style="padding-left:1.5rem;">';
+        Object.entries(facultyCount).forEach(([f, cnt]) => {
+            facultyHTML += `<li><strong>${f}:</strong> ${cnt} students</li>`;
+        });
+        facultyHTML += '</ul>';
+
+        // Idle count
+        const hasQuiz = new Set();
+        (await db.collection('quizResults').get()).docs.forEach(d => hasQuiz.add(d.data().userId));
+        const idleCount = allForIdle.docs.filter(doc => !hasQuiz.has(doc.id)).length;
+
+        cont.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card"><h4>Total Users</h4><p>${total.size}</p></div>
+                <div class="stat-card"><h4>New Today</h4><p>${newToday.size}</p></div>
+                <div class="stat-card"><h4>Logins Today</h4><p>${logins.size}</p></div>
+                <div class="stat-card"><h4>Quizzes Today</h4><p>${quizzes.size}</p></div>
+                <div class="stat-card"><h4>Idle Students</h4><p>${idleCount}</p></div>
+                <div class="stat-card"><h4>100 Level</h4><p>${lvl100.size}</p></div>
+                <div class="stat-card"><h4>200 Level</h4><p>${lvl200.size}</p></div>
+            </div>
+            ${facultyHTML}
+        `;
+    })
+    .catch(err => {
+        cont.innerHTML = `<p style="color:red;">Failed to load: ${err.message}</p>`;
+        console.error(err);
+    });
+}
 
     /* ===== QUESTION BANK ===== */
     else if (tab === 'question-bank') {
@@ -1659,9 +1857,9 @@ const questions = rows.map(r => ({
   optionD: r.D || '',
   correctOption: r.Answer || '',
   type: (r.Type || 'objective').toString().trim().toLowerCase(),
-  keywords: r.Keywords || ''
+  keywords: r.Keywords || '',
+  feedback: r.Feedback || ''   // ⭐ THIS LINE ADDED
 }));
-
 await db.collection("questionBank").add({
   courseName: rows[0].Course || 'Unnamed Course',
   level: rows[0].Level || '100',
