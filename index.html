@@ -2073,14 +2073,25 @@ function updateTacticalCountdown() {
 function showTacticalCard() {
     if (!currentUser) return;
 
-    const level = (currentUser.level || "").toString().trim().toLowerCase();
+    // Very strict: only exact "100" (case-insensitive, trimmed)
+    const userLevel = (currentUser.level || "").trim();
 
-    if (level === '100' || level.includes('100')) {
+    // Optional: log for debugging (remove later)
+    console.log("Current user level:", userLevel);
+
+    if (userLevel === "100" || userLevel === "100 Level") {
         const card = document.getElementById('tactical-card');
         if (card) {
             card.style.display = 'block';
             setInterval(updateTacticalCountdown, 1000);
-            updateTacticalCountdown(); // immediate run
+            updateTacticalCountdown(); // run immediately
+            console.log("MEE101 Tactical card shown for 100 level user");
+        }
+    } else {
+        const card = document.getElementById('tactical-card');
+        if (card) {
+            card.style.display = 'none';
+            console.log("MEE101 Tactical card hidden (not 100 level)");
         }
     }
 }
