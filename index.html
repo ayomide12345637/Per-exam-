@@ -850,41 +850,58 @@ async function toggleGlobalLock(enabled) {
 
 // NEW: Check & show lock screen if needed
 async function checkGlobalLock() {
-    const configSnap = await db.collection('config').doc('global').get();
-    if (!configSnap.exists) return;
+    try {
+        // Always get the latest setting from Firebase
+        const configSnap = await db.collection('config').doc('global').get();
 
-    const data = configSnap.data();
-    if (!data.lockEnabled) {
-        document.getElementById('channel-lock-screen').style.display = 'none';
-        return;
-    }
+        // If no setting exists → no lock
+        if (!configSnap.exists) {
+            document.getElementById('channel-lock-screen').style.display = 'none';
+            return;
+        }
 
-    if (currentUser?.channelFollowed) return;
+        const data = configSnap.data();
 
-    document.getElementById('channel-lock-screen').style.display = 'flex';
+        // Only show lock if you (admin) turned it ON
+        if (data.lockEnabled !== true) {
+            document.getElementById('channel-lock-screen').style.display = 'none';
+            return;
+        }
 
-    document.getElementById('follow-channel-btn').onclick = () => {
-        window.open(CHANNEL_LINK, '_blank');
+        // Admins never see the lock
+        if (currentUser?.role === 'admin') {
+            document.getElementById('channel-lock-screen').style.display = 'none';
+            return;
+        }
 
-        let seconds = 15;
-        const countdownEl = document.getElementById('countdown-lock');
-        countdownEl.textContent = `${seconds} seconds`;
+        // For students: ALWAYS show the lock when it's turned ON
+        // (we ignore whether they followed before — they must follow again every time you re-enable)
+        document.getElementById('channel-lock-screen').style.display = 'flex';
 
-        const interval = setInterval(() => {
-            seconds--;
+        // The follow button + 15-second countdown (keep your existing code here)
+        document.getElementById('follow-channel-btn').onclick = () => {
+            window.open(CHANNEL_LINK, '_blank');
+
+            let seconds = 15;
+            const countdownEl = document.getElementById('countdown-lock');
             countdownEl.textContent = `${seconds} seconds`;
-            if (seconds <= 0) {
-                clearInterval(interval);
-                if (currentUser?.id) {
-                    db.collection('users').doc(currentUser.id).update({
-                        channelFollowed: true
-                    });
-                    currentUser.channelFollowed = true;
+
+            const interval = setInterval(() => {
+                seconds--;
+                countdownEl.textContent = `${seconds} seconds`;
+
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    document.getElementById('channel-lock-screen').style.display = 'none';
                 }
-                document.getElementById('channel-lock-screen').style.display = 'none';
-            }
-        }, 1000);
-    };
+            }, 1000);
+        };
+
+    } catch (err) {
+        console.error("Error checking global lock:", err);
+        // If something breaks → don't lock people out
+        document.getElementById('channel-lock-screen').style.display = 'none';
+    }
 }
 
 /* =====================
