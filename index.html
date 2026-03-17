@@ -1763,74 +1763,115 @@ ADMIN PANEL
 
 function showAdminTab(tab){
 
-const cont = document.getElementById('admin-content');
+    const cont = document.getElementById('admin-content');
 
-if(!cont){
-console.log("Admin container not found");
-return;
-}
+    if(!cont){
+        console.log("Admin container not found");
+        return;
+    }
 
-cont.innerHTML='';
+    cont.innerHTML='';
 
     /* ===== ACTIVITIES ===== */
- if (tab === 'activities') {
-    cont.innerHTML = '<h3>Recent Activities & Statistics</h3><p>Loading...</p>';
+    if (tab === 'activities') {
+        cont.innerHTML = '<h3>Recent Activities & Statistics</h3><p>Loading...</p>';
 
-    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-    const todayEnd   = new Date(); todayEnd.setHours(23,59,59,999);
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const todayEnd   = new Date(); todayEnd.setHours(23,59,59,999);
 
-    const todayStartTs = firebase.firestore.Timestamp.fromDate(todayStart);
-    const todayEndTs   = firebase.firestore.Timestamp.fromDate(todayEnd);
+        const todayStartTs = firebase.firestore.Timestamp.fromDate(todayStart);
+        const todayEndTs   = firebase.firestore.Timestamp.fromDate(todayEnd);
 
-    Promise.all([
-        db.collection('users').get(),
-        db.collection('users').where('createdAt', '>=', todayStartTs).where('createdAt', '<=', todayEndTs).get(),
-        db.collection('users').where('lastLogin', '>=', todayStartTs).where('lastLogin', '<=', todayEndTs).get(),
-        db.collection('quizResults').where('timestamp', '>=', todayStartTs).where('timestamp', '<=', todayEndTs).get(),
-        db.collection('users').get(),           // for faculty
-        db.collection('users').get(),           // for idle
-        db.collection('users').where('level', '==', '100').get(),
-        db.collection('users').where('level', '==', '200').get()
-    ])
-    .then(async ([total, newToday, logins, quizzes, allUsers, allForIdle, lvl100, lvl200]) => {
-        // Faculty count
-        const facultyCount = {};
-        FACULTIES.forEach(f => facultyCount[f] = 0);
-        allUsers.docs.forEach(doc => {
-            const fac = doc.data().faculty;
-            if (fac && facultyCount[fac] !== undefined) facultyCount[fac]++;
+        Promise.all([
+            db.collection('users').get(),
+            db.collection('users').where('createdAt', '>=', todayStartTs).where('createdAt', '<=', todayEndTs).get(),
+            db.collection('users').where('lastLogin', '>=', todayStartTs).where('lastLogin', '<=', todayEndTs).get(),
+            db.collection('quizResults').where('timestamp', '>=', todayStartTs).where('timestamp', '<=', todayEndTs).get(),
+            db.collection('users').get(),           // for faculty breakdown
+            db.collection('users').get(),           // for idle
+            db.collection('users').where('level', '==', '100').get(),
+            db.collection('users').where('level', '==', '200').get()
+        ])
+        .then(async ([total, newToday, logins, quizzes, allUsers, allForIdle, lvl100, lvl200]) => {
+            // ─── Faculty breakdown by level ────────────────────────────────
+            const facultyStats = {};
+            FACULTIES.forEach(f => {
+                facultyStats[f] = { level100: 0, level200: 0 };
+            });
+
+            allUsers.docs.forEach(doc => {
+                const data = doc.data();
+                const fac = data.faculty;
+                const lvl = (data.level || '').trim();
+
+                if (fac && facultyStats[fac]) {
+                    if (lvl === '100' || lvl === '100 Level') {
+                        facultyStats[fac].level100++;
+                    } else if (lvl === '200' || lvl === '200 Level') {
+                        facultyStats[fac].level200++;
+                    }
+                }
+            });
+
+            // Build the table HTML
+            let tableHTML = `
+                <h4 style="margin: 1.5rem 0 0.8rem; color: var(--primary);">Students by Faculty & Level</h4>
+                <div style="overflow-x: auto; margin-bottom: 1.5rem;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">Faculty</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">100 Level</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">200 Level</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            FACULTIES.forEach(fac => {
+                const stats = facultyStats[fac];
+                const total = stats.level100 + stats.level200;
+                tableHTML += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; font-weight: 500;">${fac}</td>
+                        <td style="padding: 12px; text-align: center;">${stats.level100}</td>
+                        <td style="padding: 12px; text-align: center;">${stats.level200}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: bold; color: var(--primary);">${total}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Idle count
+            const hasQuiz = new Set();
+            (await db.collection('quizResults').get()).docs.forEach(d => hasQuiz.add(d.data().userId));
+            const idleCount = allForIdle.docs.filter(doc => !hasQuiz.has(doc.id)).length;
+
+            cont.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card"><h4>Total Users</h4><p>${total.size}</p></div>
+                    <div class="stat-card"><h4>New Today</h4><p>${newToday.size}</p></div>
+                    <div class="stat-card"><h4>Logins Today</h4><p>${logins.size}</p></div>
+                    <div class="stat-card"><h4>Quizzes Today</h4><p>${quizzes.size}</p></div>
+                    <div class="stat-card"><h4>Idle Students</h4><p>${idleCount}</p></div>
+                    <div class="stat-card"><h4>100 Level</h4><p>${lvl100.size}</p></div>
+                    <div class="stat-card"><h4>200 Level</h4><p>${lvl200.size}</p></div>
+                </div>
+
+                ${tableHTML}
+            `;
+        })
+        .catch(err => {
+            cont.innerHTML = `<p style="color:red;">Failed to load: ${err.message}</p>`;
+            console.error(err);
         });
-
-        let facultyHTML = '<h4>Faculty Distribution</h4><ul style="padding-left:1.5rem;">';
-        Object.entries(facultyCount).forEach(([f, cnt]) => {
-            facultyHTML += `<li><strong>${f}:</strong> ${cnt} students</li>`;
-        });
-        facultyHTML += '</ul>';
-
-        // Idle count
-        const hasQuiz = new Set();
-        (await db.collection('quizResults').get()).docs.forEach(d => hasQuiz.add(d.data().userId));
-        const idleCount = allForIdle.docs.filter(doc => !hasQuiz.has(doc.id)).length;
-
-        cont.innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-card"><h4>Total Users</h4><p>${total.size}</p></div>
-                <div class="stat-card"><h4>New Today</h4><p>${newToday.size}</p></div>
-                <div class="stat-card"><h4>Logins Today</h4><p>${logins.size}</p></div>
-                <div class="stat-card"><h4>Quizzes Today</h4><p>${quizzes.size}</p></div>
-                <div class="stat-card"><h4>Idle Students</h4><p>${idleCount}</p></div>
-                <div class="stat-card"><h4>100 Level</h4><p>${lvl100.size}</p></div>
-                <div class="stat-card"><h4>200 Level</h4><p>${lvl200.size}</p></div>
-            </div>
-            ${facultyHTML}
-        `;
-    })
-    .catch(err => {
-        cont.innerHTML = `<p style="color:red;">Failed to load: ${err.message}</p>`;
-        console.error(err);
-    });
-}
-
+    }
     /* ===== QUESTION BANK ===== */
     else if (tab === 'question-bank') {
         cont.innerHTML = `
