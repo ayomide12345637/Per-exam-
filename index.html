@@ -1464,27 +1464,41 @@ input[type="radio"] {
         // TIMER
         // ============================================================
         function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            const timeLimitMin = Number(currentQuiz?.timeLimit) || 30;
-            let timeLeft = timeLimitMin * 60;
-            const timerEl = document.getElementById("timer");
-            if (!timerEl) return;
-            let min = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-            let sec = String(timeLeft % 60).padStart(2, "0");
-            timerEl.textContent = `Time Left: ${min}:${sec}`;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                min = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-                sec = String(timeLeft % 60).padStart(2, "0");
-                timerEl.textContent = `Time Left: ${min}:${sec}`;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    timerEl.textContent = "Time Left: 00:00";
-                    alert("Time is up!");
-                    submitQuiz();
-                }
-            }, 1000);
+    if (timerInterval) clearInterval(timerInterval);
+    const timeLimitMin = Number(currentQuiz?.timeLimit) || 30;
+    let timeLeft = timeLimitMin * 60;
+    const timerEl = document.getElementById("timer");
+    if (!timerEl) return;
+
+    // Helper function to format time
+    function formatTime(seconds) {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+
+        if (hrs > 0) {
+            // Show hours + minutes + seconds when 1 hour or more
+            return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+        } else {
+            // Show only minutes + seconds when less than 1 hour
+            return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
         }
+    }
+
+    // Initial display
+    timerEl.textContent = `Time Left: ${formatTime(timeLeft)}`;
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = `Time Left: ${formatTime(timeLeft)}`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerEl.textContent = "Time Left: 00:00";
+            alert("Time is up!");
+            submitQuiz();
+        }
+    }, 1000);
+}
 
         function stopTimer() {
             if (timerInterval) {
