@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MELOX PRE EXAM 2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -62,6 +63,10 @@ header h1 {
     text-transform: uppercase;
 }
 
+header h1 i {
+    margin-right: 8px;
+}
+
 .container {
     max-width: 100%;
     margin: 0.6rem 0.7rem 1rem;
@@ -76,6 +81,10 @@ h2 {
     text-align: center;
     font-size: 1.25rem;
     margin: 0.4rem 0 1rem;
+}
+
+h2 i {
+    margin-right: 8px;
 }
 
 .hidden { display: none !important; }
@@ -112,6 +121,10 @@ button {
     transition: background 0.2s;
 }
 
+button i {
+    margin-right: 8px;
+}
+
 button:hover {
     background: var(--yellow-dark);
 }
@@ -146,11 +159,19 @@ button.danger:hover {
     border-radius: 8px;
 }
 
+#timer i {
+    margin-right: 8px;
+}
+
 #question-progress {
     font-size: 0.95rem;
     color: #555;
     text-align: center;
     margin-bottom: 0.5rem;
+}
+
+#question-progress i {
+    margin-right: 6px;
 }
 
 #question-text {
@@ -222,6 +243,10 @@ input[type="radio"] {
     font-size: 1.02rem;
 }
 
+.result-row i {
+    margin-right: 6px;
+}
+
 #loading {
     position: fixed;
     inset: 0;
@@ -231,6 +256,10 @@ input[type="radio"] {
     place-items: center;
     font-size: 1.5rem;
     z-index: 9999;
+}
+
+#loading i {
+    margin-right: 12px;
 }
 
 .admin-nav {
@@ -245,6 +274,10 @@ input[type="radio"] {
     min-width: 110px;
 }
 
+.admin-nav button i {
+    margin-right: 8px;
+}
+
 .team-card{
     background:#f5f5f5;
     padding:15px 25px;
@@ -257,6 +290,10 @@ input[type="radio"] {
 .team-card h4{
     margin:0;
     color:var(--green);
+}
+
+.team-card h4 i {
+    margin-right: 6px;
 }
 
 .team-card p{
@@ -284,6 +321,10 @@ input[type="radio"] {
     width: 420px;
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.modal-content h2 i, .lock-content h2 i {
+    margin-right: 10px;
 }
 
 .modal-content select, .lock-content button {
@@ -317,6 +358,7 @@ input[type="radio"] {
 }
 
 .stat-card h4 { margin: 0 0 0.6rem; color: var(--primary); font-size: 1.1rem; }
+.stat-card h4 i { margin-right: 6px; }
 .stat-card p { font-size: 1.8rem; font-weight: bold; margin: 0; }
 
 @media (max-width: 600px) {
@@ -343,6 +385,10 @@ input[type="radio"] {
     font-size: inherit;
 }
 
+.nav-text i {
+    margin-right: 6px;
+}
+
 .nav-text:hover {
     color: #0056b3;
 }
@@ -357,9 +403,8 @@ input[type="radio"] {
     box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 
-.notice-card h4{
-    margin-bottom:8px;
-    color:#856404;
+.notice-card h4 i {
+    margin-right: 8px;
 }
 
 .notice-card p{
@@ -374,6 +419,10 @@ input[type="radio"] {
     text-decoration:underline;
 }
 
+.notice-card a i {
+    margin-right: 6px;
+}
+
 .delete-btn {
     background: #dc3545;
     color: white;
@@ -384,6 +433,10 @@ input[type="radio"] {
     font-weight: bold;
     cursor: pointer;
     margin: 10px 0;
+}
+
+.delete-btn i {
+    margin-right: 8px;
 }
 
 .delete-btn:hover {
@@ -420,11 +473,19 @@ input[type="radio"] {
     font-size: 1.2rem;
 }
 
+#welcome-page .message i {
+    margin-right: 6px;
+}
+
 #welcome-page .pay-section {
     background: #f8f9fa;
     padding: 1.5rem;
     border-radius: 10px;
     margin: 1.5rem 0;
+}
+
+#welcome-page .pay-section h3 i {
+    margin-right: 8px;
 }
 
 #welcome-page input {
@@ -443,6 +504,11 @@ input[type="radio"] {
     font-weight: bold;
     margin-top: 1rem;
     transition: 0.2s;
+    font-size: 1.05rem;
+}
+
+#welcome-page .whatsapp-btn i {
+    margin-right: 10px;
 }
 
 #welcome-page .whatsapp-btn:hover {
@@ -452,15 +518,78 @@ input[type="radio"] {
 #paymentButtonContainer button {
     min-width: 180px;
 }
+
+#paymentButtonContainer button i {
+    margin-right: 8px;
+}
+
+/* Payment Popup Modal */
+#payment-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+#payment-popup .popup-content {
+    background: white;
+    color: #212529;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    position: relative;
+}
+#payment-popup .popup-content h2 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+#payment-popup .popup-content h2 i {
+    margin-right: 10px;
+}
+#payment-popup .popup-content p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0.8rem 0;
+    text-align: left;
+}
+#payment-popup .popup-content .highlight {
+    color: #dc3545;
+    font-weight: bold;
+}
+#payment-popup .popup-content button {
+    margin-top: 1.5rem;
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+}
+#payment-popup .popup-content button i {
+    margin-right: 8px;
+}
     </style>
 </head>
 <body>
-    <div id="loading">Loading...</div>
+    <div id="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+
+    <!-- Payment Popup Modal -->
+    <div id="payment-popup">
+        <div class="popup-content">
+            <h2><i class="fas fa-credit-card"></i> One-Time Payment</h2>
+            <p>This is a <span class="highlight">one-time general payment of ₦500</span> for <strong>all courses</strong> on this platform.</p>
+            <p>You will <strong>never be asked to pay again</strong> – even if you see a payment request later, <span class="highlight">it won't work</span> and you'll be automatically redirected to the login page.</p>
+            <p><strong>Do not panic</strong> – it's a one-time fee for lifetime access to all pre-exams.</p>
+            <p style="color: #28a745; font-weight: bold;"><i class="fas fa-check-circle"></i> Pay once, access everything.</p>
+            <button class="green" onclick="closePaymentPopupAndProceed()"><i class="fas fa-check"></i> I understand, proceed</button>
+        </div>
+    </div>
 
     <!-- Faculty Modal -->
     <div id="faculty-modal">
         <div class="modal-content">
-            <h2>Welcome! One-time Setup</h2>
+            <h2><i class="fas fa-university"></i> Welcome! One-time Setup</h2>
             <p style="margin:1rem 0;">Select your faculty to improve content for your area.</p>
             <select id="faculty-select" required>
                 <option value="" disabled selected>-- Choose Faculty --</option>
@@ -474,21 +603,21 @@ input[type="radio"] {
                 <option value="SET">SET</option>
                 <option value="SLS">SLS</option>
             </select>
-            <button class="green" onclick="saveFaculty()" style="margin-top:1.5rem;">Confirm Faculty</button>
+            <button class="green" onclick="saveFaculty()" style="margin-top:1.5rem;"><i class="fas fa-check"></i> Confirm Faculty</button>
         </div>
     </div>
 
     <!-- Global Channel Lock -->
     <div id="channel-lock-screen">
         <div class="lock-content">
-            <h2 style="color:var(--primary);">Platform Update</h2>
+            <h2 style="color:var(--primary);"><i class="fab fa-whatsapp"></i> Platform Update</h2>
             <p style="margin:1.2rem 0; font-size:1.1rem;">Please follow our WhatsApp channel for important updates.</p>
             <button id="follow-channel-btn" class="blue" style="font-size:1.3rem; padding:1.2rem;">
-                Follow WhatsApp Channel Now
+                <i class="fab fa-whatsapp"></i> Follow WhatsApp Channel Now
             </button>
             <div id="countdown-lock">Waiting...</div>
             <p style="font-size:0.95rem; color:#555; margin-top:1.5rem;">
-                After following, wait 15 seconds — access will unlock automatically.
+                <i class="fas fa-info-circle"></i> After following, wait 15 seconds — access will unlock automatically.
             </p>
         </div>
     </div>
@@ -498,180 +627,180 @@ input[type="radio"] {
             <div class="logo-glow"></div>
             <img src="https://i.imgur.com/sWN7pYD.png" alt="MELOX PRE EXAM Logo" class="logo">
         </div>
-        <h1>MELOX PRE EXAM 2.0</h1>
+        <h1><i class="fas fa-graduation-cap"></i> MELOX PRE EXAM 2.0</h1>
     </header>
 
     <div class="container">
 
         <!-- ========== WELCOME / PAYMENT PAGE ========== -->
         <section id="welcome-page">
-            <h2>Welcome Back!</h2>
+            <h2><i class="fas fa-hand-wave"></i> Welcome Back!</h2>
             <div class="message">
-                <p><strong>Welcome back to Melox Pre‑Exams 2.0!</strong></p>
+                <p><strong><i class="fas fa-rocket"></i> Welcome back to Melox Pre-Exams 2.0!</strong></p>
                 <p>The first edition was a success, and we've made several improvements to serve you better.</p>
                 <p>This platform is now <strong>exclusively for 100 Level</strong> students.</p>
-                <p>We've rebuilt the website from the ground up. Due to maintenance costs incurred, we require a <strong>one‑time payment of ₦500</strong> to access the system. This is a <strong>one‑time fee only</strong> – once paid, you'll never be asked again.</p>
-                <p><strong>If you already have an account:</strong> simply login with your Matric number and your Surname in capital letters (as before).<br>
-                <strong>If you don't have an account yet:</strong> you can register after payment.</p>
-                <p style="color: #dc3545; font-weight: bold;">Thank you for your support! 🙏</p>
-                <p>For any complaints or assistance, contact <strong>Melox</strong> via WhatsApp below.</p>
+                <p>We've rebuilt the website from the ground up. Due to maintenance costs incurred, we require a <strong>one-time payment of ₦500</strong> to access the system. This is a <strong>one-time fee only</strong> – once paid, you'll never be asked again.</p>
+                <p><strong><i class="fas fa-user-check"></i> If you already have an account:</strong> simply login with your Matric number and your Surname in capital letters (as before).<br>
+                <strong><i class="fas fa-user-plus"></i> If you don't have an account yet:</strong> you can register after payment.</p>
+                <p style="color: #dc3545; font-weight: bold;"><i class="fas fa-heart"></i> Thank you for your support!</p>
+                <p><i class="fas fa-headset"></i> For any complaints or assistance, contact <strong>Melox</strong> via WhatsApp below.</p>
             </div>
 
             <div class="pay-section">
-                <h3 style="color: var(--primary);">Pay ₦500 (One‑time)</h3>
-                <p style="margin: 0.5rem 0;">Enter your Matric Number to check your status:</p>
+                <h3 style="color: var(--primary);"><i class="fas fa-money-bill-wave"></i> Pay ₦500 (One-time)</h3>
+                <p style="margin: 0.5rem 0;"><i class="fas fa-id-card"></i> Enter your Matric Number to check your status:</p>
                 <input type="text" id="paymentMatric" placeholder="e.g. CSP/23/9123" required style="max-width:300px;">
                 <div id="paymentButtonContainer" style="margin-top: 1rem;"></div>
                 <div id="paymentStatus" style="margin-top: 0.8rem; font-weight: bold;"></div>
-                <div id="paymentLoading" style="margin-top: 0.5rem; color: #666; display: none;">⏳ Checking...</div>
+                <div id="paymentLoading" style="margin-top: 0.5rem; color: #666; display: none;"><i class="fas fa-spinner fa-spin"></i> Checking...</div>
             </div>
 
             <a href="https://wa.me/2348081531407" target="_blank" class="whatsapp-btn">
-                📱 Contact Melox on WhatsApp
+                <i class="fab fa-whatsapp"></i> Contact Melox on WhatsApp
             </a>
         </section>
 
         <!-- ========== SIGNUP ========== -->
         <section id="signup-section" class="hidden">
-            <h2>Create Account</h2>
+            <h2><i class="fas fa-user-plus"></i> Create Account</h2>
             <form id="signup-form" autocomplete="off">
                 <input type="text" id="firstName" placeholder="First Name" required>
                 <input type="text" id="middleName" placeholder="Middle Name (Optional)">
                 <input type="text" id="lastName" placeholder="Surname (Last Name)" required>
                 <input type="text" id="matricNumber" placeholder="Matric Number (e.g. CSP/23/9123)" required>
                 <input type="hidden" id="level" value="100">
-                <p style="color:#666; font-size:0.9rem; margin:-0.3rem 0 0.3rem;">✅ This platform is for <strong>100 Level</strong> students only</p>
+                <p style="color:#666; font-size:0.9rem; margin:-0.3rem 0 0.3rem;"><i class="fas fa-check-circle" style="color:#28a745;"></i> This platform is for <strong>100 Level</strong> students only</p>
                 <input type="password" id="password" placeholder="Password (Auto-set to UPPERCASE Surname)" readonly>
                 <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-                <button type="submit">Sign Up</button>
+                <button type="submit"><i class="fas fa-user-plus"></i> Sign Up</button>
             </form>
             <p>
                 Have an account? 
                 <span style="cursor:pointer;color:blue;text-decoration:underline;" onclick="showSection('login-section')">
-                    Login
+                    <i class="fas fa-sign-in-alt"></i> Login
                 </span>
             </p>
         </section>
 
         <!-- ========== LOGIN ========== -->
         <section id="login-section" class="hidden">
-            <h2>Student Login</h2>
+            <h2><i class="fas fa-sign-in-alt"></i> Student Login</h2>
             <form id="login-form">
                 <input type="text" id="loginMatric" placeholder="Matric Number (e.g. CSP/23/9123)" required>
                 <input type="password" id="loginPassword" placeholder="Password" required>
-                <button type="submit" class="blue">Login</button>
+                <button type="submit" class="blue"><i class="fas fa-sign-in-alt"></i> Login</button>
             </form>
-            <span class="nav-text" onclick="showSection('admin-login-section')">Admin Login</span>
+            <span class="nav-text" onclick="showSection('admin-login-section')"><i class="fas fa-user-shield"></i> Admin Login</span>
         </section>
 
         <!-- ========== ADMIN LOGIN ========== -->
         <section id="admin-login-section" class="hidden">
-            <h2>Admin Access</h2>
+            <h2><i class="fas fa-user-shield"></i> Admin Access</h2>
             <form id="admin-login-form">
                 <input type="password" id="adminPassword" placeholder="Admin Password" required>
                 <span class="nav-text" onclick="document.getElementById('admin-login-form').dispatchEvent(new Event('submit'))">
-                    Enter
+                    <i class="fas fa-enter"></i> Enter
                 </span>
             </form>
-            <span class="nav-text" onclick="showSection('login-section')">Back to Student Login</span>
+            <span class="nav-text" onclick="showSection('login-section')"><i class="fas fa-arrow-left"></i> Back to Student Login</span>
         </section>
 
         <!-- ========== STUDENT DASHBOARD ========== -->
         <section id="student-dashboard" class="hidden">
-            <h2>Welcome, <span id="student-name"></span></h2>
-            <h3>Available Pre-Exams</h3>
+            <h2><i class="fas fa-user-graduate"></i> Welcome, <span id="student-name"></span></h2>
+            <h3><i class="fas fa-book-open"></i> Available Pre-Exams</h3>
             <div id="course-list" style="display: grid; gap: 1rem;"></div>
-            <button type="button" onclick="logout()">Logout</button>
+            <button type="button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </section>
 
         <!-- ========== QUIZ ========== -->
         <section id="quiz-section" class="hidden">
             <h2 id="quiz-course-name"></h2>
-            <div id="timer">Time remaining: --:--</div>
-            <div id="question-progress">Question <span id="question-number">1</span> of <span id="q-total">0</span></div>
+            <div id="timer"><i class="fas fa-clock"></i> Time remaining: --:--</div>
+            <div id="question-progress"><i class="fas fa-question-circle"></i> Question <span id="question-number">1</span> of <span id="q-total">0</span></div>
             <div id="question-text"></div>
             <div class="options" id="options-container"></div>
             <div class="navigation">
-                <button id="prev-btn" onclick="prevQuestion()">Previous</button>
-                <button id="next-btn" onclick="nextQuestion()">Next</button>
-                <button id="submit-btn" class="green hidden" onclick="submitQuiz()">Finish & Submit</button>
+                <button id="prev-btn" onclick="prevQuestion()"><i class="fas fa-chevron-left"></i> Previous</button>
+                <button id="next-btn" onclick="nextQuestion()">Next <i class="fas fa-chevron-right"></i></button>
+                <button id="submit-btn" class="green hidden" onclick="submitQuiz()"><i class="fas fa-check"></i> Finish & Submit</button>
             </div>
         </section>
 
         <!-- ========== RESULTS ========== -->
         <section id="results-section" class="hidden">
-            <h2>Exam Results</h2>
+            <h2><i class="fas fa-chart-bar"></i> Exam Results</h2>
             <div id="results-card">
                 <h2 id="result-title">Security and Compliance Fundamentals</h2>
-                <div class="result-row"><span>Points:</span> <strong><span id="score">0</span> / <span id="total-q">0</span></strong></div>
-                <div class="result-row"><span>Percentage:</span> <strong><span id="percentage">0</span>%</strong></div>
-                <div class="result-row"><span>Duration:</span> <strong><span id="duration">--:--</span></strong></div>
+                <div class="result-row"><span><i class="fas fa-star"></i> Points:</span> <strong><span id="score">0</span> / <span id="total-q">0</span></strong></div>
+                <div class="result-row"><span><i class="fas fa-percent"></i> Percentage:</span> <strong><span id="percentage">0</span>%</strong></div>
+                <div class="result-row"><span><i class="fas fa-hourglass-half"></i> Duration:</span> <strong><span id="duration">--:--</span></strong></div>
                 <div class="result-row" style="margin-top:1.5rem;">
-                    <span>Feedback:</span>
+                    <span><i class="fas fa-comment-dots"></i> Feedback:</span>
                     <strong id="feedback" style="color: var(--green);">Loading feedback...</strong>
                 </div>
             </div>
             <!-- ===== PROJECT TEAM (Polokay & BTO only) ===== -->
             <div id="team-section" style="margin-top:2rem;">
-                <h3 style="text-align:center;">Project Team</h3>
+                <h3 style="text-align:center;"><i class="fas fa-users"></i> Project Team</h3>
                 <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:1rem;">
-                    <div class="team-card"><h4>Polokay</h4><p>Team Member</p></div>
-                    <div class="team-card"><h4>BTO</h4><p>Team Member</p></div>
+                    <div class="team-card"><h4><i class="fas fa-user"></i> Polokay</h4><p>Team Member</p></div>
+                    <div class="team-card"><h4><i class="fas fa-user"></i> BTO</h4><p>Team Member</p></div>
                 </div>
             </div>
             <div id="exam-notice" style="margin-top:2rem;">
-                <h3 style="text-align:center;">Important Notice</h3>
+                <h3 style="text-align:center;"><i class="fas fa-bullhorn"></i> Important Notice</h3>
                 <div style="display:flex; justify-content:center; margin-top:1rem;">
                     <div class="notice-card">
-                        <h4>Next Exam Update</h4>
+                        <h4><i class="fas fa-calendar-alt"></i> Next Exam Update</h4>
                         <p>
                             The next pre-exam will be uploaded <strong>one day before your exam</strong>. 
                             For quick updates, follow our channel:
                             <br>
                             <a href="https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x" target="_blank">
-                                Join our WhatsApp Update Channel
+                                <i class="fab fa-whatsapp"></i> Join our WhatsApp Update Channel
                             </a>
                         </p>
                     </div>
                 </div>
             </div>
             <div style="margin-top:1rem; display:flex; gap:0.5rem;">
-                <button type="button" onclick="showSection('student-dashboard')">Back to Dashboard</button>
-                <button type="button" onclick="viewAnswers()" class="blue">View Answers</button>
+                <button type="button" onclick="showSection('student-dashboard')"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+                <button type="button" onclick="viewAnswers()" class="blue"><i class="fas fa-eye"></i> View Answers</button>
             </div>
             <div id="answers-container" style="margin-top:1rem; display: none;"></div>
         </section>
 
         <!-- ========== ADMIN DASHBOARD ========== -->
         <section id="admin-dashboard" class="hidden">
-            <h2>Admin Panel</h2>
+            <h2><i class="fas fa-tachometer-alt"></i> Admin Panel</h2>
 
             <!-- Global Toggle -->
             <div style="margin:1rem 0; padding:1rem; background:#fff3cd; border-radius:10px; text-align:center;">
-                <h3>Maintenance / Channel Mode</h3>
-                <label style="font-size:1.1rem; margin-right:1rem;">Force Channel Follow:</label>
+                <h3><i class="fas fa-tools"></i> Maintenance / Channel Mode</h3>
+                <label style="font-size:1.1rem; margin-right:1rem;"><i class="fas fa-bell"></i> Force Channel Follow:</label>
                 <input type="checkbox" id="global-lock-toggle" onchange="toggleGlobalLock(this.checked)">
             </div>
 
-            <!-- Delete 200 Level Users (one‑time) -->
+            <!-- Delete 200 Level Users (one-time) -->
             <div style="margin:1rem 0; padding:1.5rem; background:#fff0f0; border-radius:10px; text-align:center; border:2px solid #dc3545;">
-                <h3 style="color:#dc3545;">⚠️ Delete All 200 Level Users</h3>
-                <p style="color:#666; margin:0.5rem 0;">This will delete <strong>Firestore user documents</strong> for all 200‑level students.</p>
-                <p style="color:#dc3545; font-weight:bold;">Note: Firebase Auth accounts remain – they will be blocked from logging in (user profile missing).<br>To fully delete Auth accounts, use Firebase Console.</p>
+                <h3 style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Delete All 200 Level Users</h3>
+                <p style="color:#666; margin:0.5rem 0;">This will delete <strong>Firestore user documents</strong> for all 200-level students.</p>
+                <p style="color:#dc3545; font-weight:bold;"><i class="fas fa-info-circle"></i> Note: Firebase Auth accounts remain – they will be blocked from logging in (user profile missing).<br>To fully delete Auth accounts, use Firebase Console.</p>
                 <button id="delete200Btn" class="delete-btn" onclick="deleteAll200LevelUsers()">
-                    🗑️ DELETE ALL 200 LEVEL USERS
+                    <i class="fas fa-trash-alt"></i> DELETE ALL 200 LEVEL USERS
                 </button>
                 <div id="deleteStatus" style="margin-top:0.5rem; font-weight:bold;"></div>
             </div>
 
             <div class="admin-nav">
-                <button onclick="showAdminTab('activities')">Activities</button>
-                <button onclick="showAdminTab('question-bank')">Question Bank</button>
-                <button onclick="showAdminTab('set-quiz')">Set / Publish Quiz</button>
-                <button onclick="showAdminTab('payments')">Payments Overview</button>
+                <button onclick="showAdminTab('activities')"><i class="fas fa-chart-line"></i> Activities</button>
+                <button onclick="showAdminTab('question-bank')"><i class="fas fa-database"></i> Question Bank</button>
+                <button onclick="showAdminTab('set-quiz')"><i class="fas fa-plus-circle"></i> Set / Publish Quiz</button>
+                <button onclick="showAdminTab('payments')"><i class="fas fa-money-bill-wave"></i> Payments Overview</button>
             </div>
             <div id="admin-content"></div>
-            <button type="button" onclick="logout()">Logout</button>
+            <button type="button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </section>
 
     </div>
@@ -813,26 +942,32 @@ input[type="radio"] {
                 loadingEl.style.display = 'none';
 
                 if (paid) {
-                    // Already paid
+                    // Already paid – determine destination based on account existence
                     statusEl.textContent = '✅ You have already paid!';
                     statusEl.style.color = '#28a745';
-                    container.innerHTML = `
-                        <button id="goToLoginBtn" class="blue" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
-                            🔐 Go to Login
-                        </button>
-                    `;
-                    document.getElementById('goToLoginBtn').onclick = function() {
-                        document.getElementById('welcome-page').classList.add('hidden');
-                        const accountCreated = localStorage.getItem('meloxAccountCreated');
-                        if (accountCreated === 'yes') {
+
+                    let buttonIcon = userExists ? 'fa-sign-in-alt' : 'fa-user-plus';
+                    let buttonText = userExists ? 'Go to Login' : 'Go to Sign Up';
+                    let onClickAction = userExists 
+                        ? function() {
+                            document.getElementById('welcome-page').classList.add('hidden');
                             showSection('login-section');
                             document.getElementById('loginMatric').value = matric;
-                        } else {
+                          }
+                        : function() {
+                            document.getElementById('welcome-page').classList.add('hidden');
                             showSection('signup-section');
-                        }
-                    };
+                            document.getElementById('matricNumber').value = matric;
+                          };
 
-                    // Auto‑login if possible
+                    container.innerHTML = `
+                        <button id="goToLoginBtn" class="blue" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
+                            <i class="fas ${buttonIcon}"></i> ${buttonText}
+                        </button>
+                    `;
+                    document.getElementById('goToLoginBtn').onclick = onClickAction;
+
+                    // Auto‑attempt: if user exists and we are already logged in as that user, reload
                     if (userExists && userId) {
                         try {
                             const currentAuthUser = auth.currentUser;
@@ -841,20 +976,28 @@ input[type="radio"] {
                                     window.location.reload();
                                 }, 500);
                             } else {
+                                // Not logged in, but redirect after a short delay
                                 setTimeout(() => {
                                     document.getElementById('welcome-page').classList.add('hidden');
-                                    const accountCreated = localStorage.getItem('meloxAccountCreated');
-                                    if (accountCreated === 'yes') {
+                                    if (userExists) {
                                         showSection('login-section');
                                         document.getElementById('loginMatric').value = matric;
                                     } else {
                                         showSection('signup-section');
+                                        document.getElementById('matricNumber').value = matric;
                                     }
                                 }, 800);
                             }
                         } catch (err) {
-                            console.log('Auto-login skipped:', err.message);
+                            console.log('Auto-redirect skipped:', err.message);
                         }
+                    } else {
+                        // No account – redirect to signup
+                        setTimeout(() => {
+                            document.getElementById('welcome-page').classList.add('hidden');
+                            showSection('signup-section');
+                            document.getElementById('matricNumber').value = matric;
+                        }, 800);
                     }
 
                 } else if (userExists) {
@@ -863,7 +1006,7 @@ input[type="radio"] {
                     statusEl.style.color = '#fd7e14';
                     container.innerHTML = `
                         <button id="payNowBtn" class="green" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
-                            💳 Pay Now
+                            <i class="fas fa-credit-card"></i> Pay Now
                         </button>
                     `;
                     document.getElementById('payNowBtn').onclick = function() {
@@ -872,7 +1015,10 @@ input[type="radio"] {
                             alert('Please enter a valid Matric number.');
                             return;
                         }
-                        initPayment(storedMatric);
+                        // Show the payment popup
+                        document.getElementById('payment-popup').style.display = 'flex';
+                        // Store the matric to use when they click proceed
+                        document.getElementById('payment-popup').dataset.matric = storedMatric;
                     };
 
                 } else {
@@ -881,7 +1027,7 @@ input[type="radio"] {
                     statusEl.style.color = '#007bff';
                     container.innerHTML = `
                         <button id="payNowBtn" class="green" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
-                            💳 Pay Now
+                            <i class="fas fa-credit-card"></i> Pay Now
                         </button>
                     `;
                     document.getElementById('payNowBtn').onclick = function() {
@@ -890,7 +1036,8 @@ input[type="radio"] {
                             alert('Please enter a valid Matric number.');
                             return;
                         }
-                        initPayment(storedMatric);
+                        document.getElementById('payment-popup').style.display = 'flex';
+                        document.getElementById('payment-popup').dataset.matric = storedMatric;
                     };
                 }
 
@@ -899,6 +1046,17 @@ input[type="radio"] {
                 loadingEl.style.display = 'none';
                 statusEl.textContent = '❌ Error checking status. Please try again.';
                 statusEl.style.color = '#dc3545';
+            }
+        }
+
+        // ============================================================
+        // PAYMENT POPUP – close and proceed
+        // ============================================================
+        function closePaymentPopupAndProceed() {
+            document.getElementById('payment-popup').style.display = 'none';
+            const matric = document.getElementById('payment-popup').dataset.matric;
+            if (matric) {
+                initPayment(matric);
             }
         }
 
@@ -919,7 +1077,6 @@ input[type="radio"] {
                 btn.textContent = '⏳ Processing...';
             }
 
-            // UPDATED: ₦500 = 50000 Kobo
             const amountNaira = 500;
             const amountInKobo = amountNaira * 100;
 
@@ -966,15 +1123,21 @@ input[type="radio"] {
                                         btn.disabled = false;
                                         btn.textContent = '✅ Paid';
                                     }
+                                    // Re‑check the matric to refresh UI
                                     document.getElementById('paymentMatric').dispatchEvent(new Event('input'));
-                                    setTimeout(() => {
+                                    // After 2s, redirect based on account existence
+                                    setTimeout(async () => {
+                                        const userSnap = await db.collection('users')
+                                            .where('matricNumber', '==', matric)
+                                            .get();
+                                        const exists = !userSnap.empty;
                                         document.getElementById('welcome-page').classList.add('hidden');
-                                        const accountCreated = localStorage.getItem('meloxAccountCreated');
-                                        if (accountCreated === 'yes') {
+                                        if (exists) {
                                             showSection('login-section');
                                             document.getElementById('loginMatric').value = matric;
                                         } else {
                                             showSection('signup-section');
+                                            document.getElementById('matricNumber').value = matric;
                                         }
                                     }, 2000);
                                 })
@@ -1300,7 +1463,7 @@ input[type="radio"] {
         async function loadCourses() {
             const list = document.getElementById('course-list');
             if (!list) return;
-            list.innerHTML = '<p style="text-align:center; color:#555;">Loading available pre-exams...</p>';
+            list.innerHTML = '<p style="text-align:center; color:#555;"><i class="fas fa-spinner fa-spin"></i> Loading available pre-exams...</p>';
 
             try {
                 const snaps = await db.collection('quizzes')
@@ -1309,7 +1472,7 @@ input[type="radio"] {
                     .get();
 
                 if (snaps.empty) {
-                    list.innerHTML = '<p style="text-align:center; color:#666; padding:2rem;">No pre-exams available at this time.</p>';
+                    list.innerHTML = '<p style="text-align:center; color:#666; padding:2rem;"><i class="fas fa-info-circle"></i> No pre-exams available at this time.</p>';
                     return;
                 }
 
@@ -1353,29 +1516,29 @@ input[type="radio"] {
                         if (!isAvailableNow) {
                             statusHTML = `
                                 <p id="timer-${doc.id}" style="color:#dc3545; font-weight:bold; text-align:center; margin:0.8rem 0;">
-                                    Loading countdown...
+                                    <i class="fas fa-clock"></i> Loading countdown...
                                 </p>
                             `;
-                            buttonHTML = `<button disabled style="background:#ccc; width:100%;">Locked – Opens Later</button>`;
+                            buttonHTML = `<button disabled style="background:#ccc; width:100%;"><i class="fas fa-lock"></i> Locked – Opens Later</button>`;
                             setTimeout(() => {
                                 startCountdown(doc.id, releaseTime);
                             }, 150);
                         } else {
                             if (attempts >= 2) {
-                                statusHTML = `<p style="color:#dc3545; font-weight:bold; text-align:center;">Maximum 2 attempts used</p>`;
+                                statusHTML = `<p style="color:#dc3545; font-weight:bold; text-align:center;"><i class="fas fa-times-circle"></i> Maximum 2 attempts used</p>`;
                                 buttonHTML = `<button disabled style="background:#ccc; width:100%;">No More Attempts</button>`;
                             } 
                             else if (d.payment === "YES" && !hasPaid) {
-                                statusHTML = `<p style="color:#dc3545; font-weight:bold; text-align:center;">Payment Required (₦100)</p>`;
-                                buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;">Pay & Start</button>`;
+                                statusHTML = `<p style="color:#dc3545; font-weight:bold; text-align:center;"><i class="fas fa-credit-card"></i> Payment Required (₦100)</p>`;
+                                buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;"><i class="fas fa-credit-card"></i> Pay & Start</button>`;
                             } 
                             else {
                                 if (attempts === 1) {
-                                    statusHTML = `<p style="color:#fd7e14; font-weight:bold; text-align:center;">1 attempt used – Final attempt</p>`;
-                                    buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;">Start 2nd Attempt</button>`;
+                                    statusHTML = `<p style="color:#fd7e14; font-weight:bold; text-align:center;"><i class="fas fa-exclamation-triangle"></i> 1 attempt used – Final attempt</p>`;
+                                    buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;"><i class="fas fa-play"></i> Start 2nd Attempt</button>`;
                                 } else {
-                                    statusHTML = `<p style="color:#28a745; font-weight:bold; text-align:center;">Ready to begin</p>`;
-                                    buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;">Start Pre-Exam</button>`;
+                                    statusHTML = `<p style="color:#28a745; font-weight:bold; text-align:center;"><i class="fas fa-check-circle"></i> Ready to begin</p>`;
+                                    buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${doc.id}')" style="width:100%;"><i class="fas fa-play"></i> Start Pre-Exam</button>`;
                                 }
                             }
                         }
@@ -1383,17 +1546,17 @@ input[type="radio"] {
                         let paidBadge = '';
                         if (d.payment === "YES") {
                             paidBadge = hasPaid
-                                ? `<span style="background:#28a745; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;">PAID</span>`
-                                : `<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;">₦100</span>`;
+                                ? `<span style="background:#28a745; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-check-circle"></i> PAID</span>`
+                                : `<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-credit-card"></i> ₦100</span>`;
                         }
 
                         card.innerHTML = `
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-                                <h3 style="margin:0; font-size:1.15rem;">${d.courseName || 'Pre-Exam'}</h3>
+                                <h3 style="margin:0; font-size:1.15rem;"><i class="fas fa-book"></i> ${d.courseName || 'Pre-Exam'}</h3>
                                 ${paidBadge}
                             </div>
                             <p style="color:#555; margin:0.4rem 0;">
-                                Duration: ${d.timeLimit || '?'} minutes
+                                <i class="fas fa-clock"></i> Duration: ${d.timeLimit || '?'} minutes
                             </p>
                             ${statusHTML}
                             ${buttonHTML}
@@ -1406,7 +1569,7 @@ input[type="radio"] {
             } catch (err) {
                 list.innerHTML = `
                     <p style="color:#dc3545; text-align:center; padding:2rem;">
-                        Sorry, couldn't load pre-exams right now.<br>Please try again later.
+                        <i class="fas fa-exclamation-circle"></i> Sorry, couldn't load pre-exams right now.<br>Please try again later.
                     </p>
                 `;
                 console.error("loadCourses failed:", err);
@@ -1441,7 +1604,7 @@ input[type="radio"] {
                     if (btn) btn.removeAttribute("disabled");
                     return;
                 }
-                timerEl.textContent = `Available in: ${formatCountdown(diff)}`;
+                timerEl.textContent = `<i class="fas fa-clock"></i> Available in: ${formatCountdown(diff)}`;
             }, 1000);
         }
 
@@ -1623,7 +1786,7 @@ input[type="radio"] {
 
                 if (attempts === 1) {
                     setTimeout(() => {
-                        alert("This is your second and final attempt. Good luck! 💪");
+                        alert("This is your second and final attempt. Good luck!");
                     }, 800);
                 }
             } catch (err) {
@@ -1893,7 +2056,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // ADMIN PANEL – unchanged
+        // ADMIN PANEL – Payments Overview shows maintenance payments (₦500)
         // ============================================================
         function showAdminTab(tab){
             const cont = document.getElementById('admin-content');
@@ -1969,13 +2132,13 @@ input[type="radio"] {
 
                     cont.innerHTML = `
                         <div class="stats-grid">
-                            <div class="stat-card"><h4>Total Users</h4><p>${total.size}</p></div>
-                            <div class="stat-card"><h4>New Today</h4><p>${newToday.size}</p></div>
-                            <div class="stat-card"><h4>Logins Today</h4><p>${logins.size}</p></div>
-                            <div class="stat-card"><h4>Quizzes Today</h4><p>${quizzes.size}</p></div>
-                            <div class="stat-card"><h4>Idle Students</h4><p>${idleCount}</p></div>
-                            <div class="stat-card"><h4>100 Level</h4><p>${lvl100.size}</p></div>
-                            <div class="stat-card"><h4>200 Level</h4><p>${lvl200.size}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-users"></i> Total Users</h4><p>${total.size}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-user-plus"></i> New Today</h4><p>${newToday.size}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-sign-in-alt"></i> Logins Today</h4><p>${logins.size}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-check-circle"></i> Quizzes Today</h4><p>${quizzes.size}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-bed"></i> Idle Students</h4><p>${idleCount}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-graduation-cap"></i> 100 Level</h4><p>${lvl100.size}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-user-graduate"></i> 200 Level</h4><p>${lvl200.size}</p></div>
                         </div>
                         ${tableHTML}
                     `;
@@ -1988,7 +2151,7 @@ input[type="radio"] {
             else if (tab === 'question-bank') {
                 cont.innerHTML = `
                     <input type="file" id="excelFile" accept=".xlsx,.xls">
-                    <button onclick="uploadQuestionBank()">Upload Question Bank</button>
+                    <button onclick="uploadQuestionBank()"><i class="fas fa-upload"></i> Upload Question Bank</button>
                     <div id="bank-list"></div>
                 `;
                 loadQuestionBanks();
@@ -2010,25 +2173,74 @@ input[type="radio"] {
                         </select>
                         <label>Release Date & Time (Nigeria)</label>
                         <input type="datetime-local" id="releaseTime">
-                        <button onclick="publishQuiz()">Publish Quiz</button>
+                        <button onclick="publishQuiz()"><i class="fas fa-cloud-upload-alt"></i> Publish Quiz</button>
                     `;
                     cont.innerHTML = html;
                 });
             }
             else if (tab === 'payments') {
-                cont.innerHTML = '<h3>Payment Overview</h3><p>Loading payment stats...</p>';
-                db.collection("payments").get().then(snap => {
-                    const totalUsers = snap.size;
-                    const totalRevenue = totalUsers * 100;
-                    cont.innerHTML = `
-                        <h3>Payment Overview</h3>
-                        <p><strong>Users Paid:</strong> ${totalUsers}</p>
-                        <p><strong>Total Revenue:</strong> ₦${totalRevenue}</p>
-                    `;
-                }).catch(err => {
-                    cont.innerHTML = `<p style="color:red;">Failed to load payment stats: ${err.message}</p>`;
-                    console.error(err);
-                });
+                // Show maintenance payments (₦500)
+                cont.innerHTML = '<h3><i class="fas fa-money-bill-wave"></i> Maintenance Payments (₦500)</h3><p>Loading stats...</p>';
+                db.collection('maintenancePayments')
+                    .where('status', '==', 'success')
+                    .get()
+                    .then(async (snap) => {
+                        const totalPaid = snap.size;
+                        const totalRevenue = totalPaid * 500;
+
+                        // Faculty breakdown
+                        const facultyCounts = {};
+                        FACULTIES.forEach(f => facultyCounts[f] = 0);
+                        let unknown = 0;
+
+                        for (const doc of snap.docs) {
+                            const data = doc.data();
+                            let userId = data.userId;
+                            let matric = data.matric;
+                            let faculty = null;
+
+                            if (userId) {
+                                const userDoc = await db.collection('users').doc(userId).get();
+                                if (userDoc.exists) {
+                                    faculty = userDoc.data().faculty;
+                                }
+                            } else if (matric) {
+                                const userSnap = await db.collection('users')
+                                    .where('matricNumber', '==', matric)
+                                    .get();
+                                if (!userSnap.empty) {
+                                    faculty = userSnap.docs[0].data().faculty;
+                                }
+                            }
+                            if (faculty && facultyCounts.hasOwnProperty(faculty)) {
+                                facultyCounts[faculty]++;
+                            } else {
+                                unknown++;
+                            }
+                        }
+
+                        let facultyHTML = '<h4><i class="fas fa-university"></i> Breakdown by Faculty</h4><ul style="list-style:none; padding:0;">';
+                        let totalWithFaculty = 0;
+                        FACULTIES.forEach(f => {
+                            const count = facultyCounts[f];
+                            totalWithFaculty += count;
+                            facultyHTML += `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>${f}</strong>: ${count} paid</li>`;
+                        });
+                        facultyHTML += `<li style="padding:4px 0; font-style:italic;">Unknown Faculty: ${unknown}</li>`;
+                        facultyHTML += '</ul>';
+
+                        cont.innerHTML = `
+                            <div class="stats-grid">
+                                <div class="stat-card"><h4><i class="fas fa-users"></i> Total Paid</h4><p>${totalPaid}</p></div>
+                                <div class="stat-card"><h4><i class="fas fa-money-bill-wave"></i> Total Revenue</h4><p>₦${totalRevenue}</p></div>
+                            </div>
+                            ${facultyHTML}
+                        `;
+                    })
+                    .catch(err => {
+                        cont.innerHTML = `<p style="color:red;">Failed to load payment stats: ${err.message}</p>`;
+                        console.error(err);
+                    });
             }
         }
 
@@ -2197,7 +2409,7 @@ input[type="radio"] {
             document.getElementById('login-section').classList.add('hidden');
         }
 
-        console.log('✅ MELOX PRE EXAM 2.0 – Updated to ₦500 | Team: Polokay & BTO | Feedback from Excel');
+        console.log('✅ MELOX PRE EXAM 2.0 – All fixes applied (Font Awesome icons)');
     </script>
 </body>
 </html>
