@@ -448,6 +448,10 @@ input[type="radio"] {
 #welcome-page .whatsapp-btn:hover {
     background: #128C7E;
 }
+
+#paymentButtonContainer button {
+    min-width: 180px;
+}
     </style>
 </head>
 <body>
@@ -515,13 +519,11 @@ input[type="radio"] {
 
             <div class="pay-section">
                 <h3 style="color: var(--primary);">Pay ₦100 (One‑time)</h3>
-                <p style="margin: 0.5rem 0;">Enter your Matric Number to associate the payment:</p>
+                <p style="margin: 0.5rem 0;">Enter your Matric Number to check your status:</p>
                 <input type="text" id="paymentMatric" placeholder="e.g. CSP/23/9123" required style="max-width:300px;">
-                <br>
-                <button id="payNowBtn" class="green" style="margin-top:1rem; padding: 0.8rem 3rem; font-size:1.2rem;" onclick="initMaintenancePayment()">
-                    💳 Pay Now
-                </button>
+                <div id="paymentButtonContainer" style="margin-top: 1rem;"></div>
                 <div id="paymentStatus" style="margin-top: 0.8rem; font-weight: bold;"></div>
+                <div id="paymentLoading" style="margin-top: 0.5rem; color: #666; display: none;">⏳ Checking...</div>
             </div>
 
             <a href="https://wa.me/2348081531407" target="_blank" class="whatsapp-btn">
@@ -714,12 +716,11 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // FIXED: CHECK PAYMENT (try userId first, then fallback to matric)
+        // CHECK PAYMENT (try userId first, then fallback to matric)
         // ============================================================
         async function checkUserPaid(userId, matric) {
             if (!userId && !matric) return false;
             try {
-                // First attempt: by userId (if provided)
                 if (userId) {
                     const snap = await db.collection('maintenancePayments')
                         .where('userId', '==', userId)
@@ -727,7 +728,6 @@ input[type="radio"] {
                         .get();
                     if (!snap.empty) return true;
                 }
-                // If userId failed or not provided, try by matric
                 if (matric) {
                     const snap = await db.collection('maintenancePayments')
                         .where('matric', '==', matric)
@@ -743,107 +743,275 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // MAINTENANCE PAYMENT (₦100)
+        // DYNAMIC PAYMENT CHECK (debounced)
         // ============================================================
-        function initMaintenancePayment() {
-            const matric = document.getElementById('paymentMatric').value.trim();
-            if (!matric || !/^[A-Z]{3}\/\d+\/\d+$/.test(matric)) {
-                alert('Please enter a valid Matric number (e.g. CSP/23/9123)');
-                return;
-            }
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
 
-            checkUserPaid(null, matric).then(paid => {
-                if (paid) {
-                    alert('This Matric number has already paid. Please login.');
-                    document.getElementById('welcome-page').classList.add('hidden');
-                    document.getElementById('paymentStatus').textContent = '✅ Already paid!';
-                    document.getElementById('paymentStatus').style.color = 'green';
-                    const accountCreated = localStorage.getItem('meloxAccountCreated');
-                    if (accountCreated === 'yes') {
-                        showSection('login-section');
-                    } else {
-                        showSection('signup-section');
-                    }
+        const paymentMatricInput = document.getElementById('paymentMatric');
+        if (paymentMatricInput) {
+            paymentMatricInput.addEventListener('input', debounce(function() {
+                const matric = this.value.trim();
+                const container = document.getElementById('paymentButtonContainer');
+                const statusEl = document.getElementById('paymentStatus');
+                const loadingEl = document.getElementById('paymentLoading');
+
+                container.innerHTML = '';
+                statusEl.textContent = '';
+                statusEl.style.color = '';
+
+                if (matric.length < 5) {
+                    loadingEl.style.display = 'none';
                     return;
                 }
 
-                const amountNaira = 100;
-                const amountInKobo = amountNaira * 100; // 10000
-                const btn = document.getElementById('payNowBtn');
+                if (!/^[A-Z]{3}\/\d+\/\d+$/.test(matric)) {
+                    loadingEl.style.display = 'none';
+                    statusEl.textContent = '⚠️ Invalid format. Use: CSP/23/9123';
+                    statusEl.style.color = '#dc3545';
+                    return;
+                }
+
+                loadingEl.style.display = 'block';
+                statusEl.textContent = 'Checking your Matric...';
+                statusEl.style.color = '#666';
+
+                checkMatricStatus(matric);
+            }, 500));
+        }
+
+        async function checkMatricStatus(matric) {
+            const container = document.getElementById('paymentButtonContainer');
+            const statusEl = document.getElementById('paymentStatus');
+            const loadingEl = document.getElementById('paymentLoading');
+
+            try {
+                // Check if Matric exists in users
+                const userSnap = await db.collection('users')
+                    .where('matricNumber', '==', matric)
+                    .get();
+
+                const userExists = !userSnap.empty;
+                let userId = null;
+                if (userExists) {
+                    userId = userSnap.docs[0].id;
+                }
+
+                // Check payment by matric
+                const paidSnap = await db.collection('maintenancePayments')
+                    .where('matric', '==', matric)
+                    .where('status', '==', 'success')
+                    .get();
+
+                const paid = !paidSnap.empty;
+
+                loadingEl.style.display = 'none';
+
+                if (paid) {
+                    // Already paid
+                    statusEl.textContent = '✅ You have already paid!';
+                    statusEl.style.color = '#28a745';
+                    container.innerHTML = `
+                        <button id="goToLoginBtn" class="blue" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
+                            🔐 Go to Login
+                        </button>
+                    `;
+                    document.getElementById('goToLoginBtn').onclick = function() {
+                        document.getElementById('welcome-page').classList.add('hidden');
+                        const accountCreated = localStorage.getItem('meloxAccountCreated');
+                        if (accountCreated === 'yes') {
+                            showSection('login-section');
+                            document.getElementById('loginMatric').value = matric;
+                        } else {
+                            showSection('signup-section');
+                        }
+                    };
+
+                    // Auto‑login if possible (fast network)
+                    if (userExists && userId) {
+                        try {
+                            const currentAuthUser = auth.currentUser;
+                            if (currentAuthUser && currentAuthUser.uid === userId) {
+                                // Already logged in – reload
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 500);
+                            } else {
+                                // Attempt to sign in if we have credentials? Not safe to store password.
+                                // We'll just redirect to login.
+                                setTimeout(() => {
+                                    document.getElementById('welcome-page').classList.add('hidden');
+                                    const accountCreated = localStorage.getItem('meloxAccountCreated');
+                                    if (accountCreated === 'yes') {
+                                        showSection('login-section');
+                                        document.getElementById('loginMatric').value = matric;
+                                    } else {
+                                        showSection('signup-section');
+                                    }
+                                }, 800);
+                            }
+                        } catch (err) {
+                            console.log('Auto-login skipped:', err.message);
+                        }
+                    }
+
+                } else if (userExists) {
+                    // User exists but not paid
+                    statusEl.textContent = '⚠️ Your Matric exists but you haven\'t paid yet.';
+                    statusEl.style.color = '#fd7e14';
+                    container.innerHTML = `
+                        <button id="payNowBtn" class="green" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
+                            💳 Pay Now
+                        </button>
+                    `;
+                    document.getElementById('payNowBtn').onclick = function() {
+                        const storedMatric = document.getElementById('paymentMatric').value.trim();
+                        if (!storedMatric || !/^[A-Z]{3}\/\d+\/\d+$/.test(storedMatric)) {
+                            alert('Please enter a valid Matric number.');
+                            return;
+                        }
+                        initPayment(storedMatric);
+                    };
+
+                } else {
+                    // User doesn't exist
+                    statusEl.textContent = 'ℹ️ No account found. You can pay and then sign up.';
+                    statusEl.style.color = '#007bff';
+                    container.innerHTML = `
+                        <button id="payNowBtn" class="green" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
+                            💳 Pay Now
+                        </button>
+                    `;
+                    document.getElementById('payNowBtn').onclick = function() {
+                        const storedMatric = document.getElementById('paymentMatric').value.trim();
+                        if (!storedMatric || !/^[A-Z]{3}\/\d+\/\d+$/.test(storedMatric)) {
+                            alert('Please enter a valid Matric number.');
+                            return;
+                        }
+                        initPayment(storedMatric);
+                    };
+                }
+
+            } catch (err) {
+                console.error('Error checking Matric:', err);
+                loadingEl.style.display = 'none';
+                statusEl.textContent = '❌ Error checking status. Please try again.';
+                statusEl.style.color = '#dc3545';
+            }
+        }
+
+        // ============================================================
+        // INITIATE PAYMENT (separate function)
+        // ============================================================
+        function initPayment(matric) {
+            const statusEl = document.getElementById('paymentStatus');
+            const container = document.getElementById('paymentButtonContainer');
+            const btn = document.querySelector('#paymentButtonContainer #payNowBtn');
+
+            if (btn && btn.disabled) return;
+
+            statusEl.textContent = '⏳ Initializing payment...';
+            statusEl.style.color = '#666';
+            if (btn) {
                 btn.disabled = true;
                 btn.textContent = '⏳ Processing...';
-                document.getElementById('paymentStatus').textContent = '';
+            }
 
-                function tryInitSquad() {
-                    if (typeof squad === 'undefined' || typeof squad !== 'function') {
-                        setTimeout(tryInitSquad, 500);
-                        return;
-                    }
-                    try {
-                        const userEmail = matric.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() + '@melox.com';
-                        const squadInstance = new squad({
-                            key: "pk_cb3dfacd4666ddefe368d173d1b4a23e840c0f72",
-                            email: userEmail,
-                            amount: amountInKobo,
-                            currency_code: "NGN",
-                            first_name: "Student",
-                            last_name: matric,
-                            onClose: () => {
+            const amountNaira = 100;
+            const amountInKobo = amountNaira * 100;
+
+            function tryInitSquad() {
+                if (typeof squad === 'undefined' || typeof squad !== 'function') {
+                    setTimeout(tryInitSquad, 500);
+                    return;
+                }
+                try {
+                    const userEmail = matric.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() + '@melox.com';
+                    const squadInstance = new squad({
+                        key: "pk_cb3dfacd4666ddefe368d173d1b4a23e840c0f72",
+                        email: userEmail,
+                        amount: amountInKobo,
+                        currency_code: "NGN",
+                        first_name: "Student",
+                        last_name: matric,
+                        onClose: () => {
+                            if (btn) {
                                 btn.disabled = false;
                                 btn.textContent = '💳 Pay Now';
-                            },
-                            onSuccess: (response) => {
-                                const txRef = response.transaction_ref || response.reference || ("SQ-" + Date.now());
-                                const receivedAmount = response.transaction_amount || response.amount || 0;
-                                if (txRef && receivedAmount >= amountInKobo) {
-                                    db.collection('maintenancePayments').add({
-                                        matric: matric,
-                                        amount: amountInKobo,
-                                        currency: "NGN",
-                                        status: "success",
-                                        paidAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                        transactionRef: txRef,
-                                        squadReference: response.reference || '',
-                                        squadTransactionRef: response.transaction_ref || ''
-                                    })
-                                    .then(() => {
-                                        localStorage.setItem('melox_paid', 'true');
-                                        document.getElementById('paymentStatus').textContent = '✅ Payment successful! You can now login or sign up.';
-                                        document.getElementById('paymentStatus').style.color = 'green';
+                            }
+                            statusEl.textContent = '';
+                        },
+                        onSuccess: (response) => {
+                            const txRef = response.transaction_ref || response.reference || ("SQ-" + Date.now());
+                            const receivedAmount = response.transaction_amount || response.amount || 0;
+                            if (txRef && receivedAmount >= amountInKobo) {
+                                db.collection('maintenancePayments').add({
+                                    matric: matric,
+                                    amount: amountInKobo,
+                                    currency: "NGN",
+                                    status: "success",
+                                    paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    transactionRef: txRef,
+                                    squadReference: response.reference || '',
+                                    squadTransactionRef: response.transaction_ref || ''
+                                })
+                                .then(() => {
+                                    localStorage.setItem('melox_paid', 'true');
+                                    statusEl.textContent = '✅ Payment successful! You can now login or sign up.';
+                                    statusEl.style.color = 'green';
+                                    if (btn) {
                                         btn.disabled = false;
                                         btn.textContent = '✅ Paid';
+                                    }
+                                    // Re‑check the matric to refresh UI
+                                    document.getElementById('paymentMatric').dispatchEvent(new Event('input'));
+                                    // After 2s, redirect
+                                    setTimeout(() => {
                                         document.getElementById('welcome-page').classList.add('hidden');
                                         const accountCreated = localStorage.getItem('meloxAccountCreated');
                                         if (accountCreated === 'yes') {
                                             showSection('login-section');
+                                            document.getElementById('loginMatric').value = matric;
                                         } else {
                                             showSection('signup-section');
                                         }
-                                    })
-                                    .catch(err => {
-                                        console.error('Error saving payment:', err);
-                                        document.getElementById('paymentStatus').textContent = '❌ Payment saved but failed to record. Contact support.';
-                                        document.getElementById('paymentStatus').style.color = 'red';
+                                    }, 2000);
+                                })
+                                .catch(err => {
+                                    console.error('Error saving payment:', err);
+                                    statusEl.textContent = '❌ Payment saved but failed to record. Contact support.';
+                                    statusEl.style.color = 'red';
+                                    if (btn) {
                                         btn.disabled = false;
                                         btn.textContent = '💳 Pay Now';
-                                    });
-                                } else {
-                                    alert('Payment could not be confirmed. Check Squad dashboard.');
+                                    }
+                                });
+                            } else {
+                                alert('Payment could not be confirmed. Check Squad dashboard.');
+                                if (btn) {
                                     btn.disabled = false;
                                     btn.textContent = '💳 Pay Now';
                                 }
                             }
-                        });
-                        squadInstance.setup();
-                        squadInstance.open();
-                    } catch (err) {
-                        alert('Error initializing payment: ' + (err.message || 'Please try again.'));
+                        }
+                    });
+                    squadInstance.setup();
+                    squadInstance.open();
+                } catch (err) {
+                    alert('Error initializing payment: ' + (err.message || 'Please try again.'));
+                    if (btn) {
                         btn.disabled = false;
                         btn.textContent = '💳 Pay Now';
                     }
+                    statusEl.textContent = '';
                 }
-                tryInitSquad();
-            });
+            }
+            tryInitSquad();
         }
 
         // ============================================================
@@ -929,7 +1097,6 @@ input[type="radio"] {
                 return alert("Passwords don't match!");
             }
 
-            // Check payment exists for this matric
             const paid = await checkUserPaid(null, matric);
             if (!paid) {
                 hideLoading();
@@ -948,7 +1115,6 @@ input[type="radio"] {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                // Link payment to this userId
                 const paymentSnap = await db.collection('maintenancePayments')
                     .where('matric', '==', matric)
                     .where('status', '==', 'success')
@@ -995,7 +1161,6 @@ input[type="radio"] {
                     alert('❌ This platform is exclusively for 100 Level students. Your account is set to: ' + userLevel);
                     return;
                 }
-                // Check payment – now tries userId then matric
                 const paid = await checkUserPaid(cred.user.uid, matric);
                 if (!paid) {
                     await auth.signOut();
@@ -1253,11 +1418,23 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // COUNTDOWN
+        // COUNTDOWN – updated to show hours only if >=1 hour
         // ============================================================
         function startCountdown(docId, releaseTime) {
             const timerEl = document.getElementById(`timer-${docId}`);
             if (!timerEl) return;
+
+            function formatCountdown(seconds) {
+                const hrs = Math.floor(seconds / 3600);
+                const mins = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                if (hrs > 0) {
+                    return `${hrs}h ${mins}m ${secs}s`;
+                } else {
+                    return `${mins}m ${secs}s`;
+                }
+            }
+
             const interval = setInterval(() => {
                 const now = Date.now();
                 let diff = Math.floor((releaseTime - now) / 1000);
@@ -1268,10 +1445,7 @@ input[type="radio"] {
                     if (btn) btn.removeAttribute("disabled");
                     return;
                 }
-                const hours = Math.floor(diff / 3600);
-                const minutes = Math.floor((diff % 3600) / 60);
-                const seconds = diff % 60;
-                timerEl.textContent = `Available in: ${hours}h ${minutes}m ${seconds}s`;
+                timerEl.textContent = `Available in: ${formatCountdown(diff)}`;
             }, 1000);
         }
 
@@ -1303,7 +1477,10 @@ input[type="radio"] {
                 const hours = Math.floor(diffSec / 3600);
                 const minutes = Math.floor((diffSec % 3600) / 60);
                 const seconds = diffSec % 60;
-                alert(`This quiz is locked.\nAvailable in: ${hours}h ${minutes}m ${seconds}s`);
+                let msg = `This quiz is locked.\nAvailable in: `;
+                if (hours > 0) msg += `${hours}h ${minutes}m ${seconds}s`;
+                else msg += `${minutes}m ${seconds}s`;
+                alert(msg);
                 return;
             }
 
@@ -1461,44 +1638,39 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // TIMER
+        // TIMER – hours only when >= 1 hour
         // ============================================================
         function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    const timeLimitMin = Number(currentQuiz?.timeLimit) || 30;
-    let timeLeft = timeLimitMin * 60;
-    const timerEl = document.getElementById("timer");
-    if (!timerEl) return;
+            if (timerInterval) clearInterval(timerInterval);
+            const timeLimitMin = Number(currentQuiz?.timeLimit) || 30;
+            let timeLeft = timeLimitMin * 60;
+            const timerEl = document.getElementById("timer");
+            if (!timerEl) return;
 
-    // Helper function to format time
-    function formatTime(seconds) {
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
+            function formatTime(seconds) {
+                const hrs = Math.floor(seconds / 3600);
+                const mins = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                if (hrs > 0) {
+                    return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+                } else {
+                    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+                }
+            }
 
-        if (hrs > 0) {
-            // Show hours + minutes + seconds when 1 hour or more
-            return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-        } else {
-            // Show only minutes + seconds when less than 1 hour
-            return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+            timerEl.textContent = `Time Left: ${formatTime(timeLeft)}`;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = `Time Left: ${formatTime(timeLeft)}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerEl.textContent = "Time Left: 00:00";
+                    alert("Time is up!");
+                    submitQuiz();
+                }
+            }, 1000);
         }
-    }
-
-    // Initial display
-    timerEl.textContent = `Time Left: ${formatTime(timeLeft)}`;
-
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        timerEl.textContent = `Time Left: ${formatTime(timeLeft)}`;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            timerEl.textContent = "Time Left: 00:00";
-            alert("Time is up!");
-            submitQuiz();
-        }
-    }, 1000);
-}
 
         function stopTimer() {
             if (timerInterval) {
@@ -1978,7 +2150,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // PAGE LOAD (fixes race condition)
+        // PAGE LOAD
         // ============================================================
         window.addEventListener('load', function() {
             auth.onAuthStateChanged(async function(user) {
@@ -2029,7 +2201,7 @@ input[type="radio"] {
             document.getElementById('login-section').classList.add('hidden');
         }
 
-        console.log('✅ MELOX PRE EXAM 2.0 – All issues fixed | Fee: ₦100 | Team: Polokay & BTO | Feedback from Excel');
+        console.log('✅ MELOX PRE EXAM 2.0 – All fixes applied | Fee: ₦100 | Team: Polokay & BTO | Feedback from Excel');
     </script>
 </body>
 </html>
