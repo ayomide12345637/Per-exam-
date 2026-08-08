@@ -834,10 +834,10 @@ function showOfflinePage() {
     offlinePageShowing = true;
     
     // Save current URL to return after reload
-    localStorage.setItem('melox_redirect_after_online', window.location.pathname);
+    localStorage.setItem('melox_redirect_after_online', window.location.href);
     
-    // Redirect to the offline page
-    window.location.href = 'offline.html';
+    // Redirect to the offline page (use full path to be safe)
+    window.location.href = window.location.origin + '/offline.html';
 }
 
 // Detect network status changes
@@ -2506,4 +2506,4 @@ console.log('✅ Network error handler installed – offline page will show on n
         console.log('✅ MELOX PRE EXAM 2.0 – All fixes applied (Font Awesome icons)');
     </script>
 </body>
-</html>
+<
