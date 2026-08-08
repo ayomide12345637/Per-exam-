@@ -506,7 +506,7 @@ input[type="radio"] {
                 <p><strong>Welcome back to Melox Pre‑Exams 2.0!</strong></p>
                 <p>The first edition was a success, and we've made several improvements to serve you better.</p>
                 <p>This platform is now <strong>exclusively for 100 Level</strong> students.</p>
-                <p>We've rebuilt the website from the ground up. Due to maintenance costs incurred, we require a <strong>one‑time payment of ₦500</strong> to access the system. This is a <strong>one‑time fee only</strong> – once paid, you'll never be asked again.</p>
+                <p>We've rebuilt the website from the ground up. Due to maintenance costs incurred, we require a <strong>one‑time payment of ₦100</strong> to access the system. This is a <strong>one‑time fee only</strong> – once paid, you'll never be asked again.</p>
                 <p><strong>If you already have an account:</strong> simply login with your Matric number and your Surname in capital letters (as before).<br>
                 <strong>If you don't have an account yet:</strong> you can register after payment.</p>
                 <p style="color: #dc3545; font-weight: bold;">Thank you for your support! 🙏</p>
@@ -514,7 +514,7 @@ input[type="radio"] {
             </div>
 
             <div class="pay-section">
-                <h3 style="color: var(--primary);">Pay ₦500 (One‑time)</h3>
+                <h3 style="color: var(--primary);">Pay ₦100 (One‑time)</h3>
                 <p style="margin: 0.5rem 0;">Enter your Matric Number to associate the payment:</p>
                 <input type="text" id="paymentMatric" placeholder="e.g. CSP/23/9123" required style="max-width:300px;">
                 <br>
@@ -606,16 +606,15 @@ input[type="radio"] {
                 <div class="result-row"><span>Duration:</span> <strong><span id="duration">--:--</span></strong></div>
                 <div class="result-row" style="margin-top:1.5rem;">
                     <span>Feedback:</span>
-                    <strong id="feedback" style="color: var(--green);">Congratulations, you passed the compliance exam.</strong>
+                    <strong id="feedback" style="color: var(--green);">Loading feedback...</strong>
                 </div>
             </div>
+            <!-- ===== UPDATED PROJECT TEAM ===== -->
             <div id="team-section" style="margin-top:2rem;">
                 <h3 style="text-align:center;">Project Team</h3>
                 <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:1rem;">
                     <div class="team-card"><h4>Polokay</h4><p>Team Member</p></div>
                     <div class="team-card"><h4>BTO</h4><p>Team Member</p></div>
-                    <div class="team-card"><h4>Don Emzy</h4><p>Team Member</p></div>
-                    <div class="team-card"><h4>Unique Dray</h4><p>Team Member</p></div>
                 </div>
             </div>
             <div id="exam-notice" style="margin-top:2rem;">
@@ -715,7 +714,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // FIXED: CHECK PAYMENT STATUS (supports both userId and matric)
+        // CHECK PAYMENT STATUS (supports both userId and matric)
         // ============================================================
         async function checkUserPaid(userId, matric) {
             if (!userId && !matric) return false;
@@ -735,7 +734,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // FIXED: MAINTENANCE PAYMENT (₦500) – uses Date.now()
+        // MAINTENANCE PAYMENT (₦100) – UPDATED AMOUNT
         // ============================================================
         function initMaintenancePayment() {
             const matric = document.getElementById('paymentMatric').value.trim();
@@ -759,8 +758,9 @@ input[type="radio"] {
                     return;
                 }
 
-                const amountNaira = 500;
-                const amountInKobo = amountNaira * 100;
+                // UPDATED: ₦100 = 10000 Kobo
+                const amountNaira = 100;
+                const amountInKobo = amountNaira * 100; // 10000
                 const btn = document.getElementById('payNowBtn');
                 btn.disabled = true;
                 btn.textContent = '⏳ Processing...';
@@ -839,7 +839,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // FIXED: DELETE 200 LEVEL USERS (only Firestore, with notice)
+        // DELETE 200 LEVEL USERS (only Firestore, with notice)
         // ============================================================
         async function deleteAll200LevelUsers() {
             const btn = document.getElementById('delete200Btn');
@@ -894,7 +894,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // SIGNUP – fixed to check payment and link userId
+        // SIGNUP – now links userId to payment so they never pay again
         // ============================================================
         document.getElementById('signup-form')?.addEventListener('submit', async e => {
             e.preventDefault();
@@ -925,14 +925,13 @@ input[type="radio"] {
             const paid = await checkUserPaid(null, matric);
             if (!paid) {
                 hideLoading();
-                alert('You must pay the one-time maintenance fee of ₦500 before signing up.');
+                alert('You must pay the one-time maintenance fee of ₦100 before signing up.');
                 return;
             }
 
             try {
                 const cred = await auth.createUserWithEmailAndPassword(matric + '@melox.com', password);
                 const uid = cred.user.uid;
-                // Save user doc
                 await db.collection('users').doc(uid).set({
                     fullName,
                     matricNumber: matric,
@@ -941,7 +940,7 @@ input[type="radio"] {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                // Link payment to this userId (update the existing payment record)
+                // Link the existing payment to this userId
                 const paymentSnap = await db.collection('maintenancePayments')
                     .where('matric', '==', matric)
                     .where('status', '==', 'success')
@@ -962,7 +961,7 @@ input[type="radio"] {
         });
 
         // ============================================================
-        // LOGIN – fixed to handle missing user doc (ghost auth)
+        // LOGIN – checks payment via userId OR matric
         // ============================================================
         document.getElementById('login-form')?.addEventListener('submit', async e => {
             e.preventDefault();
@@ -975,7 +974,6 @@ input[type="radio"] {
                 const userRef = db.collection('users').doc(cred.user.uid);
                 const userDoc = await userRef.get();
                 if (!userDoc.exists) {
-                    // Ghost account: sign out and alert
                     await auth.signOut();
                     hideLoading();
                     alert('Your account profile is missing. Please contact support or create a new account.');
@@ -989,11 +987,12 @@ input[type="radio"] {
                     alert('❌ This platform is exclusively for 100 Level students. Your account is set to: ' + userLevel);
                     return;
                 }
+                // Check payment (checks userId first, then matric)
                 const paid = await checkUserPaid(cred.user.uid, matric);
                 if (!paid) {
                     await auth.signOut();
                     hideLoading();
-                    alert('You have not paid the maintenance fee of ₦500. Please pay first.');
+                    alert('You have not paid the maintenance fee of ₦100. Please pay first.');
                     document.getElementById('welcome-page').classList.remove('hidden');
                     return;
                 }
@@ -1071,7 +1070,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // GLOBAL LOCK (with race condition fixed)
+        // GLOBAL LOCK
         // ============================================================
         async function toggleGlobalLock(enabled) {
             if (currentUser?.role !== 'admin') return;
@@ -1127,7 +1126,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // LOAD COURSES (only 100 Level) – fixed time check
+        // LOAD COURSES (only 100 Level)
         // ============================================================
         async function loadCourses() {
             const list = document.getElementById('course-list');
@@ -1146,7 +1145,7 @@ input[type="radio"] {
                 }
 
                 list.innerHTML = '';
-                const nowTime = Date.now(); // use client's time
+                const nowTime = Date.now();
 
                 for (const doc of snaps.docs) {
                     try {
@@ -1246,7 +1245,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // COUNTDOWN – fixed to use Date.now()
+        // COUNTDOWN
         // ============================================================
         function startCountdown(docId, releaseTime) {
             const timerEl = document.getElementById(`timer-${docId}`);
@@ -1269,7 +1268,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // CHECK PAYMENT & START QUIZ – fixed time check
+        // CHECK PAYMENT & START QUIZ
         // ============================================================
         async function checkPaymentAndStart(quizId) {
             const doc = await db.collection('quizzes').doc(quizId).get();
@@ -1386,7 +1385,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // START QUIZ (unchanged, but fixed time checks above)
+        // START QUIZ
         // ============================================================
         async function startQuiz(quizId) {
             showLoading();
@@ -1454,7 +1453,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // TIMER (unchanged)
+        // TIMER
         // ============================================================
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
@@ -1487,8 +1486,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // SHOW OLD RESULT, VIEW ANSWERS, LOAD QUESTION, NAVIGATION, SUBMIT
-        // (all unchanged – they already work correctly)
+        // SHOW OLD RESULT
         // ============================================================
         async function showOldResult(data) {
             try {
@@ -1513,6 +1511,9 @@ input[type="radio"] {
             }
         }
 
+        // ============================================================
+        // VIEW ANSWERS
+        // ============================================================
         function viewAnswers() {
             const container = document.getElementById('answers-container');
             if (!container) return;
@@ -1564,6 +1565,9 @@ input[type="radio"] {
             container.scrollIntoView({ behavior: 'smooth' });
         }
 
+        // ============================================================
+        // LOAD QUESTION (objective only)
+        // ============================================================
         function loadQuestion() {
             const q = currentQuestions[currentQuestionIndex];
             if (!q) return;
@@ -1616,6 +1620,9 @@ input[type="radio"] {
                 .classList.toggle('hidden', currentQuestionIndex !== currentQuestions.length - 1);
         }
 
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
         function nextQuestion() {
             if (currentQuestionIndex < currentQuestions.length - 1) {
                 currentQuestionIndex++;
@@ -1630,6 +1637,9 @@ input[type="radio"] {
             }
         }
 
+        // ============================================================
+        // SUBMIT QUIZ – FEEDBACK NOW COMES FROM EXCEL
+        // ============================================================
         function submitQuiz() {
             if (!confirm("Submit quiz now? You cannot go back after this.")) {
                 return;
@@ -1657,15 +1667,19 @@ input[type="radio"] {
             document.getElementById('percentage').textContent = percentage;
             document.getElementById('duration').textContent = `${min}:${sec}`;
 
+            // ===== UPDATED: FEEDBACK FROM EXCEL =====
             let feedbackText;
             const percent = Number(percentage);
-            if (percent < 50) {
-                feedbackText = "Oga you no Sabi book at all like your head just dry try dey read naaa omooooooooor nawa for you oooo";
-            } else if (percent < 70) {
-                feedbackText = "Haffa try dey read you try Sha but put more effort";
-            } else {
-                feedbackText = "sharp you sabi book";
-            }
+            const feedback = currentQuiz.feedback || { 
+                low: 'Needs improvement', 
+                mid: 'Fair effort', 
+                high: 'Excellent performance' 
+            };
+            if (percent < 50) feedbackText = feedback.low;
+            else if (percent < 70) feedbackText = feedback.mid;
+            else feedbackText = feedback.high;
+            // =========================================
+
             document.getElementById('feedback').textContent = feedbackText;
             document.getElementById('result-title').textContent = currentQuiz.courseName || "Quiz Results";
 
@@ -1690,7 +1704,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // ADMIN PANEL – unchanged (uses existing functions)
+        // ADMIN PANEL – unchanged
         // ============================================================
         function showAdminTab(tab){
             const cont = document.getElementById('admin-content');
@@ -1830,7 +1844,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // QUESTION BANK LIST, UPLOAD, PUBLISH (unchanged)
+        // QUESTION BANK LIST, UPLOAD, PUBLISH
         // ============================================================
         async function loadQuestionBanks(){
             const list=document.getElementById('bank-list');
@@ -1899,9 +1913,8 @@ input[type="radio"] {
             if(!id) return alert("Select bank");
             if(!releaseTime) return alert("Set release date & time");
             const doc=await db.collection('questionBank').doc(id).get();
-            // Convert releaseTime to UTC timestamp
             const releaseDate = new Date(releaseTime);
-            const releaseTimestamp = releaseDate.getTime(); // UTC milliseconds
+            const releaseTimestamp = releaseDate.getTime();
             await db.collection('quizzes').add({
                 ...doc.data(),
                 level: '100',
@@ -1944,15 +1957,13 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // PAGE LOAD: FIXED RACE CONDITION – now uses onAuthStateChanged
+        // PAGE LOAD (fixes race condition)
         // ============================================================
         window.addEventListener('load', function() {
             auth.onAuthStateChanged(async function(user) {
                 if (user) {
-                    // User is logged in
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (!userDoc.exists) {
-                        // Ghost account – sign out
                         await auth.signOut();
                         localStorage.removeItem('melox_paid');
                         showWelcome();
@@ -1962,7 +1973,6 @@ input[type="radio"] {
                     currentUser.id = user.uid;
                     const paid = await checkUserPaid(currentUser.id, currentUser.matricNumber);
                     if (paid) {
-                        // Already paid → go to dashboard
                         document.getElementById('welcome-page').classList.add('hidden');
                         document.getElementById('student-name').textContent = currentUser.fullName || 'Student';
                         loadCourses();
@@ -1970,15 +1980,12 @@ input[type="radio"] {
                         if (!currentUser.faculty) {
                             document.getElementById('faculty-modal').style.display = 'flex';
                         }
-                        // Now check global lock (after we have currentUser)
                         checkGlobalLock();
                     } else {
-                        // Not paid → show welcome
                         await auth.signOut();
                         showWelcome();
                     }
                 } else {
-                    // Not logged in
                     const localPaid = localStorage.getItem('melox_paid');
                     if (localPaid === 'true') {
                         document.getElementById('welcome-page').classList.add('hidden');
@@ -2001,7 +2008,7 @@ input[type="radio"] {
             document.getElementById('login-section').classList.add('hidden');
         }
 
-        console.log('✅ MELOX PRE EXAM 2.0 – All issues fixed');
+        console.log('✅ MELOX PRE EXAM 2.0 – All issues fixed | Fee: ₦100 | Team: Polokay & BTO | Feedback from Excel');
     </script>
 </body>
 </html>
