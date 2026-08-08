@@ -609,7 +609,7 @@ input[type="radio"] {
                     <strong id="feedback" style="color: var(--green);">Loading feedback...</strong>
                 </div>
             </div>
-            <!-- ===== UPDATED PROJECT TEAM ===== -->
+            <!-- ===== PROJECT TEAM (Polokay & BTO only) ===== -->
             <div id="team-section" style="margin-top:2rem;">
                 <h3 style="text-align:center;">Project Team</h3>
                 <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:1rem;">
@@ -714,19 +714,28 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // CHECK PAYMENT STATUS (supports both userId and matric)
+        // FIXED: CHECK PAYMENT (try userId first, then fallback to matric)
         // ============================================================
         async function checkUserPaid(userId, matric) {
             if (!userId && !matric) return false;
             try {
-                let query = db.collection('maintenancePayments');
+                // First attempt: by userId (if provided)
                 if (userId) {
-                    query = query.where('userId', '==', userId);
-                } else if (matric) {
-                    query = query.where('matric', '==', matric);
+                    const snap = await db.collection('maintenancePayments')
+                        .where('userId', '==', userId)
+                        .where('status', '==', 'success')
+                        .get();
+                    if (!snap.empty) return true;
                 }
-                const snap = await query.get();
-                return !snap.empty && snap.docs[0].data().status === 'success';
+                // If userId failed or not provided, try by matric
+                if (matric) {
+                    const snap = await db.collection('maintenancePayments')
+                        .where('matric', '==', matric)
+                        .where('status', '==', 'success')
+                        .get();
+                    if (!snap.empty) return true;
+                }
+                return false;
             } catch (e) {
                 console.error('checkUserPaid error', e);
                 return false;
@@ -734,7 +743,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // MAINTENANCE PAYMENT (₦100) – UPDATED AMOUNT
+        // MAINTENANCE PAYMENT (₦100)
         // ============================================================
         function initMaintenancePayment() {
             const matric = document.getElementById('paymentMatric').value.trim();
@@ -758,7 +767,6 @@ input[type="radio"] {
                     return;
                 }
 
-                // UPDATED: ₦100 = 10000 Kobo
                 const amountNaira = 100;
                 const amountInKobo = amountNaira * 100; // 10000
                 const btn = document.getElementById('payNowBtn');
@@ -839,7 +847,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // DELETE 200 LEVEL USERS (only Firestore, with notice)
+        // DELETE 200 LEVEL USERS (only Firestore)
         // ============================================================
         async function deleteAll200LevelUsers() {
             const btn = document.getElementById('delete200Btn');
@@ -894,7 +902,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // SIGNUP – now links userId to payment so they never pay again
+        // SIGNUP – links userId to payment
         // ============================================================
         document.getElementById('signup-form')?.addEventListener('submit', async e => {
             e.preventDefault();
@@ -940,7 +948,7 @@ input[type="radio"] {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                // Link the existing payment to this userId
+                // Link payment to this userId
                 const paymentSnap = await db.collection('maintenancePayments')
                     .where('matric', '==', matric)
                     .where('status', '==', 'success')
@@ -961,7 +969,7 @@ input[type="radio"] {
         });
 
         // ============================================================
-        // LOGIN – checks payment via userId OR matric
+        // LOGIN – uses the improved checkUserPaid
         // ============================================================
         document.getElementById('login-form')?.addEventListener('submit', async e => {
             e.preventDefault();
@@ -987,7 +995,7 @@ input[type="radio"] {
                     alert('❌ This platform is exclusively for 100 Level students. Your account is set to: ' + userLevel);
                     return;
                 }
-                // Check payment (checks userId first, then matric)
+                // Check payment – now tries userId then matric
                 const paid = await checkUserPaid(cred.user.uid, matric);
                 if (!paid) {
                     await auth.signOut();
@@ -1638,7 +1646,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // SUBMIT QUIZ – FEEDBACK NOW COMES FROM EXCEL
+        // SUBMIT QUIZ – feedback from Excel
         // ============================================================
         function submitQuiz() {
             if (!confirm("Submit quiz now? You cannot go back after this.")) {
@@ -1667,7 +1675,7 @@ input[type="radio"] {
             document.getElementById('percentage').textContent = percentage;
             document.getElementById('duration').textContent = `${min}:${sec}`;
 
-            // ===== UPDATED: FEEDBACK FROM EXCEL =====
+            // Feedback from Excel
             let feedbackText;
             const percent = Number(percentage);
             const feedback = currentQuiz.feedback || { 
@@ -1678,7 +1686,6 @@ input[type="radio"] {
             if (percent < 50) feedbackText = feedback.low;
             else if (percent < 70) feedbackText = feedback.mid;
             else feedbackText = feedback.high;
-            // =========================================
 
             document.getElementById('feedback').textContent = feedbackText;
             document.getElementById('result-title').textContent = currentQuiz.courseName || "Quiz Results";
