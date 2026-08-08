@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melox – Payment Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #007bff;
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 0.2rem;
+        }
+        h1 i {
+            margin-right: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-top: -0.5rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-box {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-box .number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-box .label {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 4px;
+        }
+        .stat-box .label i {
+            margin-right: 6px;
+        }
+        .faculty-list {
+            border-top: 1px solid #dee2e6;
+            padding-top: 1rem;
+        }
+        .faculty-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .faculty-row .count {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .faculty-row i {
+            margin-right: 8px;
+            color: #007bff;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-weight: bold;
+            border-top: 2px solid #007bff;
+            margin-top: 8px;
+        }
+        .total-row i {
+            margin-right: 8px;
+            color: #007bff;
+        }
+        .timestamp {
+            text-align: center;
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 1.5rem;
+        }
+        .timestamp i {
+            margin-right: 6px;
+        }
+        .refresh-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .refresh-btn i {
+            margin-right: 8px;
+        }
+        .refresh-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1><i class="fas fa-clipboard-list"></i> Melox Register</h1>
+        <div class="subtitle"><i class="fas fa-check-circle">
+
+        <div id="stats">
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="number" id="totalPaid">0</div>
+                    <div class="label"><i class="fas fa-users"></i> Total Registered</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="faculty-list" id="facultyBreakdown">
+            <h3 style="margin-top:0;"><i class="fas fa-university"></i> Breakdown by Faculty</h3>
+            <div id="facultyRows"></div>
+            <div class="total-row">
+                <span><i class="fas fa-users"></i> Total</span>
+                <span id="facultyTotal">0</span>
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="loadData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <div class="timestamp" id="lastUpdated"><i class="fas fa-clock"></i> Last updated: --</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQzBX4m70zI-koaHJlWEYsRSU2MBnXwwk",
+            authDomain: "melox-pre-exam.firebaseapp.com",
+            projectId: "melox-pre-exam",
+            storageBucket: "melox-pre-exam.firebasestorage.app",
+            messagingSenderId: "461617469136",
+            appId: "1:461617469136:web:7f0f262894f88a89fdf0d5",
+            measurementId: "G-DN7682VZ0T"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const FACULTIES = ["SEET","SAAT","SEMS","SLIT","SBMS","SPS","SOC","SET","SLS"];
+
+        async function loadData() {
+            try {
+                const snap = await db.collection('maintenancePayments')
+                    .where('status', '==', 'success')
+                    .get();
+
+                const totalPaid = snap.size;
+                document.getElementById('totalPaid').textContent = totalPaid;
+
+                // Faculty breakdown
+                const facultyCounts = {};
+                FACULTIES.forEach(f => facultyCounts[f] = 0);
+                let unknown = 0;
+
+                for (const doc of snap.docs) {
+                    const data = doc.data();
+                    let userId = data.userId;
+                    let matric = data.matric;
+                    let faculty = null;
+
+                    if (userId) {
+                        const userDoc = await db.collection('users').doc(userId).get();
+                        if (userDoc.exists) {
+                            faculty = userDoc.data().faculty;
+                        }
+                    } else if (matric) {
+                        const userSnap = await db.collection('users')
+                            .where('matricNumber', '==', matric)
+                            .get();
+                        if (!userSnap.empty) {
+                            faculty = userSnap.docs[0].data().faculty;
+                        }
+                    }
+                    if (faculty && facultyCounts.hasOwnProperty(faculty)) {
+                        facultyCounts[faculty]++;
+                    } else {
+                        unknown++;
+                    }
+                }
+
+                let html = '';
+                let totalWithFaculty = 0;
+                FACULTIES.forEach(f => {
+                    const count = facultyCounts[f];
+                    totalWithFaculty += count;
+                    html += `
+                        <div class="faculty-row">
+                            <span><i class="fas fa-user-graduate"></i> ${f}</span>
+                            <span class="count">${count}</span>
+                        </div>
+                    `;
+                });
+                if (unknown > 0) {
+                    html += `
+                        <div class="faculty-row" style="font-style:italic; color:#999;">
+                            <span><i class="fas fa-question-circle"></i> Unknown Faculty</span>
+                            <span class="count">${unknown}</span>
+                        </div>
+                    `;
+                }
+                document.getElementById('facultyRows').innerHTML = html;
+                document.getElementById('facultyTotal').textContent = totalWithFaculty + unknown;
+
+                document.getElementById('lastUpdated').innerHTML = `<i class="fas fa-clock"></i> Last updated: ${new Date().toLocaleString()}`;
+
+            } catch (err) {
+                console.error('Error loading data:', err);
+                document.getElementById('facultyRows').innerHTML = '<p style="color:red;"><i class="fas fa-exclamation-circle"></i> Error loading data</p>';
+            }
+        }
+
+        loadData();
+        setInterval(loadData, 30000); // auto-refresh every 30s
+    </script>
+</body>
+</html>
