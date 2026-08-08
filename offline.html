@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Issues – Melox</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-box {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+
+        .icon-box i {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        h1 {
+            color: #212529;
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .jokes {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .joke-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .joke-item:last-child {
+            border-bottom: none;
+        }
+
+        .joke-item i {
+            color: #ffc107;
+            margin-top: 3px;
+            font-size: 1rem;
+            min-width: 20px;
+        }
+
+        .joke-item .emoji {
+            font-size: 1.2rem;
+        }
+
+        .btn-reload {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-reload i {
+            margin-right: 10px;
+        }
+
+        .btn-reload:hover {
+            background: #0056b3;
+            transform: scale(1.02);
+        }
+
+        .btn-reload:active {
+            transform: scale(0.98);
+        }
+
+        .footer-text {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .footer-text i {
+            margin-right: 6px;
+            color: #dc3545;
+        }
+
+        .random-joke {
+            margin-top: 1rem;
+            padding: 12px;
+            background: #fff3cd;
+            border-radius: 10px;
+            font-style: italic;
+            color: #856404;
+            font-size: 0.95rem;
+            border-left: 4px solid #ffc107;
+        }
+
+        .random-joke i {
+            margin-right: 8px;
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <!-- Animated icon -->
+        <div class="icon-box">
+            <i class="fas fa-wifi"></i>
+        </div>
+
+        <h1><i class="fas fa-frown"></i> Omo! Network Don Fail</h1>
+        <p class="subtitle"><i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i> Your internet connection is not cooperating</p>
+
+        <!-- Funny jokes list -->
+        <div class="jokes">
+            <div class="joke-item">
+                <i class="fas fa-tools"></i>
+                <span><strong>Try this method:</strong> Climb the roof of your house, sit on the pan, and hold your phone up high — network go find you!</span>
+            </div>
+            <div class="joke-item">
+                <i class="fas fa-mobile-alt"></i>
+                <span><strong>Oga go buy iPhone 15</strong> — so you go fit use 5G LTE. No more “connecting...” wahala.</span>
+            </div>
+            <div class="joke-item">
+                <i class="fas fa-database"></i>
+                <span><strong>Haffa you no get data?</strong> Go buy Data abeg! Your network is poor, even snail pass am.</span>
+            </div>
+            <div class="joke-item">
+                <i class="fas fa-face-sad-tear"></i>
+                <span><strong>Omo nawa for your network ooo!</strong> E be like say you dey use GPRS for 2026. Abeg sort yourself.</span>
+            </div>
+            <div class="joke-item">
+                <i class="fas fa-hammer"></i>
+                <span><strong>Use hammer knack this phone naa!</strong> Make the network work — sometimes e need "motivation".</span>
+            </div>
+        </div>
+
+        <!-- Random joke that changes on reload -->
+        <div class="random-joke" id="randomJoke">
+            <i class="fas fa-lightbulb"></i> <span id="jokeText">Loading joke...</span>
+        </div>
+
+        <!-- Reload button -->
+        <button class="btn-reload" onclick="reloadPage()">
+            <i class="fas fa-sync-alt"></i> Try Again
+        </button>
+
+        <p class="footer-text">
+            <i class="fas fa-heart" style="color:#dc3545;"></i> Melox Pre-Exam 2.0 — We feel your pain
+        </p>
+    </div>
+
+    <script>
+        // Array of funny random jokes
+        const jokes = [
+            "Your network is slower than a snail climbing a ladder. Just relax.",
+            "If you climb the highest mountain, maybe network go find you there.",
+            "Don't worry, even the exam has given up waiting for your network.",
+            "Try blowing on your phone like a cartridge — e fit work.",
+            "Your network is so poor, even the loading spinner is crying.",
+            "Have you tried turning it off and on again? No? Try am now.",
+            "Oga, if you no get data, just go and sleep. Tomorrow is another day.",
+            "Network is like love — when you need am most, e disappear.",
+            "Even the Melox server don tire for your network. Abeg sort am.",
+            "Try standing on one leg and facing north — network go catch."
+        ];
+
+        // Pick a random joke on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const randomIndex = Math.floor(Math.random() * jokes.length);
+            document.getElementById('jokeText').textContent = jokes[randomIndex];
+        });
+
+        // Reload function
+        function reloadPage() {
+            const btn = document.querySelector('.btn-reload');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Trying again...';
+            btn.disabled = true;
+
+            // Force reload the page (or try to)
+            window.location.reload();
+        }
+
+        // Also try to detect if connection is back and reload automatically
+        window.addEventListener('online', function() {
+            // Wait 2 seconds then reload if connection returns
+            setTimeout(function() {
+                window.location.reload();
+            }, 2000);
+        });
+    </script>
+
+</body>
+</html>
