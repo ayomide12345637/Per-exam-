@@ -821,6 +821,100 @@ input[type="radio"] {
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        
+        // ============================================================
+// NETWORK & LOADING ERROR HANDLER – Show offline page
+// ============================================================
+
+// Track if offline page is already showing
+let offlinePageShowing = false;
+
+function showOfflinePage() {
+    if (offlinePageShowing) return;
+    offlinePageShowing = true;
+    
+    // Save current URL to return after reload
+    localStorage.setItem('melox_redirect_after_online', window.location.pathname);
+    
+    // Redirect to the offline page
+    window.location.href = 'offline.html';
+}
+
+// Detect network status changes
+window.addEventListener('offline', function() {
+    showOfflinePage();
+});
+
+// Check if we're online on page load
+if (!navigator.onLine) {
+    showOfflinePage();
+}
+
+// Also show offline page if Firebase operations take too long
+// We'll use a global timeout for Firebase calls
+const originalFetch = window.fetch;
+window.fetch = function(...args) {
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 seconds timeout
+    });
+    
+    return Promise.race([
+        originalFetch.apply(this, args),
+        timeoutPromise
+    ]).catch(function(error) {
+        console.warn('Fetch timeout or network error:', error);
+        // Only show offline page if we're actually offline or it's a network error
+        if (!navigator.onLine || error.message.includes('timeout')) {
+            showOfflinePage();
+        }
+        throw error;
+    });
+};
+
+// Also catch Firebase auth errors that might be network-related
+const originalSignIn = firebase.auth().signInWithEmailAndPassword;
+if (firebase.auth().signInWithEmailAndPassword) {
+    firebase.auth().signInWithEmailAndPassword = function(email, password) {
+        return originalSignIn.call(this, email, password).catch(function(error) {
+            if (error.code === 'auth/network-request-failed') {
+                showOfflinePage();
+            }
+            throw error;
+        });
+    };
+}
+
+// Catch Firestore errors
+const originalGet = firebase.firestore().collection('dummy').get;
+// We'll wrap all Firestore queries with a timeout
+const originalCollection = db.collection;
+db.collection = function(name) {
+    const collectionRef = originalCollection.call(this, name);
+    const originalGet = collectionRef.get;
+    const originalWhere = collectionRef.where;
+    
+    // Wrap .get() to add timeout
+    collectionRef.get = function() {
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Firestore timeout')), 15000);
+        });
+        
+        return Promise.race([
+            originalGet.call(this),
+            timeoutPromise
+        ]).catch(function(error) {
+            console.warn('Firestore timeout or error:', error);
+            if (!navigator.onLine || error.message.includes('timeout')) {
+                showOfflinePage();
+            }
+            throw error;
+        });
+    };
+    
+    return collectionRef;
+};
+
+console.log('✅ Network error handler installed – offline page will show on network failure');
 
         let currentUser = null;
         let currentQuiz = null;
