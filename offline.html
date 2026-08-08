@@ -66,10 +66,18 @@
             margin-bottom: 0.5rem;
         }
 
+        h1 i {
+            margin-right: 8px;
+        }
+
         .subtitle {
             color: #666;
             font-size: 0.95rem;
             margin-bottom: 1.5rem;
+        }
+
+        .subtitle i {
+            margin-right: 6px;
         }
 
         .jokes {
@@ -102,10 +110,6 @@
             min-width: 20px;
         }
 
-        .joke-item .emoji {
-            font-size: 1.2rem;
-        }
-
         .btn-reload {
             display: inline-block;
             background: #007bff;
@@ -131,6 +135,12 @@
 
         .btn-reload:active {
             transform: scale(0.98);
+        }
+
+        .btn-reload:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .footer-text {
@@ -159,6 +169,27 @@
             margin-right: 8px;
             color: #ffc107;
         }
+
+        .status-text {
+            margin-top: 0.8rem;
+            font-size: 0.9rem;
+            color: #28a745;
+            display: none;
+        }
+
+        .status-text i {
+            margin-right: 6px;
+        }
+
+        .status-text.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -180,7 +211,7 @@
             </div>
             <div class="joke-item">
                 <i class="fas fa-mobile-alt"></i>
-                <span><strong>Oga go buy iPhone 15</strong> — so you go fit use 5G LTE. No more “connecting...” wahala.</span>
+                <span><strong>Oga go buy iPhone 15</strong> — so you go fit use 5G LTE. No more "connecting..." wahala.</span>
             </div>
             <div class="joke-item">
                 <i class="fas fa-database"></i>
@@ -201,8 +232,13 @@
             <i class="fas fa-lightbulb"></i> <span id="jokeText">Loading joke...</span>
         </div>
 
+        <!-- Status text -->
+        <div class="status-text" id="statusText">
+            <i class="fas fa-check-circle"></i> <span id="statusMessage">Internet connection restored! Redirecting...</span>
+        </div>
+
         <!-- Reload button -->
-        <button class="btn-reload" onclick="reloadPage()">
+        <button class="btn-reload" id="reloadBtn" onclick="tryGoBack()">
             <i class="fas fa-sync-alt"></i> Try Again
         </button>
 
@@ -230,24 +266,99 @@
         document.addEventListener('DOMContentLoaded', function() {
             const randomIndex = Math.floor(Math.random() * jokes.length);
             document.getElementById('jokeText').textContent = jokes[randomIndex];
+
+            // Check if we're actually online now
+            if (navigator.onLine) {
+                // We're online but on the offline page – auto redirect back
+                showStatus('Internet connection restored! Redirecting...', 'success');
+                setTimeout(function() {
+                    goBackToMain();
+                }, 2000);
+            }
+
+            // Listen for online event
+            window.addEventListener('online', function() {
+                showStatus('Internet connection restored! Redirecting...', 'success');
+                setTimeout(function() {
+                    goBackToMain();
+                }, 2000);
+            });
         });
 
-        // Reload function
-        function reloadPage() {
-            const btn = document.querySelector('.btn-reload');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Trying again...';
-            btn.disabled = true;
-
-            // Force reload the page (or try to)
-            window.location.reload();
+        // Show status message
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusText');
+            const msgEl = document.getElementById('statusMessage');
+            msgEl.textContent = message;
+            statusEl.classList.add('show');
+            if (type === 'success') {
+                statusEl.style.color = '#28a745';
+            } else {
+                statusEl.style.color = '#dc3545';
+            }
         }
 
-        // Also try to detect if connection is back and reload automatically
-        window.addEventListener('online', function() {
-            // Wait 2 seconds then reload if connection returns
-            setTimeout(function() {
-                window.location.reload();
-            }, 2000);
+        // Go back to main website
+        function goBackToMain() {
+            // Try to go back to the main page
+            const mainUrl = window.location.origin + '/index.html';
+            const mainUrlAlt = window.location.origin + '/';
+            
+            // Check if we have a saved redirect URL
+            const savedRedirect = localStorage.getItem('melox_redirect_after_online');
+            if (savedRedirect) {
+                localStorage.removeItem('melox_redirect_after_online');
+                window.location.href = savedRedirect;
+                return;
+            }
+
+            // Try to go to index.html
+            window.location.href = mainUrl;
+        }
+
+        // Try again function
+        function tryGoBack() {
+            const btn = document.getElementById('reloadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking connection...';
+
+            // First check if we're online
+            if (navigator.onLine) {
+                showStatus('Internet detected! Redirecting...', 'success');
+                setTimeout(function() {
+                    goBackToMain();
+                }, 1500);
+            } else {
+                // Still offline
+                showStatus('Still offline. Please check your connection.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt"></i> Try Again';
+                
+                // Change the message to be funny
+                document.querySelector('.icon-box i').className = 'fas fa-face-sad-tear';
+                document.querySelector('h1').innerHTML = '<i class="fas fa-face-sad-tear"></i> Still No Network!';
+                
+                // Add extra funny message
+                const jokeEl = document.getElementById('randomJoke');
+                jokeEl.innerHTML = '<i class="fas fa-lightbulb"></i> <span>Omo, your network still dey sleep ooo! Try climb higher roof.</span>';
+            }
+        }
+
+        // Also try to auto-recover if connection comes back while user is on this page
+        let autoCheckInterval = setInterval(function() {
+            if (navigator.onLine) {
+                // We're online – auto redirect
+                clearInterval(autoCheckInterval);
+                showStatus('Internet connection restored! Redirecting...', 'success');
+                setTimeout(function() {
+                    goBackToMain();
+                }, 1500);
+            }
+        }, 5000); // check every 5 seconds
+
+        // Clean up interval if page unloads
+        window.addEventListener('beforeunload', function() {
+            clearInterval(autoCheckInterval);
         });
     </script>
 
