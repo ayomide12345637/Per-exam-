@@ -510,7 +510,7 @@ input[type="radio"] {
                 <p><strong>Welcome back to Melox Pre‑Exams 2.0!</strong></p>
                 <p>The first edition was a success, and we've made several improvements to serve you better.</p>
                 <p>This platform is now <strong>exclusively for 100 Level</strong> students.</p>
-                <p>We've rebuilt the website from the ground up. Due to maintenance costs incurred, we require a <strong>one‑time payment of ₦100</strong> to access the system. This is a <strong>one‑time fee only</strong> – once paid, you'll never be asked again.</p>
+                <p>We've rebuilt the website from the ground up. Due to maintenance costs incurred, we require a <strong>one‑time payment of ₦500</strong> to access the system. This is a <strong>one‑time fee only</strong> – once paid, you'll never be asked again.</p>
                 <p><strong>If you already have an account:</strong> simply login with your Matric number and your Surname in capital letters (as before).<br>
                 <strong>If you don't have an account yet:</strong> you can register after payment.</p>
                 <p style="color: #dc3545; font-weight: bold;">Thank you for your support! 🙏</p>
@@ -518,7 +518,7 @@ input[type="radio"] {
             </div>
 
             <div class="pay-section">
-                <h3 style="color: var(--primary);">Pay ₦100 (One‑time)</h3>
+                <h3 style="color: var(--primary);">Pay ₦500 (One‑time)</h3>
                 <p style="margin: 0.5rem 0;">Enter your Matric Number to check your status:</p>
                 <input type="text" id="paymentMatric" placeholder="e.g. CSP/23/9123" required style="max-width:300px;">
                 <div id="paymentButtonContainer" style="margin-top: 1rem;"></div>
@@ -832,18 +832,15 @@ input[type="radio"] {
                         }
                     };
 
-                    // Auto‑login if possible (fast network)
+                    // Auto‑login if possible
                     if (userExists && userId) {
                         try {
                             const currentAuthUser = auth.currentUser;
                             if (currentAuthUser && currentAuthUser.uid === userId) {
-                                // Already logged in – reload
                                 setTimeout(() => {
                                     window.location.reload();
                                 }, 500);
                             } else {
-                                // Attempt to sign in if we have credentials? Not safe to store password.
-                                // We'll just redirect to login.
                                 setTimeout(() => {
                                     document.getElementById('welcome-page').classList.add('hidden');
                                     const accountCreated = localStorage.getItem('meloxAccountCreated');
@@ -906,7 +903,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // INITIATE PAYMENT (separate function)
+        // INITIATE PAYMENT (₦500)
         // ============================================================
         function initPayment(matric) {
             const statusEl = document.getElementById('paymentStatus');
@@ -922,7 +919,8 @@ input[type="radio"] {
                 btn.textContent = '⏳ Processing...';
             }
 
-            const amountNaira = 100;
+            // UPDATED: ₦500 = 50000 Kobo
+            const amountNaira = 500;
             const amountInKobo = amountNaira * 100;
 
             function tryInitSquad() {
@@ -968,9 +966,7 @@ input[type="radio"] {
                                         btn.disabled = false;
                                         btn.textContent = '✅ Paid';
                                     }
-                                    // Re‑check the matric to refresh UI
                                     document.getElementById('paymentMatric').dispatchEvent(new Event('input'));
-                                    // After 2s, redirect
                                     setTimeout(() => {
                                         document.getElementById('welcome-page').classList.add('hidden');
                                         const accountCreated = localStorage.getItem('meloxAccountCreated');
@@ -1100,7 +1096,7 @@ input[type="radio"] {
             const paid = await checkUserPaid(null, matric);
             if (!paid) {
                 hideLoading();
-                alert('You must pay the one-time maintenance fee of ₦100 before signing up.');
+                alert('You must pay the one-time maintenance fee of ₦500 before signing up.');
                 return;
             }
 
@@ -1165,7 +1161,7 @@ input[type="radio"] {
                 if (!paid) {
                     await auth.signOut();
                     hideLoading();
-                    alert('You have not paid the maintenance fee of ₦100. Please pay first.');
+                    alert('You have not paid the maintenance fee of ₦500. Please pay first.');
                     document.getElementById('welcome-page').classList.remove('hidden');
                     return;
                 }
@@ -1418,7 +1414,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // COUNTDOWN – updated to show hours only if >=1 hour
+        // COUNTDOWN
         // ============================================================
         function startCountdown(docId, releaseTime) {
             const timerEl = document.getElementById(`timer-${docId}`);
@@ -1638,7 +1634,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // TIMER – hours only when >= 1 hour
+        // TIMER
         // ============================================================
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
@@ -2201,7 +2197,7 @@ input[type="radio"] {
             document.getElementById('login-section').classList.add('hidden');
         }
 
-        console.log('✅ MELOX PRE EXAM 2.0 – All fixes applied | Fee: ₦100 | Team: Polokay & BTO | Feedback from Excel');
+        console.log('✅ MELOX PRE EXAM 2.0 – Updated to ₦500 | Team: Polokay & BTO | Feedback from Excel');
     </script>
 </body>
 </html>
