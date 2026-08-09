@@ -28,12 +28,18 @@
     padding: 0;
 }
 
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #f0f2f5;
     color: #212529;
     line-height: 1.45;
     font-size: 15px;
+    min-height: 100vh;
 }
 
 header {
@@ -74,6 +80,7 @@ header h1 i {
     background: white;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    min-height: calc(100vh - 160px);
 }
 
 h2 {
@@ -253,9 +260,15 @@ input[type="radio"] {
     background: rgba(0,0,0,0.65);
     color: white;
     display: flex;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
     font-size: 1.5rem;
     z-index: 9999;
+    transition: opacity 0.3s;
+}
+
+#loading.hidden {
+    display: none !important;
 }
 
 #loading i {
@@ -569,6 +582,15 @@ input[type="radio"] {
 #payment-popup .popup-content button i {
     margin-right: 8px;
 }
+/* Matric format helper */
+.matric-format-hint {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 2px;
+}
+.matric-format-hint i {
+    margin-right: 4px;
+}
     </style>
 </head>
 <body>
@@ -649,7 +671,8 @@ input[type="radio"] {
             <div class="pay-section">
                 <h3 style="color: var(--primary);"><i class="fas fa-money-bill-wave"></i> Pay ₦500 (One-time)</h3>
                 <p style="margin: 0.5rem 0;"><i class="fas fa-id-card"></i> Enter your Matric Number to check your status:</p>
-                <input type="text" id="paymentMatric" placeholder="e.g. CSP/23/9123" required style="max-width:300px;">
+                <input type="text" id="paymentMatric" placeholder="e.g. CSP/23/9123" required style="max-width:300px;" oninput="this.value = this.value.toUpperCase();">
+                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999 (e.g. CSP/23/9123)</div>
                 <div id="paymentButtonContainer" style="margin-top: 1rem;"></div>
                 <div id="paymentStatus" style="margin-top: 0.8rem; font-weight: bold;"></div>
                 <div id="paymentLoading" style="margin-top: 0.5rem; color: #666; display: none;"><i class="fas fa-spinner fa-spin"></i> Checking...</div>
@@ -667,7 +690,8 @@ input[type="radio"] {
                 <input type="text" id="firstName" placeholder="First Name" required>
                 <input type="text" id="middleName" placeholder="Middle Name (Optional)">
                 <input type="text" id="lastName" placeholder="Surname (Last Name)" required>
-                <input type="text" id="matricNumber" placeholder="Matric Number (e.g. CSP/23/9123)" required>
+                <input type="text" id="matricNumber" placeholder="Matric Number (e.g. CSP/23/9123)" required oninput="this.value = this.value.toUpperCase();">
+                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999 (e.g. CSP/23/9123)</div>
                 <input type="hidden" id="level" value="100">
                 <p style="color:#666; font-size:0.9rem; margin:-0.3rem 0 0.3rem;"><i class="fas fa-check-circle" style="color:#28a745;"></i> This platform is for <strong>100 Level</strong> students only</p>
                 <input type="password" id="password" placeholder="Password (Auto-set to UPPERCASE Surname)" readonly>
@@ -686,7 +710,8 @@ input[type="radio"] {
         <section id="login-section" class="hidden">
             <h2><i class="fas fa-sign-in-alt"></i> Student Login</h2>
             <form id="login-form">
-                <input type="text" id="loginMatric" placeholder="Matric Number (e.g. CSP/23/9123)" required>
+                <input type="text" id="loginMatric" placeholder="Matric Number (e.g. CSP/23/9123)" required oninput="this.value = this.value.toUpperCase();">
+                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999 (e.g. CSP/23/9123)</div>
                 <input type="password" id="loginPassword" placeholder="Password" required>
                 <button type="submit" class="blue"><i class="fas fa-sign-in-alt"></i> Login</button>
             </form>
@@ -823,6 +848,14 @@ input[type="radio"] {
         const db = firebase.firestore();
 
         // ============================================================
+        // VALIDATE MATRIC FORMAT (strict)
+        // ============================================================
+        function isValidMatric(matric) {
+            // Must be exactly: 3 uppercase letters, /, 2 digits, /, 4 digits
+            return /^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric);
+        }
+
+        // ============================================================
         // NETWORK & LOADING ERROR HANDLER – Show offline page
         // ============================================================
         let offlinePageShowing = false;
@@ -887,13 +920,8 @@ input[type="radio"] {
         const CHANNEL_LINK = "https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x";
         const loading = document.getElementById('loading');
 
-        // Speed up loading: hide loading when DOM ready
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => { hideLoading(); }, 1000);
-        });
-
-        function showLoading(){ loading.style.display='flex'; }
-        function hideLoading(){ loading.style.display='none'; }
+        function showLoading(){ loading.classList.remove('hidden'); }
+        function hideLoading(){ loading.classList.add('hidden'); }
 
         function showSection(id){
             document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
@@ -902,10 +930,14 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // CACHED PAYMENT CHECK (cache for 10 minutes)
+        // CACHED PAYMENT CHECK (cache for 10 minutes) & localStorage flag
         // ============================================================
         const PAYMENT_CACHE_KEY = 'melox_payment_cache';
         const PAYMENT_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+        function hasDevicePaid() {
+            return localStorage.getItem('melox_paid') === 'true';
+        }
 
         function getCachedPayment(matric) {
             try {
@@ -926,17 +958,33 @@ input[type="radio"] {
                     paid,
                     timestamp: Date.now()
                 }));
+                if (paid) {
+                    localStorage.setItem('melox_paid', 'true');
+                }
             } catch {}
         }
 
+        // On page load, immediately hide welcome if device already paid
+        if (hasDevicePaid()) {
+            document.getElementById('welcome-page').classList.add('hidden');
+            const accountCreated = localStorage.getItem('meloxAccountCreated');
+            if (accountCreated === 'yes') {
+                showSection('login-section');
+            } else {
+                showSection('signup-section');
+            }
+        }
+
         // ============================================================
-        // CHECK PAYMENT (with cache)
+        // CHECK PAYMENT (with cache and uppercase matric)
         // ============================================================
         async function checkUserPaid(userId, matric) {
             if (!userId && !matric) return false;
+            // Always use uppercase for matric
+            const upperMatric = matric ? matric.toUpperCase() : null;
             // Try cache first
-            if (matric) {
-                const cached = getCachedPayment(matric);
+            if (upperMatric) {
+                const cached = getCachedPayment(upperMatric);
                 if (cached !== null) return cached;
             }
             try {
@@ -946,17 +994,17 @@ input[type="radio"] {
                         .where('status', '==', 'success')
                         .get();
                     if (!snap.empty) {
-                        if (matric) setCachedPayment(matric, true);
+                        if (upperMatric) setCachedPayment(upperMatric, true);
                         return true;
                     }
                 }
-                if (matric) {
+                if (upperMatric) {
                     const snap = await db.collection('maintenancePayments')
-                        .where('matric', '==', matric)
+                        .where('matric', '==', upperMatric)
                         .where('status', '==', 'success')
                         .get();
                     const paid = !snap.empty;
-                    setCachedPayment(matric, paid);
+                    setCachedPayment(upperMatric, paid);
                     return paid;
                 }
                 return false;
@@ -967,7 +1015,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // DYNAMIC PAYMENT CHECK (debounced 300ms)
+        // DYNAMIC PAYMENT CHECK (debounced 300ms) – with strict validation
         // ============================================================
         function debounce(func, wait) {
             let timeout;
@@ -980,7 +1028,8 @@ input[type="radio"] {
         const paymentMatricInput = document.getElementById('paymentMatric');
         if (paymentMatricInput) {
             paymentMatricInput.addEventListener('input', debounce(function() {
-                const matric = this.value.trim();
+                const matric = this.value.trim().toUpperCase();
+                this.value = matric; // force uppercase
                 const container = document.getElementById('paymentButtonContainer');
                 const statusEl = document.getElementById('paymentStatus');
                 const loadingEl = document.getElementById('paymentLoading');
@@ -994,9 +1043,10 @@ input[type="radio"] {
                     return;
                 }
 
-                if (!/^[A-Z]{3}\/\d+\/\d+$/.test(matric)) {
+                // Strict format validation
+                if (!isValidMatric(matric)) {
                     loadingEl.style.display = 'none';
-                    statusEl.textContent = '⚠️ Invalid format. Use: CSP/23/9123';
+                    statusEl.textContent = '⚠️ Invalid format. Must be: ABC/99/9999 (e.g. CSP/23/9123)';
                     statusEl.style.color = '#dc3545';
                     return;
                 }
@@ -1010,19 +1060,20 @@ input[type="radio"] {
         }
 
         async function checkMatricStatus(matric) {
+            // matric is already uppercase from the input handler
             const container = document.getElementById('paymentButtonContainer');
             const statusEl = document.getElementById('paymentStatus');
             const loadingEl = document.getElementById('paymentLoading');
 
             try {
-                // Check user existence
+                // Check user existence (using uppercase matric)
                 const userSnap = await db.collection('users')
                     .where('matricNumber', '==', matric)
                     .get();
                 const userExists = !userSnap.empty;
                 let userId = userExists ? userSnap.docs[0].id : null;
 
-                // Check payment (cached)
+                // Check payment (cached, using uppercase matric)
                 const paid = await checkUserPaid(userId, matric);
                 loadingEl.style.display = 'none';
 
@@ -1071,9 +1122,9 @@ input[type="radio"] {
                         </button>
                     `;
                     document.getElementById('payNowBtn').onclick = function() {
-                        const storedMatric = document.getElementById('paymentMatric').value.trim();
-                        if (!storedMatric || !/^[A-Z]{3}\/\d+\/\d+$/.test(storedMatric)) {
-                            alert('Please enter a valid Matric number.');
+                        const storedMatric = document.getElementById('paymentMatric').value.trim().toUpperCase();
+                        if (!storedMatric || !isValidMatric(storedMatric)) {
+                            alert('Please enter a valid Matric number (e.g. CSP/23/9123)');
                             return;
                         }
                         document.getElementById('payment-popup').style.display = 'flex';
@@ -1088,9 +1139,9 @@ input[type="radio"] {
                         </button>
                     `;
                     document.getElementById('payNowBtn').onclick = function() {
-                        const storedMatric = document.getElementById('paymentMatric').value.trim();
-                        if (!storedMatric || !/^[A-Z]{3}\/\d+\/\d+$/.test(storedMatric)) {
-                            alert('Please enter a valid Matric number.');
+                        const storedMatric = document.getElementById('paymentMatric').value.trim().toUpperCase();
+                        if (!storedMatric || !isValidMatric(storedMatric)) {
+                            alert('Please enter a valid Matric number (e.g. CSP/23/9123)');
                             return;
                         }
                         document.getElementById('payment-popup').style.display = 'flex';
@@ -1111,13 +1162,22 @@ input[type="radio"] {
         function closePaymentPopupAndProceed() {
             document.getElementById('payment-popup').style.display = 'none';
             const matric = document.getElementById('payment-popup').dataset.matric;
-            if (matric) initPayment(matric);
+            if (matric) {
+                // Validate again before proceeding
+                if (!isValidMatric(matric)) {
+                    alert('Invalid Matric format. Please use format: ABC/99/9999 (e.g. CSP/23/9123)');
+                    return;
+                }
+                initPayment(matric);
+            }
         }
 
         // ============================================================
-        // INITIATE PAYMENT (₦500)
+        // INITIATE PAYMENT (₦500) – with uppercase matric
         // ============================================================
         function initPayment(matric) {
+            // Ensure uppercase
+            const upperMatric = matric.toUpperCase();
             const statusEl = document.getElementById('paymentStatus');
             const container = document.getElementById('paymentButtonContainer');
             const btn = document.querySelector('#paymentButtonContainer #payNowBtn');
@@ -1140,14 +1200,14 @@ input[type="radio"] {
                     return;
                 }
                 try {
-                    const userEmail = matric.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() + '@melox.com';
+                    const userEmail = upperMatric.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() + '@melox.com';
                     const squadInstance = new squad({
                         key: "pk_cb3dfacd4666ddefe368d173d1b4a23e840c0f72",
                         email: userEmail,
                         amount: amountInKobo,
                         currency_code: "NGN",
                         first_name: "Student",
-                        last_name: matric,
+                        last_name: upperMatric,
                         onClose: () => {
                             if (btn) {
                                 btn.disabled = false;
@@ -1160,7 +1220,7 @@ input[type="radio"] {
                             const receivedAmount = response.transaction_amount || response.amount || 0;
                             if (txRef && receivedAmount >= amountInKobo) {
                                 db.collection('maintenancePayments').add({
-                                    matric: matric,
+                                    matric: upperMatric,
                                     amount: amountInKobo,
                                     currency: "NGN",
                                     status: "success",
@@ -1171,7 +1231,7 @@ input[type="radio"] {
                                 })
                                 .then(() => {
                                     localStorage.setItem('melox_paid', 'true');
-                                    setCachedPayment(matric, true);
+                                    setCachedPayment(upperMatric, true);
                                     statusEl.textContent = '✅ Payment successful! You can now login or sign up.';
                                     statusEl.style.color = 'green';
                                     if (btn) {
@@ -1181,16 +1241,16 @@ input[type="radio"] {
                                     document.getElementById('paymentMatric').dispatchEvent(new Event('input'));
                                     setTimeout(async () => {
                                         const userSnap = await db.collection('users')
-                                            .where('matricNumber', '==', matric)
+                                            .where('matricNumber', '==', upperMatric)
                                             .get();
                                         const exists = !userSnap.empty;
                                         document.getElementById('welcome-page').classList.add('hidden');
                                         if (exists) {
                                             showSection('login-section');
-                                            document.getElementById('loginMatric').value = matric;
+                                            document.getElementById('loginMatric').value = upperMatric;
                                         } else {
                                             showSection('signup-section');
-                                            document.getElementById('matricNumber').value = matric;
+                                            document.getElementById('matricNumber').value = upperMatric;
                                         }
                                     }, 2000);
                                 })
@@ -1282,7 +1342,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // SIGNUP – links userId to payment
+        // SIGNUP – links userId to payment (uppercase matric)
         // ============================================================
         document.getElementById('signup-form')?.addEventListener('submit', async e => {
             e.preventDefault();
@@ -1291,7 +1351,7 @@ input[type="radio"] {
             const middle = document.getElementById('middleName')?.value.trim() || '';
             const last = document.getElementById('lastName')?.value.trim().toUpperCase() || '';
             const fullName = [first, middle, last].filter(Boolean).join(' ');
-            const matric = document.getElementById('matricNumber')?.value.trim() || '';
+            let matric = document.getElementById('matricNumber')?.value.trim().toUpperCase() || '';
             const level = '100';
             const password = last;
             const confirm = document.getElementById('confirmPassword')?.value || '';
@@ -1300,9 +1360,10 @@ input[type="radio"] {
                 hideLoading();
                 return alert('Please fill all required fields');
             }
-            if (!/^[A-Z]{3}\/\d+\/\d+$/.test(matric)) {
+            // Strict validation
+            if (!isValidMatric(matric)) {
                 hideLoading();
-                return alert('Matric number must be like CSP/23/9123');
+                return alert('Invalid Matric format. Must be: ABC/99/9999 (e.g. CSP/23/9123)');
             }
             if (password !== confirm) {
                 hideLoading();
@@ -1347,13 +1408,19 @@ input[type="radio"] {
         });
 
         // ============================================================
-        // LOGIN – uses the improved checkUserPaid
+        // LOGIN – uses the improved checkUserPaid (uppercase matric)
         // ============================================================
         document.getElementById('login-form')?.addEventListener('submit', async e => {
             e.preventDefault();
             showLoading();
-            const matric = document.getElementById('loginMatric')?.value.trim() || '';
+            let matric = document.getElementById('loginMatric')?.value.trim().toUpperCase() || '';
             const pw = document.getElementById('loginPassword')?.value || '';
+
+            if (!isValidMatric(matric)) {
+                hideLoading();
+                alert('Invalid Matric format. Must be: ABC/99/9999 (e.g. CSP/23/9123)');
+                return;
+            }
 
             try {
                 const cred = await auth.signInWithEmailAndPassword(matric + '@melox.com', pw);
@@ -1392,6 +1459,7 @@ input[type="radio"] {
                     document.getElementById('faculty-modal').style.display = 'flex';
                 }
                 document.getElementById('welcome-page').classList.add('hidden');
+                localStorage.setItem('melox_paid', 'true');
             } catch (err) {
                 alert(err.message || 'Login failed');
             }
@@ -1519,7 +1587,6 @@ input[type="radio"] {
             list.innerHTML = '<p style="text-align:center; color:#555;"><i class="fas fa-spinner fa-spin"></i> Loading available pre-exams...</p>';
 
             try {
-                // 1. Get all published quizzes for 100 level
                 const quizzesSnap = await db.collection('quizzes')
                     .where('status', '==', 'published')
                     .where('level', '==', '100')
@@ -1530,7 +1597,6 @@ input[type="radio"] {
                     return;
                 }
 
-                // 2. Batch get results and payments for current user in parallel
                 const [resultsSnap, paymentsSnap] = await Promise.all([
                     db.collection('quizResults')
                         .where('userId', '==', currentUser.id)
@@ -1540,7 +1606,6 @@ input[type="radio"] {
                         .get()
                 ]);
 
-                // Build maps: quizId -> attempt count, quizId -> hasPaid
                 const attemptMap = {};
                 resultsSnap.forEach(doc => {
                     const data = doc.data();
@@ -1555,7 +1620,6 @@ input[type="radio"] {
                     paidMap[qid] = true;
                 });
 
-                // 3. Render cards
                 list.innerHTML = '';
                 const nowTime = Date.now();
 
@@ -1639,7 +1703,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // COUNTDOWN (fixed with innerHTML)
+        // COUNTDOWN
         // ============================================================
         function startCountdown(docId, releaseTime) {
             const timerEl = document.getElementById(`timer-${docId}`);
@@ -1666,7 +1730,6 @@ input[type="radio"] {
                     if (btn) btn.removeAttribute("disabled");
                     return;
                 }
-                // USE innerHTML to render the icon
                 timerEl.innerHTML = `<i class="fas fa-clock"></i> Available in: ${formatCountdown(diff)}`;
             }, 1000);
         }
@@ -1860,7 +1923,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // TIMER (uses textContent, no icons)
+        // TIMER
         // ============================================================
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
@@ -2422,7 +2485,26 @@ input[type="radio"] {
         // ============================================================
         // PAGE LOAD
         // ============================================================
+        if (hasDevicePaid()) {
+            document.getElementById('welcome-page').classList.add('hidden');
+            const accountCreated = localStorage.getItem('meloxAccountCreated');
+            if (accountCreated === 'yes') {
+                showSection('login-section');
+            } else {
+                showSection('signup-section');
+            }
+        }
+
         window.addEventListener('load', function() {
+            // Ensure all Matric inputs force uppercase
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                if (input.id && (input.id.includes('matric') || input.id.includes('Matric'))) {
+                    input.addEventListener('input', function() {
+                        this.value = this.value.toUpperCase();
+                    });
+                }
+            });
+
             auth.onAuthStateChanged(async function(user) {
                 if (user) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
@@ -2462,6 +2544,7 @@ input[type="radio"] {
                         showWelcome();
                     }
                 }
+                hideLoading();
             });
         });
 
@@ -2469,9 +2552,10 @@ input[type="radio"] {
             document.getElementById('welcome-page').classList.remove('hidden');
             document.getElementById('signup-section').classList.add('hidden');
             document.getElementById('login-section').classList.add('hidden');
+            hideLoading();
         }
 
-        console.log('✅ MELOX PRE EXAM 2.0 – Fully optimized and bug-free.');
+        console.log('✅ MELOX PRE EXAM 2.0 – Matric format enforced (ABC/99/9999), uppercase only.');
     </script>
 </body>
 </html>
