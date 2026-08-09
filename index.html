@@ -676,6 +676,14 @@ input[type="radio"] {
                 <div id="paymentButtonContainer" style="margin-top: 1rem;"></div>
                 <div id="paymentStatus" style="margin-top: 0.8rem; font-weight: bold;"></div>
                 <div id="paymentLoading" style="margin-top: 0.5rem; color: #666; display: none;"><i class="fas fa-spinner fa-spin"></i> Checking...</div>
+                
+                <!-- NEW: Verify Payment Button -->
+                <div id="verifyPaymentSection" style="margin-top: 1rem;">
+                    <button id="verifyPaymentBtn" class="blue" onclick="verifyPendingPayment()" style="padding: 0.8rem 2rem; font-size: 1rem; display: none;">
+                        <i class="fas fa-sync-alt"></i> Verify My Payment
+                    </button>
+                    <div id="verifyStatus" style="margin-top: 0.5rem; font-weight: bold;"></div>
+                </div>
             </div>
 
             <a href="https://wa.me/2348081531407" target="_blank" class="whatsapp-btn">
@@ -1173,11 +1181,9 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // INITIATE PAYMENT (₦500) – with uppercase matric
+        // IMPROVED INITIATE PAYMENT (₦500) – with retry & backup
         // ============================================================
         function initPayment(matric) {
-            // Ensure uppercase
-            const upperMatric = matric.toUpperCase();
             const statusEl = document.getElementById('paymentStatus');
             const container = document.getElementById('paymentButtonContainer');
             const btn = document.querySelector('#paymentButtonContainer #payNowBtn');
@@ -1200,14 +1206,14 @@ input[type="radio"] {
                     return;
                 }
                 try {
-                    const userEmail = upperMatric.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() + '@melox.com';
+                    const userEmail = matric.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() + '@melox.com';
                     const squadInstance = new squad({
                         key: "pk_cb3dfacd4666ddefe368d173d1b4a23e840c0f72",
                         email: userEmail,
                         amount: amountInKobo,
                         currency_code: "NGN",
                         first_name: "Student",
-                        last_name: upperMatric,
+                        last_name: matric,
                         onClose: () => {
                             if (btn) {
                                 btn.disabled = false;
@@ -1215,56 +1221,115 @@ input[type="radio"] {
                             }
                             statusEl.textContent = '';
                         },
-                        onSuccess: (response) => {
-                            const txRef = response.transaction_ref || response.reference || ("SQ-" + Date.now());
-                            const receivedAmount = response.transaction_amount || response.amount || 0;
-                            if (txRef && receivedAmount >= amountInKobo) {
-                                db.collection('maintenancePayments').add({
-                                    matric: upperMatric,
-                                    amount: amountInKobo,
-                                    currency: "NGN",
-                                    status: "success",
-                                    paidAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                    transactionRef: txRef,
-                                    squadReference: response.reference || '',
-                                    squadTransactionRef: response.transaction_ref || ''
-                                })
-                                .then(() => {
-                                    localStorage.setItem('melox_paid', 'true');
-                                    setCachedPayment(upperMatric, true);
-                                    statusEl.textContent = '✅ Payment successful! You can now login or sign up.';
-                                    statusEl.style.color = 'green';
-                                    if (btn) {
-                                        btn.disabled = false;
-                                        btn.textContent = '✅ Paid';
-                                    }
-                                    document.getElementById('paymentMatric').dispatchEvent(new Event('input'));
-                                    setTimeout(async () => {
-                                        const userSnap = await db.collection('users')
-                                            .where('matricNumber', '==', upperMatric)
-                                            .get();
-                                        const exists = !userSnap.empty;
-                                        document.getElementById('welcome-page').classList.add('hidden');
-                                        if (exists) {
-                                            showSection('login-section');
-                                            document.getElementById('loginMatric').value = upperMatric;
-                                        } else {
-                                            showSection('signup-section');
-                                            document.getElementById('matricNumber').value = upperMatric;
+                        onSuccess: async (response) => {
+                            console.log('💰 Squad onSuccess triggered!');
+                            console.log('📦 Full response:', JSON.stringify(response, null, 2));
+                            
+                            // Extract transaction details
+                            const txRef = response.transaction_ref || 
+                                          response.reference || 
+                                          ("SQ-" + Date.now());
+                            
+                            const receivedAmount = response.transaction_amount || 
+                                                  response.amount || 
+                                                  response.formattedTransactionAmount || 0;
+                            
+                            // Check if payment is valid (50000 kobo = ₦500)
+                            const isValidPayment = receivedAmount >= amountInKobo;
+                            
+                            if (isValidPayment) {
+                                statusEl.textContent = '💾 Saving payment record...';
+                                statusEl.style.color = '#666';
+                                
+                                try {
+                                    // Save to Firestore with retry logic
+                                    let saved = false;
+                                    let retryCount = 0;
+                                    const maxRetries = 3;
+                                    
+                                    while (!saved && retryCount < maxRetries) {
+                                        try {
+                                            await db.collection('maintenancePayments').add({
+                                                matric: matric,
+                                                amount: amountInKobo,
+                                                currency: "NGN",
+                                                status: "success",
+                                                paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                                transactionRef: txRef,
+                                                squadReference: response.reference || '',
+                                                squadTransactionRef: response.transaction_ref || ''
+                                            });
+                                            saved = true;
+                                            console.log('✅ Payment saved to Firestore!');
+                                        } catch (err) {
+                                            retryCount++;
+                                            console.warn(`⚠️ Save attempt ${retryCount} failed:`, err.message);
+                                            if (retryCount < maxRetries) {
+                                                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                                            }
                                         }
-                                    }, 2000);
-                                })
-                                .catch(err => {
-                                    console.error('Error saving payment:', err);
-                                    statusEl.textContent = '❌ Payment saved but failed to record. Contact support.';
+                                    }
+                                    
+                                    if (saved) {
+                                        localStorage.setItem('melox_paid', 'true');
+                                        setCachedPayment(matric, true);
+                                        statusEl.textContent = '✅ Payment successful! You can now login or sign up.';
+                                        statusEl.style.color = 'green';
+                                        if (btn) {
+                                            btn.disabled = false;
+                                            btn.textContent = '✅ Paid';
+                                        }
+                                        
+                                        // Re-check matric status
+                                        document.getElementById('paymentMatric').dispatchEvent(new Event('input'));
+                                        
+                                        // Redirect after 2s
+                                        setTimeout(async () => {
+                                            const userSnap = await db.collection('users')
+                                                .where('matricNumber', '==', matric)
+                                                .get();
+                                            const exists = !userSnap.empty;
+                                            document.getElementById('welcome-page').classList.add('hidden');
+                                            if (exists) {
+                                                showSection('login-section');
+                                                document.getElementById('loginMatric').value = matric;
+                                            } else {
+                                                showSection('signup-section');
+                                                document.getElementById('matricNumber').value = matric;
+                                            }
+                                        }, 2000);
+                                    } else {
+                                        // If all retries failed, save to localStorage for manual fix
+                                        localStorage.setItem('melox_pending_payment', JSON.stringify({
+                                            matric: matric,
+                                            amount: amountInKobo,
+                                            txRef: txRef,
+                                            timestamp: Date.now()
+                                        }));
+                                        statusEl.textContent = '⚠️ Payment successful but could not save. Please contact support with your Matric number.';
+                                        statusEl.style.color = '#fd7e14';
+                                        if (btn) {
+                                            btn.disabled = false;
+                                            btn.textContent = '✅ Paid (Contact Support)';
+                                        }
+                                        console.log('💾 Payment saved to localStorage for manual fix.');
+                                    }
+                                    
+                                } catch (err) {
+                                    console.error('❌ Critical error saving payment:', err);
+                                    statusEl.textContent = '❌ Payment successful but failed to save. Please contact support with your Matric number.';
                                     statusEl.style.color = 'red';
                                     if (btn) {
                                         btn.disabled = false;
-                                        btn.textContent = '💳 Pay Now';
+                                        btn.textContent = '✅ Paid (Contact Support)';
                                     }
-                                });
+                                }
+                                
                             } else {
-                                alert('Payment could not be confirmed. Check Squad dashboard.');
+                                // Payment amount doesn't match
+                                console.warn('⚠️ Payment amount mismatch:', receivedAmount, 'expected:', amountInKobo);
+                                statusEl.textContent = '⚠️ Payment amount mismatch. Please try again.';
+                                statusEl.style.color = 'red';
                                 if (btn) {
                                     btn.disabled = false;
                                     btn.textContent = '💳 Pay Now';
@@ -1284,6 +1349,69 @@ input[type="radio"] {
                 }
             }
             tryInitSquad();
+        }
+
+        // ============================================================
+        // VERIFY PENDING PAYMENT - Check if payment was successful
+        // ============================================================
+        async function verifyPendingPayment() {
+            const statusEl = document.getElementById('verifyStatus');
+            const btn = document.getElementById('verifyPaymentBtn');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            statusEl.textContent = '⏳ Checking payment status...';
+            statusEl.style.color = '#666';
+            
+            try {
+                const matric = document.getElementById('paymentMatric').value.trim().toUpperCase();
+                if (!matric || !/^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric)) {
+                    statusEl.textContent = '⚠️ Please enter a valid Matric number first.';
+                    statusEl.style.color = '#dc3545';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verify My Payment';
+                    return;
+                }
+                
+                // Check if payment exists in Firestore
+                const paid = await checkUserPaid(null, matric);
+                
+                if (paid) {
+                    statusEl.textContent = '✅ Payment verified! You can now login or sign up.';
+                    statusEl.style.color = '#28a745';
+                    localStorage.setItem('melox_paid', 'true');
+                    setCachedPayment(matric, true);
+                    
+                    // Check if user exists
+                    const userSnap = await db.collection('users')
+                        .where('matricNumber', '==', matric)
+                        .get();
+                    const exists = !userSnap.empty;
+                    
+                    setTimeout(() => {
+                        document.getElementById('welcome-page').classList.add('hidden');
+                        if (exists) {
+                            showSection('login-section');
+                            document.getElementById('loginMatric').value = matric;
+                        } else {
+                            showSection('signup-section');
+                            document.getElementById('matricNumber').value = matric;
+                        }
+                    }, 1500);
+                    
+                } else {
+                    statusEl.textContent = '❌ No payment found for this Matric. Please complete payment.';
+                    statusEl.style.color = '#dc3545';
+                }
+                
+            } catch (err) {
+                console.error('Verify payment error:', err);
+                statusEl.textContent = '❌ Error verifying payment. Please try again.';
+                statusEl.style.color = '#dc3545';
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verify My Payment';
         }
 
         // ============================================================
@@ -2483,7 +2611,7 @@ input[type="radio"] {
         }
 
         // ============================================================
-        // PAGE LOAD
+        // PAGE LOAD – with verify button listener
         // ============================================================
         if (hasDevicePaid()) {
             document.getElementById('welcome-page').classList.add('hidden');
@@ -2494,6 +2622,23 @@ input[type="radio"] {
                 showSection('signup-section');
             }
         }
+
+        // Show/hide verify button on matric input
+        document.addEventListener('DOMContentLoaded', function() {
+            const matricInput = document.getElementById('paymentMatric');
+            const verifyBtn = document.getElementById('verifyPaymentBtn');
+            
+            if (matricInput && verifyBtn) {
+                matricInput.addEventListener('input', function() {
+                    const matric = this.value.trim().toUpperCase();
+                    if (matric.length >= 5 && /^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric)) {
+                        verifyBtn.style.display = 'inline-block';
+                    } else {
+                        verifyBtn.style.display = 'none';
+                    }
+                });
+            }
+        });
 
         window.addEventListener('load', function() {
             // Ensure all Matric inputs force uppercase
@@ -2556,6 +2701,7 @@ input[type="radio"] {
         }
 
         console.log('✅ MELOX PRE EXAM 2.0 – Matric format enforced (ABC/99/9999), uppercase only.');
+        console.log('✅ Payment fixes applied: retry, backup, verify button.');
     </script>
 </body>
 </html>
