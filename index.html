@@ -677,7 +677,7 @@ input[type="radio"] {
                 <div id="paymentStatus" style="margin-top: 0.8rem; font-weight: bold;"></div>
                 <div id="paymentLoading" style="margin-top: 0.5rem; color: #666; display: none;"><i class="fas fa-spinner fa-spin"></i> Checking...</div>
                 
-                <!-- NEW: Verify Payment Button -->
+                <!-- Verify Payment Button -->
                 <div id="verifyPaymentSection" style="margin-top: 1rem;">
                     <button id="verifyPaymentBtn" class="blue" onclick="verifyPendingPayment()" style="padding: 0.8rem 2rem; font-size: 1rem; display: none;">
                         <i class="fas fa-sync-alt"></i> Verify My Payment
@@ -824,6 +824,20 @@ input[type="radio"] {
                     <i class="fas fa-trash-alt"></i> DELETE ALL 200 LEVEL USERS
                 </button>
                 <div id="deleteStatus" style="margin-top:0.5rem; font-weight:bold;"></div>
+            </div>
+
+            <!-- ========== STUDENT SEARCH ========== -->
+            <div style="margin: 2rem 0; padding: 1.5rem; background: #f8f9fa; border-radius: 10px; border: 1px solid #dee2e6;">
+                <h3 style="color: var(--primary);"><i class="fas fa-search"></i> Student Search</h3>
+                <p style="color: #666; margin-bottom: 1rem;">Search for a student by Matric Number to view all their information.</p>
+                
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <input type="text" id="searchMatric" placeholder="e.g. CSP/24/9123" style="flex: 1; min-width: 200px; padding: 0.8rem 1rem; border: 1px solid #dee2e6; border-radius: 8px;" oninput="this.value = this.value.toUpperCase();">
+                    <button class="blue" onclick="searchStudent()" style="padding: 0.8rem 1.5rem;"><i class="fas fa-search"></i> Search</button>
+                    <button onclick="clearSearch()" style="padding: 0.8rem 1.5rem; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer;"><i class="fas fa-times"></i> Clear</button>
+                </div>
+                
+                <div id="searchResults" style="margin-top: 1.5rem; display: none;"></div>
             </div>
 
             <div class="admin-nav">
@@ -1412,6 +1426,199 @@ input[type="radio"] {
             
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verify My Payment';
+        }
+
+        // ============================================================
+        // STUDENT SEARCH FUNCTION
+        // ============================================================
+        async function searchStudent() {
+            const matric = document.getElementById('searchMatric').value.trim().toUpperCase();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!matric) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+            
+            // Validate format
+            if (!/^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric)) {
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = `
+                    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
+                        <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+                        <strong style="color: #856404;">Invalid Matric format.</strong>
+                        <span style="color: #856404;"> Use: ABC/99/9999 (e.g. CSP/24/9123)</span>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <i class="fas fa-spinner fa-spin"></i> Searching for ${matric}...
+                </div>
+            `;
+            
+            try {
+                // Search in users collection
+                const userSnap = await firebase.firestore()
+                    .collection('users')
+                    .where('matricNumber', '==', matric)
+                    .get();
+                
+                if (userSnap.empty) {
+                    resultsDiv.innerHTML = `
+                        <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+                            <strong style="color: #856404;">No user found with Matric: ${matric}</strong>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const userDoc = userSnap.docs[0];
+                const userData = userDoc.data();
+                const userId = userDoc.id;
+                
+                // Check if they have paid
+                const paymentSnap = await firebase.firestore()
+                    .collection('maintenancePayments')
+                    .where('matric', '==', matric)
+                    .where('status', '==', 'success')
+                    .get();
+                
+                const hasPaid = !paymentSnap.empty;
+                let paymentData = null;
+                if (hasPaid) {
+                    paymentData = paymentSnap.docs[0].data();
+                }
+                
+                // Get quiz results
+                const quizResultsSnap = await firebase.firestore()
+                    .collection('quizResults')
+                    .where('userId', '==', userId)
+                    .orderBy('timestamp', 'desc')
+                    .get();
+                
+                const quizCount = quizResultsSnap.size;
+                const quizResults = [];
+                quizResultsSnap.forEach(doc => {
+                    const data = doc.data();
+                    quizResults.push({
+                        courseName: data.courseName || 'Unknown Course',
+                        score: data.score || 0,
+                        total: data.totalQuestions || 0,
+                        percentage: data.percentage || 0,
+                        passed: data.passed || false,
+                        timestamp: data.timestamp?.toDate?.() || new Date()
+                    });
+                });
+                
+                // Build the results HTML
+                let html = `
+                    <div style="background: white; border: 1px solid #dee2e6; border-radius: 10px; overflow: hidden;">
+                        <!-- Header -->
+                        <div style="background: var(--primary); color: white; padding: 1rem;">
+                            <h4 style="margin: 0;"><i class="fas fa-user-graduate"></i> Student Details: ${matric}</h4>
+                        </div>
+                        
+                        <!-- User Info -->
+                        <div style="padding: 1rem; border-bottom: 1px solid #dee2e6;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                <div><strong>Full Name:</strong> ${userData.fullName || 'N/A'}</div>
+                                <div><strong>Matric Number:</strong> ${userData.matricNumber || 'N/A'}</div>
+                                <div><strong>Level:</strong> ${userData.level || 'N/A'}</div>
+                                <div><strong>Faculty:</strong> ${userData.faculty || 'Not set'}</div>
+                                <div><strong>Role:</strong> ${userData.role || 'student'}</div>
+                                <div><strong>User ID:</strong> <span style="font-size: 0.85rem; font-family: monospace;">${userId}</span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Timestamps -->
+                        <div style="padding: 1rem; border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
+                                <div><strong>Account Created:</strong> ${userData.createdAt?.toDate?.()?.toLocaleString() || 'N/A'}</div>
+                                <div><strong>Last Login:</strong> ${userData.lastLogin?.toDate?.()?.toLocaleString() || 'N/A'}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Status -->
+                        <div style="padding: 1rem; border-bottom: 1px solid #dee2e6;">
+                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                <strong>Payment Status:</strong>
+                                ${hasPaid 
+                                    ? `<span style="background: #28a745; color: white; padding: 0.2rem 1rem; border-radius: 20px; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> PAID (₦500)</span>`
+                                    : `<span style="background: #dc3545; color: white; padding: 0.2rem 1rem; border-radius: 20px; font-size: 0.9rem;"><i class="fas fa-times-circle"></i> NOT PAID</span>`
+                                }
+                                ${hasPaid && paymentData ? `<span style="font-size: 0.85rem; color: #666;">Paid on: ${paymentData.paidAt?.toDate?.()?.toLocaleString() || 'N/A'}</span>` : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- Quiz Results -->
+                        <div style="padding: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <strong><i class="fas fa-chart-bar"></i> Quiz Results (${quizCount} attempts)</strong>
+                            </div>
+                            
+                            ${quizCount === 0 ? `
+                                <div style="color: #666; text-align: center; padding: 1rem;">
+                                    <i class="fas fa-info-circle"></i> No quiz attempts yet.
+                                </div>
+                            ` : `
+                                <div style="max-height: 300px; overflow-y: auto;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                                        <thead>
+                                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                                <th style="padding: 0.5rem; text-align: left;">Course</th>
+                                                <th style="padding: 0.5rem; text-align: center;">Score</th>
+                                                <th style="padding: 0.5rem; text-align: center;">%</th>
+                                                <th style="padding: 0.5rem; text-align: center;">Status</th>
+                                                <th style="padding: 0.5rem; text-align: center;">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${quizResults.map(r => `
+                                                <tr style="border-bottom: 1px solid #eee;">
+                                                    <td style="padding: 0.5rem;">${r.courseName}</td>
+                                                    <td style="padding: 0.5rem; text-align: center;">${r.score}/${r.total}</td>
+                                                    <td style="padding: 0.5rem; text-align: center; font-weight: bold; color: ${r.percentage >= 50 ? '#28a745' : '#dc3545'};">${r.percentage}%</td>
+                                                    <td style="padding: 0.5rem; text-align: center;">
+                                                        ${r.passed 
+                                                            ? '<span style="color: #28a745;"><i class="fas fa-check-circle"></i> Passed</span>'
+                                                            : '<span style="color: #dc3545;"><i class="fas fa-times-circle"></i> Failed</span>'
+                                                        }
+                                                    </td>
+                                                    <td style="padding: 0.5rem; text-align: center; font-size: 0.8rem; color: #666;">
+                                                        ${r.timestamp.toLocaleDateString()}
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (err) {
+                console.error('Search error:', err);
+                resultsDiv.innerHTML = `
+                    <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc3545;">
+                        <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
+                        <strong style="color: #dc3545;">Error searching:</strong>
+                        <span style="color: #dc3545;">${err.message}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('searchMatric').value = '';
+            document.getElementById('searchResults').style.display = 'none';
         }
 
         // ============================================================
@@ -2702,6 +2909,7 @@ input[type="radio"] {
 
         console.log('✅ MELOX PRE EXAM 2.0 – Matric format enforced (ABC/99/9999), uppercase only.');
         console.log('✅ Payment fixes applied: retry, backup, verify button.');
+        console.log('✅ Student Search added to Admin Panel.');
     </script>
 </body>
 </html>
