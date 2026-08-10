@@ -1801,7 +1801,7 @@ input[type="radio"] {
             hideLoading();
         });
 
-        // // ============================================================
+// ============================================================
 // ADMIN LOGIN – USING FIREBASE AUTHENTICATION
 // ============================================================
 document.getElementById('admin-login-form')?.addEventListener('submit', async e => {
@@ -1845,19 +1845,44 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         showSection('admin-dashboard');
         showAdminTab('activities');
         check200LevelDeleted();
-        alert('✅ Admin login successful!');
+        hideLoading();
         
     } catch (error) {
         console.error('Admin login error:', error);
         if (error.code === 'auth/user-not-found') {
-            alert('Admin account not found. Please create it first.\nRun: firebase.auth().createUserWithEmailAndPassword("admin@melox.com", "YourPassword")');
+            alert('Admin account not found. Creating one for you...');
+            // Create admin account automatically
+            try {
+                const newCred = await auth.createUserWithEmailAndPassword(adminEmail, password);
+                await db.collection('users').doc(newCred.user.uid).set({
+                    fullName: 'Melox Admin',
+                    email: adminEmail,
+                    role: 'admin',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                currentUser = { 
+                    role: 'admin',
+                    id: newCred.user.uid,
+                    email: adminEmail
+                };
+                showSection('admin-dashboard');
+                showAdminTab('activities');
+                check200LevelDeleted();
+                alert('✅ Admin account created! Please login again.');
+                hideLoading();
+            } catch (createErr) {
+                alert('❌ Failed to create admin: ' + createErr.message);
+                hideLoading();
+            }
         } else if (error.code === 'auth/wrong-password') {
             alert('❌ Incorrect admin password. Please try again.');
+            hideLoading();
         } else {
             alert('❌ Admin login failed: ' + error.message);
+            hideLoading();
         }
     }
-    hideLoading();
 });
 
         function logout() {
@@ -2890,57 +2915,80 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         });
 
         window.addEventListener('load', function() {
-            // Ensure all Matric inputs force uppercase
-            document.querySelectorAll('input[type="text"]').forEach(input => {
-                if (input.id && (input.id.includes('matric') || input.id.includes('Matric'))) {
-                    input.addEventListener('input', function() {
-                        this.value = this.value.toUpperCase();
-                    });
-                }
+    // Ensure all Matric inputs force uppercase
+    document.querySelectorAll('input[type="text"]').forEach(input => {
+        if (input.id && (input.id.includes('matric') || input.id.includes('Matric'))) {
+            input.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
             });
+        }
+    });
 
-            auth.onAuthStateChanged(async function(user) {
-                if (user) {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) {
-                        await auth.signOut();
-                        localStorage.removeItem('melox_paid');
-                        showWelcome();
-                        return;
-                    }
-                    currentUser = userDoc.data();
-                    currentUser.id = user.uid;
-                    const paid = await checkUserPaid(currentUser.id, currentUser.matricNumber);
-                    if (paid) {
-                        document.getElementById('welcome-page').classList.add('hidden');
-                        document.getElementById('student-name').textContent = currentUser.fullName || 'Student';
-                        loadCourses();
-                        showSection('student-dashboard');
-                        if (!currentUser.faculty) {
-                            document.getElementById('faculty-modal').style.display = 'flex';
-                        }
-                        checkGlobalLock();
-                    } else {
-                        await auth.signOut();
-                        showWelcome();
-                    }
-                } else {
-                    const localPaid = localStorage.getItem('melox_paid');
-                    if (localPaid === 'true') {
-                        document.getElementById('welcome-page').classList.add('hidden');
-                        const accountCreated = localStorage.getItem('meloxAccountCreated');
-                        if (accountCreated === 'yes') {
-                            showSection('login-section');
-                        } else {
-                            showSection('signup-section');
-                        }
-                    } else {
-                        showWelcome();
-                    }
-                }
+    auth.onAuthStateChanged(async function(user) {
+        if (user) {
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (!userDoc.exists) {
+                await auth.signOut();
+                localStorage.removeItem('melox_paid');
+                showWelcome();
+                return;
+            }
+            
+            const userData = userDoc.data();
+            const userRole = userData.role || 'student';
+            
+            // 🔑 CHECK IF ADMIN FIRST – skip payment check
+            if (userRole === 'admin') {
+                currentUser = {
+                    role: 'admin',
+                    id: user.uid,
+                    email: userData.email || user.email,
+                    fullName: userData.fullName || 'Admin'
+                };
+                document.getElementById('welcome-page').classList.add('hidden');
+                showSection('admin-dashboard');
+                showAdminTab('activities');
+                check200LevelDeleted();
                 hideLoading();
-            });
-        });
+                return;
+            }
+            
+            // 👨‍🎓 REGULAR STUDENT – check payment
+            currentUser = userData;
+            currentUser.id = user.uid;
+            
+            const paid = await checkUserPaid(currentUser.id, currentUser.matricNumber);
+            if (paid) {
+                document.getElementById('welcome-page').classList.add('hidden');
+                document.getElementById('student-name').textContent = currentUser.fullName || 'Student';
+                loadCourses();
+                showSection('student-dashboard');
+                if (!currentUser.faculty) {
+                    document.getElementById('faculty-modal').style.display = 'flex';
+                }
+                checkGlobalLock();
+            } else {
+                await auth.signOut();
+                localStorage.removeItem('melox_paid');
+                showWelcome();
+            }
+        } else {
+            const localPaid = localStorage.getItem('melox_paid');
+            if (localPaid === 'true') {
+                document.getElementById('welcome-page').classList.add('hidden');
+                const accountCreated = localStorage.getItem('meloxAccountCreated');
+                if (accountCreated === 'yes') {
+                    showSection('login-section');
+                } else {
+                    showSection('signup-section');
+                }
+            } else {
+                showWelcome();
+            }
+        }
+        hideLoading();
+    });
+});
 
         function showWelcome() {
             document.getElementById('welcome-page').classList.remove('hidden');
