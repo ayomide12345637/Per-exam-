@@ -2260,69 +2260,87 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         // START QUIZ
         // ============================================================
         async function startQuiz(quizId) {
-            showLoading();
-            try {
-                const quizDoc = await db.collection('quizzes').doc(quizId).get();
-                if (!quizDoc.exists) throw new Error("Quiz not found");
-                const quizData = quizDoc.data();
+    showLoading();
+    try {
+        const quizDoc = await db.collection('quizzes').doc(quizId).get();
+        if (!quizDoc.exists) throw new Error("Quiz not found");
+        const quizData = quizDoc.data();
 
-                const resultCheck = await db.collection("quizResults")
-                    .where("userId", "==", currentUser.id)
-                    .where("quizId", "==", quizId)
-                    .get();
-                const attempts = resultCheck.size;
-                if (attempts >= 2) {
-                    hideLoading();
-                    alert("You have already used your maximum of 2 attempts for this pre-exam.");
-                    if (resultCheck.docs.length > 0) {
-                        const latestResult = resultCheck.docs
-                            .sort((a, b) => (b.data().timestamp?.seconds || 0) - (a.data().timestamp?.seconds || 0))[0];
-                        if (confirm("Would you like to view your most recent result?")) {
-                            showOldResult(latestResult.data());
-                        }
-                    }
-                    return;
-                }
-
-                if (quizData.payment === "YES") {
-                    const paidSnap = await db.collection("payments")
-                        .where("userId", "==", currentUser.id)
-                        .where("quizId", "==", quizId)
-                        .get();
-                    if (paidSnap.empty) {
-                        hideLoading();
-                        alert("This pre-exam requires payment. Please complete payment first.");
-                        return;
-                    }
-                }
-
-                currentQuiz = quizData;
-                currentQuiz.id = quizId;
-                currentQuestions = currentQuiz.questions || [];
-                if (currentQuestions.length === 0) {
-                    throw new Error("No questions available in this quiz");
-                }
-                currentQuestionIndex = 0;
-                selectedAnswers = new Array(currentQuestions.length).fill(null);
-                quizStartTime = Date.now();
-
-                document.getElementById('quiz-course-name').textContent = currentQuiz.courseName || 'Pre-Exam';
-                document.getElementById('q-total').textContent = currentQuestions.length;
-                showSection('quiz-section');
-                startTimer();
-                loadQuestion();
-
-                if (attempts === 1) {
-                    setTimeout(() => {
-                        alert("This is your second and final attempt. Good luck!");
-                    }, 800);
-                }
-            } catch (err) {
-                alert(err.message || "Failed to start the quiz. Please try again.");
-                console.error("startQuiz error:", err);
-            }
+        const resultCheck = await db.collection("quizResults")
+            .where("userId", "==", currentUser.id)
+            .where("quizId", "==", quizId)
+            .get();
+        const attempts = resultCheck.size;
+        
+        // ===== CHECK FOR UNLIMITED ATTEMPTS =====
+        // Check if user has unlimitedAttempts flag
+        const userDoc = await db.collection('users').doc(currentUser.id).get();
+        const userData = userDoc.data();
+        const hasUnlimited = userData.unlimitedAttempts === true;
+        const maxAttempts = userData.maxAttempts || 2;
+        
+        if (!hasUnlimited && attempts >= maxAttempts) {
             hideLoading();
+            alert(`You have already used your maximum of ${maxAttempts} attempts for this pre-exam.`);
+            if (resultCheck.docs.length > 0) {
+                const latestResult = resultCheck.docs
+                    .sort((a, b) => (b.data().timestamp?.seconds || 0) - (a.data().timestamp?.seconds || 0))[0];
+                if (confirm("Would you like to view your most recent result?")) {
+                    showOldResult(latestResult.data());
+                }
+            }
+            return;
         }
+        
+        // If unlimited, show remaining attempts (optional)
+        if (hasUnlimited && attempts > 0) {
+            const remaining = 20 - attempts;
+            console.log(`📊 ${currentUser.fullName} has ${remaining} attempts remaining (unlimited mode)`);
+        }
+
+        if (quizData.payment === "YES") {
+            const paidSnap = await db.collection("payments")
+                .where("userId", "==", currentUser.id)
+                .where("quizId", "==", quizId)
+                .get();
+            if (paidSnap.empty) {
+                hideLoading();
+                alert("This pre-exam requires payment. Please complete payment first.");
+                return;
+            }
+        }
+
+        currentQuiz = quizData;
+        currentQuiz.id = quizId;
+        currentQuestions = currentQuiz.questions || [];
+        if (currentQuestions.length === 0) {
+            throw new Error("No questions available in this quiz");
+        }
+        currentQuestionIndex = 0;
+        selectedAnswers = new Array(currentQuestions.length).fill(null);
+        quizStartTime = Date.now();
+
+        document.getElementById('quiz-course-name').textContent = currentQuiz.courseName || 'Pre-Exam';
+        document.getElementById('q-total').textContent = currentQuestions.length;
+        showSection('quiz-section');
+        startTimer();
+        loadQuestion();
+
+        if (hasUnlimited && attempts >= 19) {
+            setTimeout(() => {
+                alert(`⚠️ This is your ${attempts + 1}st attempt. You have ${20 - attempts - 1} attempts remaining.`);
+            }, 800);
+        } else if (attempts === 1 && !hasUnlimited) {
+            setTimeout(() => {
+                alert("This is your second and final attempt. Good luck!");
+            }, 800);
+        }
+    } catch (err) {
+        alert(err.message || "Failed to start the quiz. Please try again.");
+        console.error("startQuiz error:", err);
+    }
+    hideLoading();
+}
 
         // ============================================================
         // TIMER
