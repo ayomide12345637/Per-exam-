@@ -1801,22 +1801,64 @@ input[type="radio"] {
             hideLoading();
         });
 
-        // ============================================================
-        // ADMIN LOGIN
-        // ============================================================
-        document.getElementById('admin-login-form')?.addEventListener('submit', e => {
-            e.preventDefault();
-            showLoading();
-            if (document.getElementById('adminPassword')?.value === adminPass) {
-                currentUser = { role: 'admin' };
-                showSection('admin-dashboard');
-                showAdminTab('activities');
-                check200LevelDeleted();
-            } else {
-                alert('Invalid admin password');
-            }
-            hideLoading();
-        });
+        // // ============================================================
+// ADMIN LOGIN – USING FIREBASE AUTHENTICATION
+// ============================================================
+document.getElementById('admin-login-form')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    showLoading();
+    
+    const password = document.getElementById('adminPassword')?.value || '';
+    const adminEmail = 'admin@melox.com';
+    
+    try {
+        // Try to sign in with Firebase Auth
+        const cred = await auth.signInWithEmailAndPassword(adminEmail, password);
+        const uid = cred.user.uid;
+        
+        // Check if admin document exists in Firestore
+        const adminDoc = await db.collection('users').doc(uid).get();
+        if (!adminDoc.exists) {
+            // Create admin document if it doesn't exist
+            await db.collection('users').doc(uid).set({
+                fullName: 'Melox Admin',
+                email: adminEmail,
+                role: 'admin',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log('✅ Admin document created.');
+        } else {
+            // Update last login
+            await db.collection('users').doc(uid).update({
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        // Set current user as admin
+        currentUser = { 
+            role: 'admin',
+            id: uid,
+            email: adminEmail
+        };
+        
+        showSection('admin-dashboard');
+        showAdminTab('activities');
+        check200LevelDeleted();
+        alert('✅ Admin login successful!');
+        
+    } catch (error) {
+        console.error('Admin login error:', error);
+        if (error.code === 'auth/user-not-found') {
+            alert('Admin account not found. Please create it first.\nRun: firebase.auth().createUserWithEmailAndPassword("admin@melox.com", "YourPassword")');
+        } else if (error.code === 'auth/wrong-password') {
+            alert('❌ Incorrect admin password. Please try again.');
+        } else {
+            alert('❌ Admin login failed: ' + error.message);
+        }
+    }
+    hideLoading();
+});
 
         function logout() {
             showLoading();
