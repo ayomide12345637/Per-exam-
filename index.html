@@ -1904,25 +1904,32 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         // ============================================================
         // FACULTY SAVE
         // ============================================================
-        async function saveFaculty() {
-            const select = document.getElementById('faculty-select');
-            const faculty = select.value;
-            if (!faculty || !FACULTIES.includes(faculty)) {
-                return alert("Please select a valid faculty.");
-            }
-            try {
-                await db.collection('users').doc(currentUser.id).update({
-                    faculty: faculty,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                currentUser.faculty = faculty;
-                document.getElementById('faculty-modal').style.display = 'none';
-                loadCourses();
-                showSection('student-dashboard');
-            } catch (err) {
-                alert("Error saving faculty: " + err.message);
-            }
+       async function saveFaculty() {
+    const select = document.getElementById('faculty-select');
+    const faculty = select.value;
+    if (!faculty || !FACULTIES.includes(faculty)) {
+        return alert("Please select a valid faculty.");
+    }
+    try {
+        // Check if user is logged in
+        if (!currentUser || !currentUser.id) {
+            alert('Please login first before selecting faculty.');
+            return;
         }
+        
+        await db.collection('users').doc(currentUser.id).update({
+            faculty: faculty,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        currentUser.faculty = faculty;
+        document.getElementById('faculty-modal').style.display = 'none';
+        loadCourses();
+        showSection('student-dashboard');
+    } catch (err) {
+        console.error('Save faculty error:', err);
+        alert("Error saving faculty: " + err.message);
+    }
+}
 
         // ============================================================
         // GLOBAL LOCK
