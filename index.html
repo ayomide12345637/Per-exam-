@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MELOX PRE EXAM 2.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- Load Firebase with faster CDN (Cloudflare) -->
+    <!-- Load Firebase with faster CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://checkout.squadco.com/widget/squad.min.js"></script>
     <style>
-        /* Your existing styles (keeping them exactly as they were) */
+        /* ===== COMPLETE STYLES (minimal, fast) ===== */
         :root {
             --primary: #007bff;
             --yellow: #ffc107;
@@ -23,15 +21,8 @@
             --light: #f8f9fa;
             --border: #dee2e6;
         }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        html, body {
-            height: 100%;
-            overflow-x: hidden;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow-x: hidden; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f0f2f5;
@@ -64,9 +55,7 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
-        header h1 i {
-            margin-right: 8px;
-        }
+        header h1 i { margin-right: 8px; }
         .container {
             max-width: 100%;
             margin: 0.6rem 0.7rem 1rem;
@@ -76,21 +65,10 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.07);
             min-height: calc(100vh - 160px);
         }
-        h2 {
-            color: var(--primary);
-            text-align: center;
-            font-size: 1.25rem;
-            margin: 0.4rem 0 1rem;
-        }
-        h2 i {
-            margin-right: 8px;
-        }
+        h2 { color: var(--primary); text-align: center; font-size: 1.25rem; margin: 0.4rem 0 1rem; }
+        h2 i { margin-right: 8px; }
         .hidden { display: none !important; }
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
+        form { display: flex; flex-direction: column; gap: 0.75rem; }
         input, select {
             padding: 0.8rem 1rem;
             border: 1px solid var(--border);
@@ -114,27 +92,12 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        button i {
-            margin-right: 8px;
-        }
-        button:hover {
-            background: var(--yellow-dark);
-        }
-        button.blue {
-            background: var(--primary);
-            color: white;
-        }
-        button.green {
-            background: var(--green);
-            color: white;
-        }
-        button.danger {
-            background: var(--red);
-            color: white;
-        }
-        button.danger:hover {
-            background: #c82333;
-        }
+        button i { margin-right: 8px; }
+        button:hover { background: var(--yellow-dark); }
+        button.blue { background: var(--primary); color: white; }
+        button.green { background: var(--green); color: white; }
+        button.danger { background: var(--red); color: white; }
+        button.danger:hover { background: #c82333; }
         #timer {
             font-size: 1.25rem;
             font-weight: bold;
@@ -145,27 +108,16 @@
             background: #fff5f5;
             border-radius: 8px;
         }
-        #timer i {
-            margin-right: 8px;
-        }
+        #timer i { margin-right: 8px; }
         #question-progress {
             font-size: 0.95rem;
             color: #555;
             text-align: center;
             margin-bottom: 0.5rem;
         }
-        #question-progress i {
-            margin-right: 6px;
-        }
-        #question-text {
-            font-size: 1.05rem;
-            margin: 0.8rem 0 1.1rem;
-        }
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 0.7rem;
-        }
+        #question-progress i { margin-right: 6px; }
+        #question-text { font-size: 1.05rem; margin: 0.8rem 0 1.1rem; }
+        .options { display: flex; flex-direction: column; gap: 0.7rem; }
         .option-label {
             display: flex;
             align-items: center;
@@ -177,31 +129,12 @@
             font-size: 0.98rem;
             min-height: 48px;
         }
-        .option-label:hover {
-            background: #e9ecef;
-        }
-        input[type="radio"] {
-            margin-right: 0.8rem;
-            accent-color: var(--primary);
-            transform: scale(1.25);
-        }
-        .option-label.selected {
-            background: #e6ffed;
-            border-color: var(--green);
-        }
-        .navigation {
-            display: flex;
-            gap: 0.7rem;
-            margin-top: 1.3rem;
-        }
-        .navigation button {
-            flex: 1;
-            padding: 0.85rem;
-            font-size: 1rem;
-        }
-        #submit-btn {
-            background: var(--green) !important;
-        }
+        .option-label:hover { background: #e9ecef; }
+        input[type="radio"] { margin-right: 0.8rem; accent-color: var(--primary); transform: scale(1.25); }
+        .option-label.selected { background: #e6ffed; border-color: var(--green); }
+        .navigation { display: flex; gap: 0.7rem; margin-top: 1.3rem; }
+        .navigation button { flex: 1; padding: 0.85rem; font-size: 1rem; }
+        #submit-btn { background: var(--green) !important; }
         #results-card {
             background: #f8f9fa;
             padding: 1.3rem 1rem;
@@ -215,9 +148,7 @@
             margin: 0.6rem 0;
             font-size: 1.02rem;
         }
-        .result-row i {
-            margin-right: 6px;
-        }
+        .result-row i { margin-right: 6px; }
         #loading {
             position: fixed;
             inset: 0;
@@ -230,25 +161,16 @@
             z-index: 9999;
             transition: opacity 0.3s;
         }
-        #loading.hidden {
-            display: none !important;
-        }
-        #loading i {
-            margin-right: 12px;
-        }
+        #loading.hidden { display: none !important; }
+        #loading i { margin-right: 12px; }
         .admin-nav {
             display: flex;
             flex-wrap: wrap;
             gap: 0.6rem;
             margin: 1rem 0;
         }
-        .admin-nav button {
-            flex: 1 1 45%;
-            min-width: 110px;
-        }
-        .admin-nav button i {
-            margin-right: 8px;
-        }
+        .admin-nav button { flex: 1 1 45%; min-width: 110px; }
+        .admin-nav button i { margin-right: 8px; }
         .team-card {
             background: #f5f5f5;
             padding: 15px 25px;
@@ -257,17 +179,9 @@
             min-width: 120px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .team-card h4 {
-            margin: 0;
-            color: var(--green);
-        }
-        .team-card h4 i {
-            margin-right: 6px;
-        }
-        .team-card p {
-            font-size: 0.85rem;
-            color: #555;
-        }
+        .team-card h4 { margin: 0; color: var(--green); }
+        .team-card h4 i { margin-right: 6px; }
+        .team-card p { font-size: 0.85rem; color: #555; }
         #faculty-modal, #channel-lock-screen {
             position: fixed;
             inset: 0;
@@ -288,9 +202,7 @@
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
-        .modal-content h2 i, .lock-content h2 i {
-            margin-right: 10px;
-        }
+        .modal-content h2 i, .lock-content h2 i { margin-right: 10px; }
         .modal-content select, .lock-content button {
             width: 100%;
             margin: 1.2rem 0;
@@ -342,12 +254,8 @@
             padding: 0;
             font-size: inherit;
         }
-        .nav-text i {
-            margin-right: 6px;
-        }
-        .nav-text:hover {
-            color: #0056b3;
-        }
+        .nav-text i { margin-right: 6px; }
+        .nav-text:hover { color: #0056b3; }
         .notice-card {
             background: #fff3cd;
             padding: 18px 25px;
@@ -357,22 +265,10 @@
             border: 1px solid #ffeeba;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .notice-card h4 i {
-            margin-right: 8px;
-        }
-        .notice-card p {
-            font-size: 0.9rem;
-            color: #6c5700;
-            line-height: 1.5;
-        }
-        .notice-card a {
-            color: #0a7cff;
-            font-weight: 600;
-            text-decoration: underline;
-        }
-        .notice-card a i {
-            margin-right: 6px;
-        }
+        .notice-card h4 i { margin-right: 8px; }
+        .notice-card p { font-size: 0.9rem; color: #6c5700; line-height: 1.5; }
+        .notice-card a { color: #0a7cff; font-weight: 600; text-decoration: underline; }
+        .notice-card a i { margin-right: 6px; }
         .delete-btn {
             background: #dc3545;
             color: white;
@@ -384,20 +280,10 @@
             cursor: pointer;
             margin: 10px 0;
         }
-        .delete-btn i {
-            margin-right: 8px;
-        }
-        .delete-btn:hover {
-            background: #c82333;
-        }
-        .delete-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-        }
-        #welcome-page {
-            text-align: center;
-            padding: 1rem 0;
-        }
+        .delete-btn i { margin-right: 8px; }
+        .delete-btn:hover { background: #c82333; }
+        .delete-btn:disabled { background: #6c757d; cursor: not-allowed; }
+        #welcome-page { text-align: center; padding: 1rem 0; }
         #welcome-page .message {
             background: #fff0f0;
             border-left: 6px solid #dc3545;
@@ -406,32 +292,17 @@
             margin: 1.5rem 0;
             text-align: left;
         }
-        #welcome-page .message p {
-            margin: 0.8rem 0;
-            font-size: 1.05rem;
-            line-height: 1.6;
-        }
-        #welcome-page .message strong {
-            color: #dc3545;
-            font-size: 1.2rem;
-        }
-        #welcome-page .message i {
-            margin-right: 6px;
-        }
+        #welcome-page .message p { margin: 0.8rem 0; font-size: 1.05rem; line-height: 1.6; }
+        #welcome-page .message strong { color: #dc3545; font-size: 1.2rem; }
+        #welcome-page .message i { margin-right: 6px; }
         #welcome-page .pay-section {
             background: #f8f9fa;
             padding: 1.5rem;
             border-radius: 10px;
             margin: 1.5rem 0;
         }
-        #welcome-page .pay-section h3 i {
-            margin-right: 8px;
-        }
-        #welcome-page input {
-            width: 100%;
-            max-width: 300px;
-            margin: 0.5rem auto;
-        }
+        #welcome-page .pay-section h3 i { margin-right: 8px; }
+        #welcome-page input { width: 100%; max-width: 300px; margin: 0.5rem auto; }
         #welcome-page .whatsapp-btn {
             display: inline-block;
             background: #25D366;
@@ -444,18 +315,10 @@
             transition: 0.2s;
             font-size: 1.05rem;
         }
-        #welcome-page .whatsapp-btn i {
-            margin-right: 10px;
-        }
-        #welcome-page .whatsapp-btn:hover {
-            background: #128C7E;
-        }
-        #paymentButtonContainer button {
-            min-width: 180px;
-        }
-        #paymentButtonContainer button i {
-            margin-right: 8px;
-        }
+        #welcome-page .whatsapp-btn i { margin-right: 10px; }
+        #welcome-page .whatsapp-btn:hover { background: #128C7E; }
+        #paymentButtonContainer button { min-width: 180px; }
+        #paymentButtonContainer button i { margin-right: 8px; }
         #payment-popup {
             position: fixed;
             inset: 0;
@@ -465,51 +328,21 @@
             justify-content: center;
             z-index: 10000;
         }
-        #payment-popup .popup-content {
+        .popup-content {
             background: white;
             color: #212529;
             padding: 2rem;
             border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
+            max-width: 90%;
+            width: 420px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            position: relative;
         }
-        #payment-popup .popup-content h2 {
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-        #payment-popup .popup-content h2 i {
-            margin-right: 10px;
-        }
-        #payment-popup .popup-content p {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            margin: 0.8rem 0;
-            text-align: left;
-        }
-        #payment-popup .popup-content .highlight {
-            color: #dc3545;
-            font-weight: bold;
-        }
-        #payment-popup .popup-content button {
-            margin-top: 1.5rem;
-            padding: 0.8rem 2rem;
-            font-size: 1.1rem;
-        }
-        #payment-popup .popup-content button i {
-            margin-right: 8px;
-        }
-        .matric-format-hint {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 2px;
-        }
-        .matric-format-hint i {
-            margin-right: 4px;
-        }
-        /* Network status indicator */
+        .popup-content h2 i { margin-right: 10px; }
+        .popup-content .highlight { color: #dc3545; font-weight: bold; }
+        .popup-content button { margin-top: 1.5rem; padding: 0.8rem 2rem; font-size: 1.1rem; }
+        .matric-format-hint { font-size: 0.85rem; color: #666; margin-top: 2px; }
+        .matric-format-hint i { margin-right: 4px; }
         #networkStatus {
             position: fixed;
             bottom: 10px;
@@ -523,30 +356,65 @@
             pointer-events: none;
             display: none;
         }
-        #networkStatus i {
-            margin-right: 4px;
+        #networkStatus i { margin-right: 4px; }
+        .skeleton-card {
+            padding: 1.2rem;
+            border-radius: 12px;
+            background: white;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #dee2e6;
+            animation: pulse 1.5s infinite;
+        }
+        .skeleton-card .line {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+        .skeleton-card .line.short { width: 60%; }
+        .skeleton-card .line.medium { width: 80%; }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        #retryBtn {
+            margin-top: 1rem;
+            padding: 0.8rem 2rem;
         }
     </style>
 </head>
 <body>
-    <div id="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
 
-    <!-- Network status indicator -->
+    <!-- ===== LOADING OVERLAY (will auto-hide after 3s) ===== -->
+    <div id="loading">
+        <div style="text-align:center;">
+            <i class="fas fa-spinner fa-spin" style="font-size:3rem;"></i>
+            <h3 style="margin-top:1rem;">Loading Melox...</h3>
+            <p style="font-size:0.9rem; opacity:0.7; margin-top:0.5rem;">This may take a moment on slow networks</p>
+            <button id="retryBtn" class="blue" onclick="location.reload()" style="display:none; margin-top:1rem;">
+                <i class="fas fa-sync-alt"></i> Reload
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== NETWORK STATUS ===== -->
     <div id="networkStatus"><i class="fas fa-wifi"></i> <span id="networkType">Loading...</span></div>
 
-    <!-- Payment Popup Modal -->
+    <!-- ===== PAYMENT POPUP ===== -->
     <div id="payment-popup">
         <div class="popup-content">
             <h2><i class="fas fa-credit-card"></i> One-Time Payment</h2>
-            <p>This is a <span class="highlight">one-time general payment of ₦500</span> for <strong>all courses</strong> on this platform.</p>
-            <p>You will <strong>never be asked to pay again and take note Make sure you wait after paying until you are redirected back here </strong> – even if you see a payment request later, <span class="highlight">it won't work</span> and you'll be automatically redirected to the login page.</p>
-            <p><strong>Do not panic</strong> – it's a one-time fee for lifetime access to all pre-exams.</p>
+            <p>This is a <span class="highlight">one-time general payment of ₦500</span> for <strong>all courses</strong>.</p>
+            <p>You will <strong>never be asked to pay again</strong> – wait after paying until redirected.</p>
+            <p><strong>Do not panic</strong> – one-time fee for lifetime access.</p>
             <p style="color: #28a745; font-weight: bold;"><i class="fas fa-check-circle"></i> Pay once, access everything.</p>
             <button class="green" onclick="closePaymentPopupAndProceed()"><i class="fas fa-check"></i> I understand, proceed</button>
         </div>
     </div>
 
-    <!-- Faculty Modal -->
+    <!-- ===== FACULTY MODAL ===== -->
     <div id="faculty-modal">
         <div class="modal-content">
             <h2><i class="fas fa-university"></i> Welcome! One-time Setup</h2>
@@ -567,7 +435,7 @@
         </div>
     </div>
 
-    <!-- Global Channel Lock -->
+    <!-- ===== GLOBAL CHANNEL LOCK ===== -->
     <div id="channel-lock-screen">
         <div class="lock-content">
             <h2 style="color:var(--primary);"><i class="fab fa-whatsapp"></i> Platform Update</h2>
@@ -582,44 +450,44 @@
         </div>
     </div>
 
+    <!-- ===== HEADER ===== -->
     <header>
         <div class="logo-container">
-            <div class="logo-glow"></div>
-            <img src="https://i.imgur.com/sWN7pYD.png" alt="MELOX PRE EXAM Logo" class="logo">
+            <img src="https://i.imgur.com/sWN7pYD.png" alt="MELOX PRE EXAM Logo" class="logo" loading="lazy" width="70" height="70">
         </div>
         <h1><i class="fas fa-graduation-cap"></i> MELOX PRE EXAM 2.0</h1>
     </header>
 
+    <!-- ===== MAIN CONTAINER ===== -->
     <div class="container">
-        <!-- ========== WELCOME / PAYMENT PAGE ========== -->
+
+        <!-- ===== WELCOME / PAYMENT PAGE ===== -->
         <section id="welcome-page">
             <h2><i class="fas fa-hand-wave"></i> Welcome Back!</h2>
             <div class="message">
                 <p><strong><i class="fas fa-rocket"></i> Welcome back to Melox Pre-Exams 2.0!</strong></p>
-                <p>The first edition was a success, and we've made several improvements to serve you better.</p>
+                <p>The first edition was a success, and we've made several improvements.</p>
                 <p>This platform is now <strong>exclusively for 100 Level</strong> students.</p>
-                <p>We've rebuilt the website from the ground up. Due to maintenance costs incurred, we require a <strong>one-time payment of ₦500</strong> to access the system. This is a <strong>one-time fee only</strong> – once paid, you'll never be asked again.</p>
-                <p><strong><i class="fas fa-user-check"></i> If you already have an account:</strong> simply login with your Matric number and your Surname in capital letters (as before).<br>
-                <strong><i class="fas fa-user-plus"></i> If you don't have an account yet:</strong> you can register after payment.</p>
+                <p>We require a <strong>one-time payment of ₦500</strong> – once paid, you'll never be asked again.</p>
+                <p><strong><i class="fas fa-user-check"></i> Already have an account?</strong> Login with your Matric number and Surname in capital letters.<br>
+                <strong><i class="fas fa-user-plus"></i> New user?</strong> Register after payment.</p>
                 <p style="color: #dc3545; font-weight: bold;"><i class="fas fa-heart"></i> Thank you for your support!</p>
-                <p><i class="fas fa-headset"></i> For any complaints or assistance, contact <strong>Melox</strong> via WhatsApp below.</p>
+                <p><i class="fas fa-headset"></i> For complaints, contact <strong>Melox</strong> on WhatsApp.</p>
             </div>
 
             <div class="pay-section">
                 <h3 style="color: var(--primary);"><i class="fas fa-money-bill-wave"></i> Pay ₦500 (One-time)</h3>
-                <p style="margin: 0.5rem 0;"><i class="fas fa-id-card"></i> Enter your Matric Number to check your status:</p>
-                <input type="text" id="paymentMatric" placeholder="e.g. CSP/23/9123" required style="max-width:300px;" oninput="this.value = this.value.toUpperCase();">
-                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999 (e.g. CSP/23/9123)</div>
-                <div id="paymentButtonContainer" style="margin-top: 1rem;"></div>
-                <div id="paymentStatus" style="margin-top: 0.8rem; font-weight: bold;"></div>
-                <div id="paymentLoading" style="margin-top: 0.5rem; color: #666; display: none;"><i class="fas fa-spinner fa-spin"></i> Checking...</div>
-                
-                <!-- Verify Payment Button -->
-                <div id="verifyPaymentSection" style="margin-top: 1rem;">
-                    <button id="verifyPaymentBtn" class="blue" onclick="verifyPendingPayment()" style="padding: 0.8rem 2rem; font-size: 1rem; display: none;">
+                <p><i class="fas fa-id-card"></i> Enter your Matric Number:</p>
+                <input type="text" id="paymentMatric" placeholder="e.g. CSP/23/9123" style="max-width:300px;" oninput="this.value = this.value.toUpperCase();">
+                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999</div>
+                <div id="paymentButtonContainer" style="margin-top:1rem;"></div>
+                <div id="paymentStatus" style="margin-top:0.8rem; font-weight:bold;"></div>
+                <div id="paymentLoading" style="margin-top:0.5rem; color:#666; display:none;"><i class="fas fa-spinner fa-spin"></i> Checking...</div>
+                <div id="verifyPaymentSection" style="margin-top:1rem;">
+                    <button id="verifyPaymentBtn" class="blue" onclick="verifyPendingPayment()" style="padding:0.8rem 2rem; font-size:1rem; display:none;">
                         <i class="fas fa-sync-alt"></i> Verify My Payment
                     </button>
-                    <div id="verifyStatus" style="margin-top: 0.5rem; font-weight: bold;"></div>
+                    <div id="verifyStatus" style="margin-top:0.5rem; font-weight:bold;"></div>
                 </div>
             </div>
 
@@ -628,42 +496,37 @@
             </a>
         </section>
 
-        <!-- ========== SIGNUP ========== -->
+        <!-- ===== SIGNUP ===== -->
         <section id="signup-section" class="hidden">
             <h2><i class="fas fa-user-plus"></i> Create Account</h2>
             <form id="signup-form" autocomplete="off">
                 <input type="text" id="firstName" placeholder="First Name" required>
                 <input type="text" id="middleName" placeholder="Middle Name (Optional)">
-                <input type="text" id="lastName" placeholder="Surname (Last Name)" required>
-                <input type="text" id="matricNumber" placeholder="Matric Number (e.g. CSP/23/9123)" required oninput="this.value = this.value.toUpperCase();">
-                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999 (e.g. CSP/23/9123)</div>
+                <input type="text" id="lastName" placeholder="Surname" required>
+                <input type="text" id="matricNumber" placeholder="Matric Number" required oninput="this.value = this.value.toUpperCase();">
+                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999</div>
                 <input type="hidden" id="level" value="100">
-                <p style="color:#666; font-size:0.9rem; margin:-0.3rem 0 0.3rem;"><i class="fas fa-check-circle" style="color:#28a745;"></i> This platform is for <strong>100 Level</strong> students only</p>
+                <p style="color:#666; font-size:0.9rem;"><i class="fas fa-check-circle" style="color:#28a745;"></i> This platform is for <strong>100 Level</strong> students only</p>
                 <input type="password" id="password" placeholder="Password (Auto-set to UPPERCASE Surname)" readonly>
                 <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
                 <button type="submit"><i class="fas fa-user-plus"></i> Sign Up</button>
             </form>
-            <p>
-                Have an account? 
-                <span style="cursor:pointer;color:blue;text-decoration:underline;" onclick="showSection('login-section')">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </span>
-            </p>
+            <p>Have an account? <span style="cursor:pointer;color:blue;text-decoration:underline;" onclick="showSection('login-section')"><i class="fas fa-sign-in-alt"></i> Login</span></p>
         </section>
 
-        <!-- ========== LOGIN ========== -->
+        <!-- ===== LOGIN ===== -->
         <section id="login-section" class="hidden">
             <h2><i class="fas fa-sign-in-alt"></i> Student Login</h2>
             <form id="login-form">
-                <input type="text" id="loginMatric" placeholder="Matric Number (e.g. CSP/23/9123)" required oninput="this.value = this.value.toUpperCase();">
-                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999 (e.g. CSP/23/9123)</div>
+                <input type="text" id="loginMatric" placeholder="Matric Number" required oninput="this.value = this.value.toUpperCase();">
+                <div class="matric-format-hint"><i class="fas fa-info-circle"></i> Format: ABC/99/9999</div>
                 <input type="password" id="loginPassword" placeholder="Password" required>
                 <button type="submit" class="blue"><i class="fas fa-sign-in-alt"></i> Login</button>
             </form>
             <span class="nav-text" onclick="showSection('admin-login-section')"><i class="fas fa-user-shield"></i> Admin Login</span>
         </section>
 
-        <!-- ========== ADMIN LOGIN ========== -->
+        <!-- ===== ADMIN LOGIN ===== -->
         <section id="admin-login-section" class="hidden">
             <h2><i class="fas fa-user-shield"></i> Admin Access</h2>
             <form id="admin-login-form">
@@ -675,15 +538,15 @@
             <span class="nav-text" onclick="showSection('login-section')"><i class="fas fa-arrow-left"></i> Back to Student Login</span>
         </section>
 
-        <!-- ========== STUDENT DASHBOARD ========== -->
+        <!-- ===== STUDENT DASHBOARD ===== -->
         <section id="student-dashboard" class="hidden">
             <h2><i class="fas fa-user-graduate"></i> Welcome, <span id="student-name"></span></h2>
             <h3><i class="fas fa-book-open"></i> Available Pre-Exams</h3>
-            <div id="course-list" style="display: grid; gap: 1rem;"></div>
+            <div id="course-list" style="display:grid; gap:1rem;"></div>
             <button type="button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </section>
 
-        <!-- ========== QUIZ ========== -->
+        <!-- ===== QUIZ ===== -->
         <section id="quiz-section" class="hidden">
             <h2 id="quiz-course-name"></h2>
             <div id="timer"><i class="fas fa-clock"></i> Time remaining: --:--</div>
@@ -697,7 +560,7 @@
             </div>
         </section>
 
-        <!-- ========== RESULTS ========== -->
+        <!-- ===== RESULTS ===== -->
         <section id="results-section" class="hidden">
             <h2><i class="fas fa-chart-bar"></i> Exam Results</h2>
             <div id="results-card">
@@ -707,12 +570,12 @@
                 <div class="result-row"><span><i class="fas fa-hourglass-half"></i> Duration:</span> <strong><span id="duration">--:--</span></strong></div>
                 <div class="result-row" style="margin-top:1.5rem;">
                     <span><i class="fas fa-comment-dots"></i> Feedback:</span>
-                    <strong id="feedback" style="color: var(--green);">Loading feedback...</strong>
+                    <strong id="feedback" style="color:var(--green);">Loading feedback...</strong>
                 </div>
             </div>
             <div id="team-section" style="margin-top:2rem;">
                 <h3 style="text-align:center;"><i class="fas fa-users"></i> Project Team</h3>
-                <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:1rem;">
+                <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap;">
                     <div class="team-card"><h4><i class="fas fa-user"></i> Polokay</h4><p>Team Member</p></div>
                     <div class="team-card"><h4><i class="fas fa-user"></i> BTO</h4><p>Team Member</p></div>
                 </div>
@@ -722,60 +585,44 @@
                 <div style="display:flex; justify-content:center; margin-top:1rem;">
                     <div class="notice-card">
                         <h4><i class="fas fa-calendar-alt"></i> Next Exam Update</h4>
-                        <p>
-                            The next pre-exam will be uploaded <strong>one day before your exam</strong>. 
-                            For quick updates, follow our channel:
-                            <br>
-                            <a href="https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x" target="_blank">
-                                <i class="fab fa-whatsapp"></i> Join our WhatsApp Update Channel
-                            </a>
-                        </p>
+                        <p>The next pre-exam will be uploaded <strong>one day before your exam</strong>.<br>
+                        For updates, follow our channel: <a href="https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x" target="_blank"><i class="fab fa-whatsapp"></i> Join Now</a></p>
                     </div>
                 </div>
             </div>
             <div style="margin-top:1rem; display:flex; gap:0.5rem;">
-                <button type="button" onclick="showSection('student-dashboard')"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
-                <button type="button" onclick="viewAnswers()" class="blue"><i class="fas fa-eye"></i> View Answers</button>
+                <button onclick="showSection('student-dashboard')"><i class="fas fa-arrow-left"></i> Back</button>
+                <button onclick="viewAnswers()" class="blue"><i class="fas fa-eye"></i> View Answers</button>
             </div>
-            <div id="answers-container" style="margin-top:1rem; display: none;"></div>
+            <div id="answers-container" style="margin-top:1rem; display:none;"></div>
         </section>
 
-        <!-- ========== ADMIN DASHBOARD ========== -->
+        <!-- ===== ADMIN DASHBOARD ===== -->
         <section id="admin-dashboard" class="hidden">
             <h2><i class="fas fa-tachometer-alt"></i> Admin Panel</h2>
-
-            <!-- Global Toggle -->
             <div style="margin:1rem 0; padding:1rem; background:#fff3cd; border-radius:10px; text-align:center;">
                 <h3><i class="fas fa-tools"></i> Maintenance / Channel Mode</h3>
                 <label style="font-size:1.1rem; margin-right:1rem;"><i class="fas fa-bell"></i> Force Channel Follow:</label>
                 <input type="checkbox" id="global-lock-toggle" onchange="toggleGlobalLock(this.checked)">
             </div>
-
-            <!-- Delete 200 Level Users (one-time) -->
             <div style="margin:1rem 0; padding:1.5rem; background:#fff0f0; border-radius:10px; text-align:center; border:2px solid #dc3545;">
                 <h3 style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Delete All 200 Level Users</h3>
-                <p style="color:#666; margin:0.5rem 0;">This will delete <strong>Firestore user documents</strong> for all 200-level students.</p>
-                <p style="color:#dc3545; font-weight:bold;"><i class="fas fa-info-circle"></i> Note: Firebase Auth accounts remain – they will be blocked from logging in (user profile missing).<br>To fully delete Auth accounts, use Firebase Console.</p>
+                <p style="color:#666; margin:0.5rem 0;">Deletes Firestore documents for 200-level students (Auth accounts remain).</p>
                 <button id="delete200Btn" class="delete-btn" onclick="deleteAll200LevelUsers()">
                     <i class="fas fa-trash-alt"></i> DELETE ALL 200 LEVEL USERS
                 </button>
                 <div id="deleteStatus" style="margin-top:0.5rem; font-weight:bold;"></div>
             </div>
-
-            <!-- ========== STUDENT SEARCH ========== -->
             <div style="margin: 2rem 0; padding: 1.5rem; background: #f8f9fa; border-radius: 10px; border: 1px solid #dee2e6;">
                 <h3 style="color: var(--primary);"><i class="fas fa-search"></i> Student Search</h3>
-                <p style="color: #666; margin-bottom: 1rem;">Search for a student by Matric Number to view all their information.</p>
-                
+                <p style="color: #666; margin-bottom: 1rem;">Search by Matric Number.</p>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                    <input type="text" id="searchMatric" placeholder="e.g. CSP/24/9123" style="flex: 1; min-width: 200px; padding: 0.8rem 1rem; border: 1px solid #dee2e6; border-radius: 8px;" oninput="this.value = this.value.toUpperCase();">
-                    <button class="blue" onclick="searchStudent()" style="padding: 0.8rem 1.5rem;"><i class="fas fa-search"></i> Search</button>
-                    <button onclick="clearSearch()" style="padding: 0.8rem 1.5rem; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer;"><i class="fas fa-times"></i> Clear</button>
+                    <input type="text" id="searchMatric" placeholder="e.g. CSP/24/9123" style="flex:1; min-width:200px; padding:0.8rem 1rem; border:1px solid #dee2e6; border-radius:8px;" oninput="this.value = this.value.toUpperCase();">
+                    <button class="blue" onclick="searchStudent()" style="padding:0.8rem 1.5rem;"><i class="fas fa-search"></i> Search</button>
+                    <button onclick="clearSearch()" style="padding:0.8rem 1.5rem; background:#6c757d; color:white; border:none; border-radius:8px; cursor:pointer;"><i class="fas fa-times"></i> Clear</button>
                 </div>
-                
-                <div id="searchResults" style="margin-top: 1.5rem; display: none;"></div>
+                <div id="searchResults" style="margin-top:1.5rem; display:none;"></div>
             </div>
-
             <div class="admin-nav">
                 <button onclick="showAdminTab('activities')"><i class="fas fa-chart-line"></i> Activities</button>
                 <button onclick="showAdminTab('question-bank')"><i class="fas fa-database"></i> Question Bank</button>
@@ -783,12 +630,34 @@
                 <button onclick="showAdminTab('payments')"><i class="fas fa-money-bill-wave"></i> Payments Overview</button>
             </div>
             <div id="admin-content"></div>
-            <button type="button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </section>
 
     </div>
 
     <script>
+        // ============================================================
+        // CRITICAL: HIDE LOADING AFTER 3 SECONDS (EVEN IF FIREBASE FAILS)
+        // ============================================================
+        const loadingEl = document.getElementById('loading');
+        let loadingHidden = false;
+
+        function hideLoading() {
+            if (loadingHidden) return;
+            loadingHidden = true;
+            loadingEl.classList.add('hidden');
+        }
+
+        // Auto-hide loading after 3 seconds (page is visible)
+        setTimeout(hideLoading, 3000);
+
+        // Show retry button if loading takes too long (after 8 seconds)
+        setTimeout(() => {
+            if (!loadingHidden) {
+                document.getElementById('retryBtn').style.display = 'inline-block';
+            }
+        }, 8000);
+
         // ============================================================
         // FIREBASE CONFIG
         // ============================================================
@@ -806,162 +675,19 @@
         const db = firebase.firestore();
 
         // ============================================================
-        // PERFORMANCE OPTIMIZATIONS – Enable offline persistence
+        // FIRESTORE SETTINGS (ONCE, BEFORE ANY OTHER CALL)
         // ============================================================
-        db.enablePersistence({ synchronizeTabs: true })
-            .then(() => console.log('✅ Firestore offline persistence enabled'))
-            .catch(err => console.warn('⚠️ Persistence not enabled:', err));
-
-        // Use long polling and increase cache size for slow networks
         db.settings({
             experimentalForceLongPolling: true,
             cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
         });
 
-        // ============================================================
-        // NETWORK SPEED DETECTION
-        // ============================================================
-        function getNetworkStatus() {
-            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            if (!connection) return 'unknown';
-            const type = connection.effectiveType;
-            if (type === 'slow-2g' || type === '2g') return 'very-slow';
-            if (type === '3g' && connection.rtt > 400) return 'slow';
-            if (type === '3g') return 'medium';
-            return 'fast';
-        }
-
-        function updateNetworkIndicator() {
-            const el = document.getElementById('networkType');
-            const status = getNetworkStatus();
-            const icon = document.getElementById('networkStatus');
-            const map = {
-                'very-slow': '🐢 Very Slow (2G)',
-                'slow': '🐌 Slow (3G)',
-                'medium': '📶 Medium (3G+)',
-                'fast': '⚡ Fast (4G/5G)',
-                'unknown': '📶 Unknown'
-            };
-            if (el) el.textContent = map[status] || 'Unknown';
-            if (icon) icon.style.display = 'block';
-            // If very slow, show a persistent loading message
-            if (status === 'very-slow') {
-                document.getElementById('loading').innerHTML = `
-                    <div style="text-align:center; padding:2rem;">
-                        <i class="fas fa-wifi" style="font-size:3rem; color:#ffc107;"></i>
-                        <h3>Your network is very slow</h3>
-                        <p>Please wait while we load the platform...</p>
-                        <p style="font-size:0.8rem; color:#999;">This may take 30-60 seconds on 2G/3G networks.</p>
-                        <button onclick="location.reload()" class="blue" style="margin-top:1rem; padding:0.5rem 2rem;">
-                            <i class="fas fa-sync-alt"></i> Retry
-                        </button>
-                    </div>
-                `;
-            }
-        }
-        // Show network status
-        setTimeout(updateNetworkIndicator, 500);
+        db.enablePersistence({ synchronizeTabs: true })
+            .then(() => console.log('✅ Offline persistence enabled'))
+            .catch(err => console.warn('⚠️ Persistence not enabled:', err));
 
         // ============================================================
-        // VALIDATE MATRIC FORMAT (strict)
-        // ============================================================
-        function isValidMatric(matric) {
-            return /^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric);
-        }
-
-        // ============================================================
-        // NETWORK & LOADING ERROR HANDLER – Show offline page
-        // ============================================================
-        let offlinePageShowing = false;
-        function showOfflinePage() {
-            if (offlinePageShowing) return;
-            offlinePageShowing = true;
-            localStorage.setItem('melox_redirect_after_online', window.location.href);
-            window.location.href = window.location.origin + '/offline.html';
-        }
-        window.addEventListener('offline', showOfflinePage);
-        if (!navigator.onLine) showOfflinePage();
-
-        // Timeout for Firebase operations (increased to 25s for slow networks)
-        const originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Request timeout')), 25000);
-            });
-            return Promise.race([
-                originalFetch.apply(this, args),
-                timeoutPromise
-            ]).catch(function(error) {
-                if (!navigator.onLine || error.message.includes('timeout')) showOfflinePage();
-                throw error;
-            });
-        };
-
-        // Fast fail for Firestore .get() with retry
-        const originalCollection = db.collection;
-        db.collection = function(name) {
-            const collectionRef = originalCollection.call(this, name);
-            const originalGet = collectionRef.get;
-            collectionRef.get = function() {
-                return originalGet.call(this).catch(function(error) {
-                    if (!navigator.onLine || error.message.includes('timeout')) showOfflinePage();
-                    throw error;
-                });
-            };
-            return collectionRef;
-        };
-
-        console.log('✅ Fast fail & offline handler installed.');
-
-        // ============================================================
-        // CACHE HELPER – localStorage for courses
-        // ============================================================
-        const COURSES_CACHE_KEY = 'melox_courses_cache';
-        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-        function getCachedCourses() {
-            try {
-                const raw = localStorage.getItem(COURSES_CACHE_KEY);
-                if (!raw) return null;
-                const data = JSON.parse(raw);
-                if (Date.now() - data.timestamp < CACHE_TTL) {
-                    return data.courses;
-                }
-                return null;
-            } catch { return null; }
-        }
-
-        function setCachedCourses(courses) {
-            try {
-                localStorage.setItem(COURSES_CACHE_KEY, JSON.stringify({
-                    courses: courses,
-                    timestamp: Date.now()
-                }));
-            } catch {}
-        }
-
-        // ============================================================
-        // RETRY WRAPPER FOR FIREBASE OPERATIONS
-        // ============================================================
-        async function withRetry(fn, maxRetries = 3, delay = 1000) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    return await fn();
-                } catch (err) {
-                    if (err.message && (err.message.includes('network') || err.message.includes('timeout') || err.code === 'auth/network-request-failed')) {
-                        console.log(`🔄 Retry ${i+1}/${maxRetries} after ${delay}ms`);
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2; // exponential backoff
-                    } else {
-                        throw err;
-                    }
-                }
-            }
-            throw new Error('Operation failed after multiple retries.');
-        }
-
-        // ============================================================
-        // REST OF YOUR CODE (keep existing functions, only override loadCourses)
+        // GLOBALS
         // ============================================================
         let currentUser = null;
         let currentQuiz = null;
@@ -971,25 +697,25 @@
         let quizStartTime = null;
         let timerInterval = null;
 
-        const adminPass = "Anjorin$2008";
-        const FACULTIES = ["SEET","SAAT","SEMS","SLIT","SBMS","SPS","SOC","SET","SLS"];
+        const FACULTIES = ["SEET", "SAAT", "SEMS", "SLIT", "SBMS", "SPS", "SOC", "SET", "SLS"];
         const CHANNEL_LINK = "https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x";
-        const loading = document.getElementById('loading');
-
-        function showLoading(){ loading.classList.remove('hidden'); }
-        function hideLoading(){ loading.classList.add('hidden'); }
-
-        function showSection(id){
-            document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
-            const section=document.getElementById(id);
-            if(section) section.classList.remove('hidden');
-        }
-
-        // ============================================================
-        // CACHED PAYMENT CHECK (cache for 10 minutes) & localStorage flag
-        // ============================================================
+        const COURSES_CACHE_KEY = 'melox_courses_cache';
+        const CACHE_TTL = 5 * 60 * 1000;
         const PAYMENT_CACHE_KEY = 'melox_payment_cache';
         const PAYMENT_CACHE_TTL = 10 * 60 * 1000;
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            const section = document.getElementById(id);
+            if (section) section.classList.remove('hidden');
+        }
+
+        function isValidMatric(matric) {
+            return /^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric);
+        }
 
         function hasDevicePaid() {
             return localStorage.getItem('melox_paid') === 'true';
@@ -1010,28 +736,55 @@
         function setCachedPayment(matric, paid) {
             try {
                 localStorage.setItem(PAYMENT_CACHE_KEY, JSON.stringify({
-                    matric,
-                    paid,
+                    matric: matric,
+                    paid: paid,
                     timestamp: Date.now()
                 }));
-                if (paid) {
-                    localStorage.setItem('melox_paid', 'true');
-                }
+                if (paid) localStorage.setItem('melox_paid', 'true');
             } catch {}
         }
 
-        if (hasDevicePaid()) {
-            document.getElementById('welcome-page').classList.add('hidden');
-            const accountCreated = localStorage.getItem('meloxAccountCreated');
-            if (accountCreated === 'yes') {
-                showSection('login-section');
-            } else {
-                showSection('signup-section');
-            }
+        function getCachedCourses() {
+            try {
+                const raw = localStorage.getItem(COURSES_CACHE_KEY);
+                if (!raw) return null;
+                const data = JSON.parse(raw);
+                if (Date.now() - data.timestamp < CACHE_TTL) return data.courses;
+                return null;
+            } catch { return null; }
+        }
+
+        function setCachedCourses(courses) {
+            try {
+                localStorage.setItem(COURSES_CACHE_KEY, JSON.stringify({
+                    courses: courses,
+                    timestamp: Date.now()
+                }));
+            } catch {}
         }
 
         // ============================================================
-        // CHECK PAYMENT (with cache and uppercase matric)
+        // RETRY WRAPPER (with shorter timeout for slow networks)
+        // ============================================================
+        async function withRetry(fn, maxRetries = 2, delay = 2000) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    return await fn();
+                } catch (err) {
+                    if (err.message && (err.message.includes('network') || err.message.includes('timeout') || err.code === 'auth/network-request-failed')) {
+                        console.log(`🔄 Retry ${i + 1}/${maxRetries}`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 1.5;
+                    } else {
+                        throw err;
+                    }
+                }
+            }
+            throw new Error('Operation failed after multiple retries.');
+        }
+
+        // ============================================================
+        // CHECK PAYMENT
         // ============================================================
         async function checkUserPaid(userId, matric) {
             if (!userId && !matric) return false;
@@ -1042,11 +795,11 @@
             }
             try {
                 if (userId) {
-                    const snap = await withRetry(() => 
+                    const snap = await withRetry(() =>
                         db.collection('maintenancePayments')
-                            .where('userId', '==', userId)
-                            .where('status', '==', 'success')
-                            .get()
+                        .where('userId', '==', userId)
+                        .where('status', '==', 'success')
+                        .get()
                     );
                     if (!snap.empty) {
                         if (upperMatric) setCachedPayment(upperMatric, true);
@@ -1056,9 +809,9 @@
                 if (upperMatric) {
                     const snap = await withRetry(() =>
                         db.collection('maintenancePayments')
-                            .where('matric', '==', upperMatric)
-                            .where('status', '==', 'success')
-                            .get()
+                        .where('matric', '==', upperMatric)
+                        .where('status', '==', 'success')
+                        .get()
                     );
                     const paid = !snap.empty;
                     setCachedPayment(upperMatric, paid);
@@ -1072,7 +825,7 @@
         }
 
         // ============================================================
-        // DYNAMIC PAYMENT CHECK (debounced 300ms) – with strict validation
+        // DYNAMIC PAYMENT CHECK
         // ============================================================
         function debounce(func, wait) {
             let timeout;
@@ -1099,10 +852,9 @@
                     loadingEl.style.display = 'none';
                     return;
                 }
-
                 if (!isValidMatric(matric)) {
                     loadingEl.style.display = 'none';
-                    statusEl.textContent = '⚠️ Invalid format. Must be: ABC/99/9999 (e.g. CSP/23/9123)';
+                    statusEl.textContent = '⚠️ Invalid format. Must be: ABC/99/9999';
                     statusEl.style.color = '#dc3545';
                     return;
                 }
@@ -1126,7 +878,6 @@
                 );
                 const userExists = !userSnap.empty;
                 let userId = userExists ? userSnap.docs[0].id : null;
-
                 const paid = await checkUserPaid(userId, matric);
                 loadingEl.style.display = 'none';
 
@@ -1135,20 +886,20 @@
                     statusEl.style.color = '#28a745';
                     let buttonIcon = userExists ? 'fa-sign-in-alt' : 'fa-user-plus';
                     let buttonText = userExists ? 'Go to Login' : 'Go to Sign Up';
-                    let onClickAction = userExists 
-                        ? function() {
+                    let onClickAction = userExists ?
+                        function() {
                             document.getElementById('welcome-page').classList.add('hidden');
                             showSection('login-section');
                             document.getElementById('loginMatric').value = matric;
-                          }
-                        : function() {
+                        } :
+                        function() {
                             document.getElementById('welcome-page').classList.add('hidden');
                             showSection('signup-section');
                             document.getElementById('matricNumber').value = matric;
-                          };
+                        };
 
                     container.innerHTML = `
-                        <button id="goToLoginBtn" class="blue" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
+                        <button id="goToLoginBtn" class="blue" style="padding:0.8rem 3rem; font-size:1.2rem;">
                             <i class="fas ${buttonIcon}"></i> ${buttonText}
                         </button>
                     `;
@@ -1169,7 +920,7 @@
                     statusEl.textContent = '⚠️ Your Matric exists but you haven\'t paid yet.';
                     statusEl.style.color = '#fd7e14';
                     container.innerHTML = `
-                        <button id="payNowBtn" class="green" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
+                        <button id="payNowBtn" class="green" style="padding:0.8rem 3rem; font-size:1.2rem;">
                             <i class="fas fa-credit-card"></i> Pay Now
                         </button>
                     `;
@@ -1186,7 +937,7 @@
                     statusEl.textContent = 'ℹ️ No account found. You can pay and then sign up.';
                     statusEl.style.color = '#007bff';
                     container.innerHTML = `
-                        <button id="payNowBtn" class="green" style="padding: 0.8rem 3rem; font-size: 1.2rem;">
+                        <button id="payNowBtn" class="green" style="padding:0.8rem 3rem; font-size:1.2rem;">
                             <i class="fas fa-credit-card"></i> Pay Now
                         </button>
                     `;
@@ -1209,26 +960,41 @@
         }
 
         // ============================================================
-        // PAYMENT POPUP – close and proceed
+        // PAYMENT POPUP
         // ============================================================
         function closePaymentPopupAndProceed() {
             document.getElementById('payment-popup').style.display = 'none';
             const matric = document.getElementById('payment-popup').dataset.matric;
             if (matric) {
                 if (!isValidMatric(matric)) {
-                    alert('Invalid Matric format. Please use format: ABC/99/9999 (e.g. CSP/23/9123)');
+                    alert('Invalid Matric format. Use: ABC/99/9999');
                     return;
                 }
-                initPayment(matric);
+                loadSquadWidget().then(() => initPayment(matric));
             }
         }
 
+        function loadSquadWidget() {
+            return new Promise((resolve) => {
+                if (typeof squad !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://checkout.squadco.com/widget/squad.min.js';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = resolve;
+                document.head.appendChild(script);
+                setTimeout(resolve, 5000);
+            });
+        }
+
         // ============================================================
-        // IMPROVED INITIATE PAYMENT (₦500) – with retry & backup
+        // INITIATE PAYMENT
         // ============================================================
         function initPayment(matric) {
             const statusEl = document.getElementById('paymentStatus');
-            const container = document.getElementById('paymentButtonContainer');
             const btn = document.querySelector('#paymentButtonContainer #payNowBtn');
 
             if (btn && btn.disabled) return;
@@ -1266,21 +1032,20 @@
                         },
                         onSuccess: async (response) => {
                             console.log('💰 Squad onSuccess triggered!');
-                            console.log('📦 Full response:', JSON.stringify(response, null, 2));
-                            
                             const txRef = response.transaction_ref || response.reference || ("SQ-" + Date.now());
-                            const receivedAmount = response.transaction_amount || response.amount || response.formattedTransactionAmount || 0;
+                            const receivedAmount = response.transaction_amount || response.amount || response
+                                .formattedTransactionAmount || 0;
                             const isValidPayment = receivedAmount >= amountInKobo;
-                            
+
                             if (isValidPayment) {
                                 statusEl.textContent = '💾 Saving payment record...';
                                 statusEl.style.color = '#666';
-                                
+
                                 try {
                                     let saved = false;
                                     let retryCount = 0;
                                     const maxRetries = 3;
-                                    
+
                                     while (!saved && retryCount < maxRetries) {
                                         try {
                                             await db.collection('maintenancePayments').add({
@@ -1288,7 +1053,8 @@
                                                 amount: amountInKobo,
                                                 currency: "NGN",
                                                 status: "success",
-                                                paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                                paidAt: firebase.firestore.FieldValue
+                                                    .serverTimestamp(),
                                                 transactionRef: txRef,
                                                 squadReference: response.reference || '',
                                                 squadTransactionRef: response.transaction_ref || ''
@@ -1297,13 +1063,15 @@
                                             console.log('✅ Payment saved to Firestore!');
                                         } catch (err) {
                                             retryCount++;
-                                            console.warn(`⚠️ Save attempt ${retryCount} failed:`, err.message);
+                                            console.warn(`⚠️ Save attempt ${retryCount} failed:`, err
+                                            .message);
                                             if (retryCount < maxRetries) {
-                                                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                                                await new Promise(resolve => setTimeout(resolve, 1000 *
+                                                retryCount));
                                             }
                                         }
                                     }
-                                    
+
                                     if (saved) {
                                         localStorage.setItem('melox_paid', 'true');
                                         setCachedPayment(matric, true);
@@ -1316,7 +1084,8 @@
                                         document.getElementById('paymentMatric').dispatchEvent(new Event('input'));
                                         setTimeout(async () => {
                                             const userSnap = await withRetry(() =>
-                                                db.collection('users').where('matricNumber', '==', matric).get()
+                                                db.collection('users').where('matricNumber', '==', matric)
+                                                .get()
                                             );
                                             const exists = !userSnap.empty;
                                             document.getElementById('welcome-page').classList.add('hidden');
@@ -1335,7 +1104,8 @@
                                             txRef: txRef,
                                             timestamp: Date.now()
                                         }));
-                                        statusEl.textContent = '⚠️ Payment successful but could not save. Please contact support with your Matric number.';
+                                        statusEl.textContent =
+                                            '⚠️ Payment successful but could not save. Please contact support with your Matric number.';
                                         statusEl.style.color = '#fd7e14';
                                         if (btn) {
                                             btn.disabled = false;
@@ -1345,7 +1115,8 @@
                                     }
                                 } catch (err) {
                                     console.error('❌ Critical error saving payment:', err);
-                                    statusEl.textContent = '❌ Payment successful but failed to save. Please contact support with your Matric number.';
+                                    statusEl.textContent =
+                                        '❌ Payment successful but failed to save. Please contact support with your Matric number.';
                                     statusEl.style.color = 'red';
                                     if (btn) {
                                         btn.disabled = false;
@@ -1378,17 +1149,17 @@
         }
 
         // ============================================================
-        // VERIFY PENDING PAYMENT - Check if payment was successful
+        // VERIFY PENDING PAYMENT
         // ============================================================
         async function verifyPendingPayment() {
             const statusEl = document.getElementById('verifyStatus');
             const btn = document.getElementById('verifyPaymentBtn');
-            
+
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
             statusEl.textContent = '⏳ Checking payment status...';
             statusEl.style.color = '#666';
-            
+
             try {
                 const matric = document.getElementById('paymentMatric').value.trim().toUpperCase();
                 if (!matric || !/^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric)) {
@@ -1398,20 +1169,20 @@
                     btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verify My Payment';
                     return;
                 }
-                
+
                 const paid = await checkUserPaid(null, matric);
-                
+
                 if (paid) {
                     statusEl.textContent = '✅ Payment verified! You can now login or sign up.';
                     statusEl.style.color = '#28a745';
                     localStorage.setItem('melox_paid', 'true');
                     setCachedPayment(matric, true);
-                    
+
                     const userSnap = await withRetry(() =>
                         db.collection('users').where('matricNumber', '==', matric).get()
                     );
                     const exists = !userSnap.empty;
-                    
+
                     setTimeout(() => {
                         document.getElementById('welcome-page').classList.add('hidden');
                         if (exists) {
@@ -1431,74 +1202,74 @@
                 statusEl.textContent = '❌ Error verifying payment. Please try again.';
                 statusEl.style.color = '#dc3545';
             }
-            
+
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-sync-alt"></i> Verify My Payment';
         }
 
         // ============================================================
-        // STUDENT SEARCH FUNCTION
+        // STUDENT SEARCH
         // ============================================================
         async function searchStudent() {
             const matric = document.getElementById('searchMatric').value.trim().toUpperCase();
             const resultsDiv = document.getElementById('searchResults');
-            
+
             if (!matric) {
                 resultsDiv.style.display = 'none';
                 return;
             }
-            
+
             if (!/^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric)) {
                 resultsDiv.style.display = 'block';
                 resultsDiv.innerHTML = `
-                    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
-                        <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
-                        <strong style="color: #856404;">Invalid Matric format.</strong>
-                        <span style="color: #856404;"> Use: ABC/99/9999 (e.g. CSP/24/9123)</span>
+                    <div style="background:#fff3cd; padding:1rem; border-radius:8px; border-left:4px solid #ffc107;">
+                        <i class="fas fa-exclamation-triangle" style="color:#856404;"></i>
+                        <strong style="color:#856404;">Invalid Matric format.</strong>
+                        <span style="color:#856404;"> Use: ABC/99/9999 (e.g. CSP/24/9123)</span>
                     </div>
                 `;
                 return;
             }
-            
+
             resultsDiv.style.display = 'block';
             resultsDiv.innerHTML = `
-                <div style="text-align: center; padding: 2rem; color: #666;">
+                <div style="text-align:center; padding:2rem; color:#666;">
                     <i class="fas fa-spinner fa-spin"></i> Searching for ${matric}...
                 </div>
             `;
-            
+
             try {
                 const userSnap = await withRetry(() =>
                     db.collection('users').where('matricNumber', '==', matric).get()
                 );
                 if (userSnap.empty) {
                     resultsDiv.innerHTML = `
-                        <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
-                            <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
-                            <strong style="color: #856404;">No user found with Matric: ${matric}</strong>
+                        <div style="background:#fff3cd; padding:1rem; border-radius:8px; border-left:4px solid #ffc107;">
+                            <i class="fas fa-exclamation-triangle" style="color:#856404;"></i>
+                            <strong style="color:#856404;">No user found with Matric: ${matric}</strong>
                         </div>
                     `;
                     return;
                 }
-                
+
                 const userDoc = userSnap.docs[0];
                 const userData = userDoc.data();
                 const userId = userDoc.id;
-                
+
                 const paymentSnap = await withRetry(() =>
                     db.collection('maintenancePayments')
-                        .where('matric', '==', matric)
-                        .where('status', '==', 'success')
-                        .get()
+                    .where('matric', '==', matric)
+                    .where('status', '==', 'success')
+                    .get()
                 );
                 const hasPaid = !paymentSnap.empty;
                 let paymentData = hasPaid ? paymentSnap.docs[0].data() : null;
-                
+
                 const quizResultsSnap = await withRetry(() =>
                     db.collection('quizResults')
-                        .where('userId', '==', userId)
-                        .orderBy('timestamp', 'desc')
-                        .get()
+                    .where('userId', '==', userId)
+                    .orderBy('timestamp', 'desc')
+                    .get()
                 );
                 const quizCount = quizResultsSnap.size;
                 const quizResults = [];
@@ -1513,71 +1284,71 @@
                         timestamp: data.timestamp?.toDate?.() || new Date()
                     });
                 });
-                
+
                 let html = `
-                    <div style="background: white; border: 1px solid #dee2e6; border-radius: 10px; overflow: hidden;">
-                        <div style="background: var(--primary); color: white; padding: 1rem;">
-                            <h4 style="margin: 0;"><i class="fas fa-user-graduate"></i> Student Details: ${matric}</h4>
+                    <div style="background:white; border:1px solid #dee2e6; border-radius:10px; overflow:hidden;">
+                        <div style="background:var(--primary); color:white; padding:1rem;">
+                            <h4 style="margin:0;"><i class="fas fa-user-graduate"></i> Student Details: ${matric}</h4>
                         </div>
-                        <div style="padding: 1rem; border-bottom: 1px solid #dee2e6;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <div style="padding:1rem; border-bottom:1px solid #dee2e6;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
                                 <div><strong>Full Name:</strong> ${userData.fullName || 'N/A'}</div>
                                 <div><strong>Matric Number:</strong> ${userData.matricNumber || 'N/A'}</div>
                                 <div><strong>Level:</strong> ${userData.level || 'N/A'}</div>
                                 <div><strong>Faculty:</strong> ${userData.faculty || 'Not set'}</div>
                                 <div><strong>Role:</strong> ${userData.role || 'student'}</div>
-                                <div><strong>User ID:</strong> <span style="font-size: 0.85rem; font-family: monospace;">${userId}</span></div>
+                                <div><strong>User ID:</strong> <span style="font-size:0.85rem; font-family:monospace;">${userId}</span></div>
                             </div>
                         </div>
-                        <div style="padding: 1rem; border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
+                        <div style="padding:1rem; border-bottom:1px solid #dee2e6; background:#f8f9fa;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; font-size:0.9rem;">
                                 <div><strong>Account Created:</strong> ${userData.createdAt?.toDate?.()?.toLocaleString() || 'N/A'}</div>
                                 <div><strong>Last Login:</strong> ${userData.lastLogin?.toDate?.()?.toLocaleString() || 'N/A'}</div>
                             </div>
                         </div>
-                        <div style="padding: 1rem; border-bottom: 1px solid #dee2e6;">
-                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                        <div style="padding:1rem; border-bottom:1px solid #dee2e6;">
+                            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
                                 <strong>Payment Status:</strong>
                                 ${hasPaid 
-                                    ? `<span style="background: #28a745; color: white; padding: 0.2rem 1rem; border-radius: 20px; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> PAID (₦500)</span>`
-                                    : `<span style="background: #dc3545; color: white; padding: 0.2rem 1rem; border-radius: 20px; font-size: 0.9rem;"><i class="fas fa-times-circle"></i> NOT PAID</span>`
+                                    ? `<span style="background:#28a745; color:white; padding:0.2rem 1rem; border-radius:20px; font-size:0.9rem;"><i class="fas fa-check-circle"></i> PAID (₦500)</span>`
+                                    : `<span style="background:#dc3545; color:white; padding:0.2rem 1rem; border-radius:20px; font-size:0.9rem;"><i class="fas fa-times-circle"></i> NOT PAID</span>`
                                 }
-                                ${hasPaid && paymentData ? `<span style="font-size: 0.85rem; color: #666;">Paid on: ${paymentData.paidAt?.toDate?.()?.toLocaleString() || 'N/A'}</span>` : ''}
+                                ${hasPaid && paymentData ? `<span style="font-size:0.85rem; color:#666;">Paid on: ${paymentData.paidAt?.toDate?.()?.toLocaleString() || 'N/A'}</span>` : ''}
                             </div>
                         </div>
-                        <div style="padding: 1rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <div style="padding:1rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                                 <strong><i class="fas fa-chart-bar"></i> Quiz Results (${quizCount} attempts)</strong>
                             </div>
                             ${quizCount === 0 ? `
-                                <div style="color: #666; text-align: center; padding: 1rem;">
+                                <div style="color:#666; text-align:center; padding:1rem;">
                                     <i class="fas fa-info-circle"></i> No quiz attempts yet.
                                 </div>
                             ` : `
-                                <div style="max-height: 300px; overflow-y: auto;">
-                                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                                <div style="max-height:300px; overflow-y:auto;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
                                         <thead>
-                                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                                <th style="padding: 0.5rem; text-align: left;">Course</th>
-                                                <th style="padding: 0.5rem; text-align: center;">Score</th>
-                                                <th style="padding: 0.5rem; text-align: center;">%</th>
-                                                <th style="padding: 0.5rem; text-align: center;">Status</th>
-                                                <th style="padding: 0.5rem; text-align: center;">Date</th>
+                                            <tr style="background:#f8f9fa; border-bottom:2px solid #dee2e6;">
+                                                <th style="padding:0.5rem; text-align:left;">Course</th>
+                                                <th style="padding:0.5rem; text-align:center;">Score</th>
+                                                <th style="padding:0.5rem; text-align:center;">%</th>
+                                                <th style="padding:0.5rem; text-align:center;">Status</th>
+                                                <th style="padding:0.5rem; text-align:center;">Date</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             ${quizResults.map(r => `
-                                                <tr style="border-bottom: 1px solid #eee;">
-                                                    <td style="padding: 0.5rem;">${r.courseName}</td>
-                                                    <td style="padding: 0.5rem; text-align: center;">${r.score}/${r.total}</td>
-                                                    <td style="padding: 0.5rem; text-align: center; font-weight: bold; color: ${r.percentage >= 50 ? '#28a745' : '#dc3545'};">${r.percentage}%</td>
-                                                    <td style="padding: 0.5rem; text-align: center;">
+                                                <tr style="border-bottom:1px solid #eee;">
+                                                    <td style="padding:0.5rem;">${r.courseName}</td>
+                                                    <td style="padding:0.5rem; text-align:center;">${r.score}/${r.total}</td>
+                                                    <td style="padding:0.5rem; text-align:center; font-weight:bold; color:${r.percentage >= 50 ? '#28a745' : '#dc3545'};">${r.percentage}%</td>
+                                                    <td style="padding:0.5rem; text-align:center;">
                                                         ${r.passed 
-                                                            ? '<span style="color: #28a745;"><i class="fas fa-check-circle"></i> Passed</span>'
-                                                            : '<span style="color: #dc3545;"><i class="fas fa-times-circle"></i> Failed</span>'
+                                                            ? '<span style="color:#28a745;"><i class="fas fa-check-circle"></i> Passed</span>'
+                                                            : '<span style="color:#dc3545;"><i class="fas fa-times-circle"></i> Failed</span>'
                                                         }
                                                     </td>
-                                                    <td style="padding: 0.5rem; text-align: center; font-size: 0.8rem; color: #666;">
+                                                    <td style="padding:0.5rem; text-align:center; font-size:0.8rem; color:#666;">
                                                         ${r.timestamp.toLocaleDateString()}
                                                     </td>
                                                 </tr>
@@ -1593,10 +1364,10 @@
             } catch (err) {
                 console.error('Search error:', err);
                 resultsDiv.innerHTML = `
-                    <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc3545;">
-                        <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
-                        <strong style="color: #dc3545;">Error searching:</strong>
-                        <span style="color: #dc3545;">${err.message}</span>
+                    <div style="background:#f8d7da; padding:1rem; border-radius:8px; border-left:4px solid #dc3545;">
+                        <i class="fas fa-exclamation-circle" style="color:#dc3545;"></i>
+                        <strong style="color:#dc3545;">Error searching:</strong>
+                        <span style="color:#dc3545;">${err.message}</span>
                     </div>
                 `;
             }
@@ -1608,7 +1379,7 @@
         }
 
         // ============================================================
-        // DELETE 200 LEVEL USERS (only Firestore)
+        // DELETE 200 LEVEL USERS
         // ============================================================
         async function deleteAll200LevelUsers() {
             const btn = document.getElementById('delete200Btn');
@@ -1627,11 +1398,11 @@
             btn.textContent = '⏳ Deleting...';
             status.innerHTML = 'Processing...';
             status.style.color = 'orange';
-            showLoading();
 
             try {
                 const usersSnap = await withRetry(() => db.collection('users').get());
-                let deletedCount = 0, errorCount = 0;
+                let deletedCount = 0,
+                    errorCount = 0;
                 for (const doc of usersSnap.docs) {
                     const data = doc.data();
                     const level = (data.level || '').toString().trim();
@@ -1645,7 +1416,8 @@
                     }
                 }
                 localStorage.setItem('200level_deleted', 'true');
-                status.innerHTML = `✅ Deleted ${deletedCount} user documents. ${errorCount > 0 ? `Errors: ${errorCount}` : ''}<br>
+                status.innerHTML =
+                    `✅ Deleted ${deletedCount} user documents. ${errorCount > 0 ? `Errors: ${errorCount}` : ''}<br>
                                     <span style="font-size:0.9rem; color:#856404;">Note: Firebase Auth accounts remain. To fully remove them, use Firebase Console.</span>`;
                 status.style.color = 'green';
                 btn.textContent = '✅ DELETED (One-time use)';
@@ -1659,40 +1431,36 @@
                 btn.disabled = false;
                 alert('Error deleting: ' + err.message);
             }
-            hideLoading();
         }
 
         // ============================================================
-        // SIGNUP – links userId to payment (uppercase matric)
+        // SIGNUP
         // ============================================================
         document.getElementById('signup-form')?.addEventListener('submit', async e => {
             e.preventDefault();
-            showLoading();
             const first = document.getElementById('firstName')?.value.trim() || '';
             const middle = document.getElementById('middleName')?.value.trim() || '';
             const last = document.getElementById('lastName')?.value.trim().toUpperCase() || '';
             const fullName = [first, middle, last].filter(Boolean).join(' ');
             let matric = document.getElementById('matricNumber')?.value.trim().toUpperCase() || '';
-            const level = '100';
             const password = last;
             const confirm = document.getElementById('confirmPassword')?.value || '';
 
             if (!matric || !password || !confirm) {
-                hideLoading();
-                return alert('Please fill all required fields');
+                alert('Please fill all required fields');
+                return;
             }
             if (!isValidMatric(matric)) {
-                hideLoading();
-                return alert('Invalid Matric format. Must be: ABC/99/9999 (e.g. CSP/23/9123)');
+                alert('Invalid Matric format. Must be: ABC/99/9999 (e.g. CSP/23/9123)');
+                return;
             }
             if (password !== confirm) {
-                hideLoading();
-                return alert("Passwords don't match!");
+                alert("Passwords don't match!");
+                return;
             }
 
             const paid = await checkUserPaid(null, matric);
             if (!paid) {
-                hideLoading();
                 alert('You must pay the one-time maintenance fee of ₦500 before signing up.');
                 return;
             }
@@ -1710,9 +1478,9 @@
                 }));
                 const paymentSnap = await withRetry(() =>
                     db.collection('maintenancePayments')
-                        .where('matric', '==', matric)
-                        .where('status', '==', 'success')
-                        .get()
+                    .where('matric', '==', matric)
+                    .where('status', '==', 'success')
+                    .get()
                 );
                 if (!paymentSnap.empty) {
                     await db.collection('maintenancePayments').doc(paymentSnap.docs[0].id).update({
@@ -1726,21 +1494,18 @@
             } catch (err) {
                 alert(err.message || 'Signup failed');
             }
-            hideLoading();
         });
 
         // ============================================================
-        // LOGIN – uses the improved checkUserPaid (uppercase matric)
+        // LOGIN
         // ============================================================
         document.getElementById('login-form')?.addEventListener('submit', async e => {
             e.preventDefault();
-            showLoading();
             let matric = document.getElementById('loginMatric')?.value.trim().toUpperCase() || '';
             const pw = document.getElementById('loginPassword')?.value || '';
 
             if (!isValidMatric(matric)) {
-                hideLoading();
-                alert('Invalid Matric format. Must be: ABC/99/9999 (e.g. CSP/23/9123)');
+                alert('Invalid Matric format. Must be: ABC/99/9999');
                 return;
             }
 
@@ -1750,7 +1515,6 @@
                 const userDoc = await withRetry(() => userRef.get());
                 if (!userDoc.exists) {
                     await auth.signOut();
-                    hideLoading();
                     alert('Your account profile is missing. Please contact support or create a new account.');
                     return;
                 }
@@ -1758,14 +1522,13 @@
                 const userLevel = (userData.level || '').toString().trim();
                 if (userLevel !== '100' && userLevel !== '100 Level') {
                     await auth.signOut();
-                    hideLoading();
-                    alert('❌ This platform is exclusively for 100 Level students. Your account is set to: ' + userLevel);
+                    alert('❌ This platform is exclusively for 100 Level students. Your account is set to: ' +
+                        userLevel);
                     return;
                 }
                 const paid = await checkUserPaid(cred.user.uid, matric);
                 if (!paid) {
                     await auth.signOut();
-                    hideLoading();
                     alert('You have not paid the maintenance fee of ₦500. Please pay first.');
                     document.getElementById('welcome-page').classList.remove('hidden');
                     return;
@@ -1785,23 +1548,21 @@
             } catch (err) {
                 alert(err.message || 'Login failed');
             }
-            hideLoading();
         });
 
         // ============================================================
-        // ADMIN LOGIN – USING FIREBASE AUTHENTICATION
+        // ADMIN LOGIN
         // ============================================================
         document.getElementById('admin-login-form')?.addEventListener('submit', async e => {
             e.preventDefault();
-            showLoading();
-            
+
             const password = document.getElementById('adminPassword')?.value || '';
             const adminEmail = 'admin@melox.com';
-            
+
             try {
                 const cred = await withRetry(() => auth.signInWithEmailAndPassword(adminEmail, password));
                 const uid = cred.user.uid;
-                
+
                 const adminDoc = await withRetry(() => db.collection('users').doc(uid).get());
                 if (!adminDoc.exists) {
                     await withRetry(() => db.collection('users').doc(uid).set({
@@ -1817,18 +1578,18 @@
                         lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                     }));
                 }
-                
-                currentUser = { 
+
+                currentUser = {
                     role: 'admin',
                     id: uid,
                     email: adminEmail
                 };
-                
+
                 showSection('admin-dashboard');
                 showAdminTab('activities');
                 check200LevelDeleted();
-                hideLoading();
-                
+                alert('✅ Admin login successful!');
+
             } catch (error) {
                 console.error('Admin login error:', error);
                 if (error.code === 'auth/user-not-found') {
@@ -1842,7 +1603,7 @@
                             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                             lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                         }));
-                        currentUser = { 
+                        currentUser = {
                             role: 'admin',
                             id: newCred.user.uid,
                             email: adminEmail
@@ -1851,23 +1612,21 @@
                         showAdminTab('activities');
                         check200LevelDeleted();
                         alert('✅ Admin account created! Please login again.');
-                        hideLoading();
                     } catch (createErr) {
                         alert('❌ Failed to create admin: ' + createErr.message);
-                        hideLoading();
                     }
                 } else if (error.code === 'auth/wrong-password') {
                     alert('❌ Incorrect admin password. Please try again.');
-                    hideLoading();
                 } else {
                     alert('❌ Admin login failed: ' + error.message);
-                    hideLoading();
                 }
             }
         });
 
+        // ============================================================
+        // LOGOUT
+        // ============================================================
         function logout() {
-            showLoading();
             auth.signOut().then(() => {
                 currentUser = null;
                 const paid = localStorage.getItem('melox_paid');
@@ -1879,7 +1638,6 @@
                     document.getElementById('login-section').classList.add('hidden');
                 }
             }).catch(err => alert(err.message));
-            hideLoading();
         }
 
         // ============================================================
@@ -1973,24 +1731,39 @@
         }
 
         // ============================================================
-        // LOAD COURSES (optimized – batch queries + cache)
+        // LOAD COURSES
         // ============================================================
+        function renderSkeleton() {
+            const list = document.getElementById('course-list');
+            if (!list) return;
+            let html = '';
+            for (let i = 0; i < 3; i++) {
+                html += `
+                    <div class="skeleton-card">
+                        <div class="line" style="width:70%;"></div>
+                        <div class="line short"></div>
+                        <div class="line medium"></div>
+                        <div class="line" style="width:40%;"></div>
+                    </div>
+                `;
+            }
+            list.innerHTML = html;
+        }
+
         async function loadCourses() {
             const list = document.getElementById('course-list');
             if (!list) return;
 
-            // Try loading from cache first
+            renderSkeleton();
+
             const cached = getCachedCourses();
             if (cached) {
                 console.log('✅ Loaded courses from cache');
                 renderCourses(cached);
-                // Still fetch in background to update cache
-                fetchCoursesInBackground();
+                setTimeout(fetchCoursesInBackground, 500);
                 return;
             }
 
-            // No cache – load from server
-            list.innerHTML = '<p style="text-align:center; color:#555;"><i class="fas fa-spinner fa-spin"></i> Loading available pre-exams...</p>';
             await fetchCoursesInBackground();
         }
 
@@ -1998,14 +1771,15 @@
             try {
                 const quizzesSnap = await withRetry(() =>
                     db.collection('quizzes')
-                        .where('status', '==', 'published')
-                        .where('level', '==', '100')
-                        .get()
+                    .where('status', '==', 'published')
+                    .where('level', '==', '100')
+                    .get()
                 );
 
+                const list = document.getElementById('course-list');
                 if (quizzesSnap.empty) {
-                    const list = document.getElementById('course-list');
-                    list.innerHTML = '<p style="text-align:center; color:#666; padding:2rem;"><i class="fas fa-info-circle"></i> No pre-exams available at this time.</p>';
+                    list.innerHTML =
+                        '<p style="text-align:center; color:#666; padding:2rem;"><i class="fas fa-info-circle"></i> No pre-exams available at this time.</p>';
                     return;
                 }
 
@@ -2047,33 +1821,42 @@
                                 <i class="fas fa-clock"></i> Loading countdown...
                             </p>
                         `;
-                        buttonHTML = `<button disabled style="background:#ccc; width:100%;"><i class="fas fa-lock"></i> Locked – Opens Later</button>`;
+                        buttonHTML =
+                            `<button disabled style="background:#ccc; width:100%;"><i class="fas fa-lock"></i> Locked – Opens Later</button>`;
                         setTimeout(() => {
                             startCountdown(quizId, releaseTime);
                         }, 100);
                     } else {
                         if (attempts >= 2) {
-                            statusHTML = `<p style="color:#dc3545; font-weight:bold; text-align:center;"><i class="fas fa-times-circle"></i> Maximum 2 attempts used</p>`;
-                            buttonHTML = `<button disabled style="background:#ccc; width:100%;">No More Attempts</button>`;
+                            statusHTML =
+                                `<p style="color:#dc3545; font-weight:bold; text-align:center;"><i class="fas fa-times-circle"></i> Maximum 2 attempts used</p>`;
+                            buttonHTML =
+                                `<button disabled style="background:#ccc; width:100%;">No More Attempts</button>`;
                         } else if (d.payment === "YES" && !hasPaid) {
-                            statusHTML = `<p style="color:#dc3545; font-weight:bold; text-align:center;"><i class="fas fa-credit-card"></i> Payment Required (₦100)</p>`;
-                            buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-credit-card"></i> Pay & Start</button>`;
+                            statusHTML =
+                                `<p style="color:#dc3545; font-weight:bold; text-align:center;"><i class="fas fa-credit-card"></i> Payment Required (₦100)</p>`;
+                            buttonHTML =
+                                `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-credit-card"></i> Pay & Start</button>`;
                         } else {
                             if (attempts === 1) {
-                                statusHTML = `<p style="color:#fd7e14; font-weight:bold; text-align:center;"><i class="fas fa-exclamation-triangle"></i> 1 attempt used – Final attempt</p>`;
-                                buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-play"></i> Start 2nd Attempt</button>`;
+                                statusHTML =
+                                    `<p style="color:#fd7e14; font-weight:bold; text-align:center;"><i class="fas fa-exclamation-triangle"></i> 1 attempt used – Final attempt</p>`;
+                                buttonHTML =
+                                    `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-play"></i> Start 2nd Attempt</button>`;
                             } else {
-                                statusHTML = `<p style="color:#28a745; font-weight:bold; text-align:center;"><i class="fas fa-check-circle"></i> Ready to begin</p>`;
-                                buttonHTML = `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-play"></i> Start Pre-Exam</button>`;
+                                statusHTML =
+                                    `<p style="color:#28a745; font-weight:bold; text-align:center;"><i class="fas fa-check-circle"></i> Ready to begin</p>`;
+                                buttonHTML =
+                                    `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-play"></i> Start Pre-Exam</button>`;
                             }
                         }
                     }
 
                     let paidBadge = '';
                     if (d.payment === "YES") {
-                        paidBadge = hasPaid
-                            ? `<span style="background:#28a745; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-check-circle"></i> PAID</span>`
-                            : `<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-credit-card"></i> ₦100</span>`;
+                        paidBadge = hasPaid ?
+                            `<span style="background:#28a745; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-check-circle"></i> PAID</span>` :
+                            `<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-credit-card"></i> ₦100</span>`;
                     }
 
                     const cardHTML = `
@@ -2090,10 +1873,7 @@
                     courses.push(cardHTML);
                 }
 
-                // Cache the courses
                 setCachedCourses(courses);
-
-                // Render them
                 renderCourses(courses);
 
             } catch (err) {
@@ -2137,11 +1917,8 @@
                 const hrs = Math.floor(seconds / 3600);
                 const mins = Math.floor((seconds % 3600) / 60);
                 const secs = seconds % 60;
-                if (hrs > 0) {
-                    return `${hrs}h ${mins}m ${secs}s`;
-                } else {
-                    return `${mins}m ${secs}s`;
-                }
+                if (hrs > 0) return `${hrs}h ${mins}m ${secs}s`;
+                return `${mins}m ${secs}s`;
             }
 
             const interval = setInterval(() => {
@@ -2171,9 +1948,9 @@
 
             const resultCheck = await withRetry(() =>
                 db.collection("quizResults")
-                    .where("userId", "==", currentUser.id)
-                    .where("quizId", "==", quizId)
-                    .get()
+                .where("userId", "==", currentUser.id)
+                .where("quizId", "==", quizId)
+                .get()
             );
             const attempts = resultCheck.size;
             if (attempts >= 2) {
@@ -2198,9 +1975,9 @@
             if (quiz.payment === "YES") {
                 const paidSnap = await withRetry(() =>
                     db.collection("payments")
-                        .where("userId", "==", currentUser.id)
-                        .where("quizId", "==", quizId)
-                        .get()
+                    .where("userId", "==", currentUser.id)
+                    .where("quizId", "==", quizId)
+                    .get()
                 );
                 if (!paidSnap.empty) {
                     startQuiz(quizId);
@@ -2210,9 +1987,9 @@
                 const amountNaira = 100;
                 const amountInKobo = amountNaira * 100;
                 const courseName = quiz.courseName || "this pre-exam";
-                if (!confirm("Are you sure you want to pay ₦" + amountNaira + 
-                             " to start \"" + courseName + "\"?\n\n" +
-                             "This is a one-time payment for this pre-exam.")) {
+                if (!confirm("Are you sure you want to pay ₦" + amountNaira +
+                        " to start \"" + courseName + "\"?\n\n" +
+                        "This is a one-time payment for this pre-exam.")) {
                     alert("Payment cancelled. You can try again later.");
                     return;
                 }
@@ -2224,7 +2001,8 @@
                     }
                     try {
                         let userEmail = currentUser?.email;
-                        if (!userEmail || !userEmail.includes('@') || userEmail.includes('/') || userEmail.includes(' ')) {
+                        if (!userEmail || !userEmail.includes('@') || userEmail.includes('/') || userEmail.includes(
+                            ' ')) {
                             const cleanMatric = (currentUser.matricNumber || "unknown")
                                 .replace(/[^a-zA-Z0-9]/g, '')
                                 .toLowerCase();
@@ -2239,9 +2017,9 @@
                             last_name: currentUser.fullName?.split(' ').slice(1).join(' ') || "User",
                             onClose: () => {},
                             onSuccess: (response) => {
-                                const txRef = response.transaction_ref || 
-                                              response.reference || 
-                                              (response.formattedTransactionAmount ? "SQ-" + Date.now() : null);
+                                const txRef = response.transaction_ref ||
+                                    response.reference ||
+                                    (response.formattedTransactionAmount ? "SQ-" + Date.now() : null);
                                 const receivedAmount = response.transaction_amount || response.amount || 0;
                                 if (txRef && receivedAmount >= amountInKobo) {
                                     db.collection("payments").add({
@@ -2262,8 +2040,9 @@
                                     })
                                     .catch(err => {
                                         console.error("Firestore save failed:", err);
-                                        alert("Payment completed (Ref: " + txRef + 
-                                              "), but we couldn't save it. Contact support with this reference.");
+                                        alert("Payment completed (Ref: " + txRef +
+                                            "), but we couldn't save it. Contact support with this reference."
+                                            );
                                     });
                                 } else {
                                     alert("Payment attempted but could not confirm details. Check Squad dashboard.");
@@ -2286,7 +2065,6 @@
         // START QUIZ
         // ============================================================
         async function startQuiz(quizId) {
-            showLoading();
             try {
                 const quizDoc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
                 if (!quizDoc.exists) throw new Error("Quiz not found");
@@ -2294,20 +2072,20 @@
 
                 const resultCheck = await withRetry(() =>
                     db.collection("quizResults")
-                        .where("userId", "==", currentUser.id)
-                        .where("quizId", "==", quizId)
-                        .get()
+                    .where("userId", "==", currentUser.id)
+                    .where("quizId", "==", quizId)
+                    .get()
                 );
                 const attempts = resultCheck.size;
-                
+
                 const userDoc = await withRetry(() => db.collection('users').doc(currentUser.id).get());
                 const userData = userDoc.data();
                 const hasUnlimited = userData.unlimitedAttempts === true;
                 const maxAttempts = userData.maxAttempts || 2;
-                
+
                 if (!hasUnlimited && attempts >= maxAttempts) {
-                    hideLoading();
-                    alert(`You have already used your maximum of ${maxAttempts} attempts for this pre-exam.`);
+                    alert(
+                    `You have already used your maximum of ${maxAttempts} attempts for this pre-exam.`);
                     if (resultCheck.docs.length > 0) {
                         const latestResult = resultCheck.docs
                             .sort((a, b) => (b.data().timestamp?.seconds || 0) - (a.data().timestamp?.seconds || 0))[0];
@@ -2317,7 +2095,7 @@
                     }
                     return;
                 }
-                
+
                 if (hasUnlimited && attempts > 0) {
                     const remaining = 20 - attempts;
                     console.log(`📊 ${currentUser.fullName} has ${remaining} attempts remaining (unlimited mode)`);
@@ -2326,12 +2104,11 @@
                 if (quizData.payment === "YES") {
                     const paidSnap = await withRetry(() =>
                         db.collection("payments")
-                            .where("userId", "==", currentUser.id)
-                            .where("quizId", "==", quizId)
-                            .get()
+                        .where("userId", "==", currentUser.id)
+                        .where("quizId", "==", quizId)
+                        .get()
                     );
                     if (paidSnap.empty) {
-                        hideLoading();
                         alert("This pre-exam requires payment. Please complete payment first.");
                         return;
                     }
@@ -2355,7 +2132,9 @@
 
                 if (hasUnlimited && attempts >= 19) {
                     setTimeout(() => {
-                        alert(`⚠️ This is your ${attempts + 1}st attempt. You have ${20 - attempts - 1} attempts remaining.`);
+                        alert(
+                            `⚠️ This is your ${attempts + 1}st attempt. You have ${20 - attempts - 1} attempts remaining.`
+                            );
                     }, 800);
                 } else if (attempts === 1 && !hasUnlimited) {
                     setTimeout(() => {
@@ -2366,7 +2145,6 @@
                 alert(err.message || "Failed to start the quiz. Please try again.");
                 console.error("startQuiz error:", err);
             }
-            hideLoading();
         }
 
         // ============================================================
@@ -2447,15 +2225,17 @@
             container.style.display = 'block';
 
             if (!currentQuestions?.length) {
-                container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">No questions available to show.</p>';
+                container.innerHTML =
+                    '<p style="color:red; text-align:center; padding:1rem;">No questions available to show.</p>';
                 return;
             }
 
             currentQuestions.forEach((q, i) => {
                 const div = document.createElement('div');
-                div.style.cssText = 'padding:12px; margin-bottom:12px; border:1px solid #dee2e6; border-radius:8px; background:#f9f9f9;';
+                div.style.cssText =
+                    'padding:12px; margin-bottom:12px; border:1px solid #dee2e6; border-radius:8px; background:#f9f9f9;';
 
-                const qNum  = i + 1;
+                const qNum = i + 1;
                 const qText = q.question || '[Question text missing]';
 
                 let html = `<p><strong>Q${qNum}:</strong> ${qText}</p>`;
@@ -2492,7 +2272,7 @@
         }
 
         // ============================================================
-        // LOAD QUESTION (objective only)
+        // LOAD QUESTION
         // ============================================================
         function loadQuestion() {
             const q = currentQuestions[currentQuestionIndex];
@@ -2564,7 +2344,7 @@
         }
 
         // ============================================================
-        // SUBMIT QUIZ – feedback from Excel
+        // SUBMIT QUIZ
         // ============================================================
         function submitQuiz() {
             if (!confirm("Submit quiz now? You cannot go back after this.")) {
@@ -2595,10 +2375,10 @@
 
             let feedbackText;
             const percent = Number(percentage);
-            const feedback = currentQuiz.feedback || { 
-                low: 'Needs improvement', 
-                mid: 'Fair effort', 
-                high: 'Excellent performance' 
+            const feedback = currentQuiz.feedback || {
+                low: 'Needs improvement',
+                mid: 'Fair effort',
+                high: 'Excellent performance'
             };
             if (percent < 50) feedbackText = feedback.low;
             else if (percent < 70) feedbackText = feedback.mid;
@@ -2628,25 +2408,30 @@
         }
 
         // ============================================================
-        // ADMIN PANEL – Payments Overview shows maintenance payments (₦500)
+        // ADMIN PANEL
         // ============================================================
-        function showAdminTab(tab){
+        function showAdminTab(tab) {
             const cont = document.getElementById('admin-content');
-            if(!cont) return;
-            cont.innerHTML='';
+            if (!cont) return;
+            cont.innerHTML = '';
 
             if (tab === 'activities') {
                 cont.innerHTML = '<h3>Recent Activities & Statistics</h3><p>Loading...</p>';
-                const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-                const todayEnd   = new Date(); todayEnd.setHours(23,59,59,999);
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const todayEnd = new Date();
+                todayEnd.setHours(23, 59, 59, 999);
                 const todayStartTs = firebase.firestore.Timestamp.fromDate(todayStart);
-                const todayEndTs   = firebase.firestore.Timestamp.fromDate(todayEnd);
+                const todayEndTs = firebase.firestore.Timestamp.fromDate(todayEnd);
 
                 Promise.all([
                     withRetry(() => db.collection('users').get()),
-                    withRetry(() => db.collection('users').where('createdAt', '>=', todayStartTs).where('createdAt', '<=', todayEndTs).get()),
-                    withRetry(() => db.collection('users').where('lastLogin', '>=', todayStartTs).where('lastLogin', '<=', todayEndTs).get()),
-                    withRetry(() => db.collection('quizResults').where('timestamp', '>=', todayStartTs).where('timestamp', '<=', todayEndTs).get()),
+                    withRetry(() => db.collection('users').where('createdAt', '>=', todayStartTs).where('createdAt',
+                        '<=', todayEndTs).get()),
+                    withRetry(() => db.collection('users').where('lastLogin', '>=', todayStartTs).where('lastLogin',
+                        '<=', todayEndTs).get()),
+                    withRetry(() => db.collection('quizResults').where('timestamp', '>=', todayStartTs).where(
+                        'timestamp', '<=', todayEndTs).get()),
                     withRetry(() => db.collection('users').get()),
                     withRetry(() => db.collection('users').get()),
                     withRetry(() => db.collection('users').where('level', '==', '100').get()),
@@ -2699,7 +2484,8 @@
                     tableHTML += `</tbody></table></div>`;
 
                     const hasQuiz = new Set();
-                    (await withRetry(() => db.collection('quizResults').get())).docs.forEach(d => hasQuiz.add(d.data().userId));
+                    (await withRetry(() => db.collection('quizResults').get())).docs.forEach(d => hasQuiz.add(d.data()
+                        .userId));
                     const idleCount = allForIdle.docs.filter(doc => !hasQuiz.has(doc.id)).length;
 
                     cont.innerHTML = `
@@ -2719,16 +2505,14 @@
                     cont.innerHTML = `<p style="color:red;">Failed to load: ${err.message}</p>`;
                     console.error(err);
                 });
-            }
-            else if (tab === 'question-bank') {
+            } else if (tab === 'question-bank') {
                 cont.innerHTML = `
                     <input type="file" id="excelFile" accept=".xlsx,.xls">
                     <button onclick="uploadQuestionBank()"><i class="fas fa-upload"></i> Upload Question Bank</button>
                     <div id="bank-list"></div>
                 `;
                 loadQuestionBanks();
-            }
-            else if (tab === 'set-quiz') {
+            } else if (tab === 'set-quiz') {
                 cont.innerHTML = '<p>Loading banks...</p>';
                 withRetry(() => db.collection('questionBank').get()).then(snap => {
                     if (snap.empty) {
@@ -2749,13 +2533,13 @@
                     `;
                     cont.innerHTML = html;
                 });
-            }
-            else if (tab === 'payments') {
-                cont.innerHTML = '<h3><i class="fas fa-money-bill-wave"></i> Maintenance Payments (₦500)</h3><p>Loading stats...</p>';
+            } else if (tab === 'payments') {
+                cont.innerHTML =
+                '<h3><i class="fas fa-money-bill-wave"></i> Maintenance Payments (₦500)</h3><p>Loading stats...</p>';
                 withRetry(() =>
                     db.collection('maintenancePayments')
-                        .where('status', '==', 'success')
-                        .get()
+                    .where('status', '==', 'success')
+                    .get()
                 )
                 .then(async (snap) => {
                     const totalPaid = snap.size;
@@ -2779,8 +2563,8 @@
                         } else if (matric) {
                             const userSnap = await withRetry(() =>
                                 db.collection('users')
-                                    .where('matricNumber', '==', matric)
-                                    .get()
+                                .where('matricNumber', '==', matric)
+                                .get()
                             );
                             if (!userSnap.empty) {
                                 faculty = userSnap.docs[0].data().faculty;
@@ -2793,12 +2577,14 @@
                         }
                     }
 
-                    let facultyHTML = '<h4><i class="fas fa-university"></i> Breakdown by Faculty</h4><ul style="list-style:none; padding:0;">';
+                    let facultyHTML =
+                        '<h4><i class="fas fa-university"></i> Breakdown by Faculty</h4><ul style="list-style:none; padding:0;">';
                     let totalWithFaculty = 0;
                     FACULTIES.forEach(f => {
                         const count = facultyCounts[f];
                         totalWithFaculty += count;
-                        facultyHTML += `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>${f}</strong>: ${count} paid</li>`;
+                        facultyHTML +=
+                            `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>${f}</strong>: ${count} paid</li>`;
                     });
                     facultyHTML += `<li style="padding:4px 0; font-style:italic;">Unknown Faculty: ${unknown}</li>`;
                     facultyHTML += '</ul>';
@@ -2821,35 +2607,36 @@
         // ============================================================
         // QUESTION BANK LIST, UPLOAD, PUBLISH
         // ============================================================
-        async function loadQuestionBanks(){
-            const list=document.getElementById('bank-list');
-            if(!list) return;
-            const snaps=await withRetry(() => db.collection('questionBank').get());
-            list.innerHTML='';
-            snaps.forEach(doc=>{
-                const div=document.createElement('div');
-                div.textContent=doc.data().courseName;
+        async function loadQuestionBanks() {
+            const list = document.getElementById('bank-list');
+            if (!list) return;
+            const snaps = await withRetry(() => db.collection('questionBank').get());
+            list.innerHTML = '';
+            snaps.forEach(doc => {
+                const div = document.createElement('div');
+                div.textContent = doc.data().courseName;
                 list.appendChild(div);
             });
         }
 
-        async function uploadQuestionBank(){
-            const file=document.getElementById("excelFile").files[0];
-            if(!file){
+        async function uploadQuestionBank() {
+            await loadXLSX();
+            const file = document.getElementById("excelFile").files[0];
+            if (!file) {
                 alert("Choose Excel file");
                 return;
             }
-            const reader=new FileReader();
-            reader.onload=async function(e){
-                const data=new Uint8Array(e.target.result);
-                const workbook=XLSX.read(data,{type:"array"});
-                const sheet=workbook.Sheets[workbook.SheetNames[0]];
-                const rows=XLSX.utils.sheet_to_json(sheet);
-                if(!rows.length){
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet);
+                if (!rows.length) {
                     alert("Excel file is empty");
                     return;
                 }
-                if(!rows[0].Course){
+                if (!rows[0].Course) {
                     alert("Excel must contain a 'Course' column");
                     return;
                 }
@@ -2881,21 +2668,37 @@
             reader.readAsArrayBuffer(file);
         }
 
-        async function publishQuiz(){
-            const id=document.getElementById('bankSelect').value;
-            const level='100';
-            const releaseTime=document.getElementById('releaseTime').value;
-            if(!id) return alert("Select bank");
-            if(!releaseTime) return alert("Set release date & time");
-            const doc=await withRetry(() => db.collection('questionBank').doc(id).get());
+        function loadXLSX() {
+            return new Promise((resolve) => {
+                if (typeof XLSX !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = resolve;
+                document.head.appendChild(script);
+                setTimeout(resolve, 5000);
+            });
+        }
+
+        async function publishQuiz() {
+            const id = document.getElementById('bankSelect').value;
+            const level = '100';
+            const releaseTime = document.getElementById('releaseTime').value;
+            if (!id) return alert("Select bank");
+            if (!releaseTime) return alert("Set release date & time");
+            const doc = await withRetry(() => db.collection('questionBank').doc(id).get());
             const releaseDate = new Date(releaseTime);
             const releaseTimestamp = releaseDate.getTime();
             await db.collection('quizzes').add({
                 ...doc.data(),
                 level: '100',
-                status:'published',
+                status: 'published',
                 releaseTime: releaseTimestamp,
-                publishedAt:firebase.firestore.FieldValue.serverTimestamp()
+                publishedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             alert("Quiz Published!");
         }
@@ -2905,14 +2708,16 @@
         // ============================================================
         const surnameField = document.getElementById("lastName");
         const passwordField = document.getElementById("password");
-        surnameField?.addEventListener("keyup", function () {
+        surnameField?.addEventListener("keyup", function() {
             let surname = surnameField.value.toUpperCase();
             surnameField.value = surname;
             passwordField.value = surname;
         });
-        passwordField?.addEventListener("click", function () {
-            if(passwordField.value !== ""){
-                alert("Password has been automatically set to your SURNAME in CAPITAL LETTERS.\n\nPlease enter the same password in the Confirm Password field.");
+        passwordField?.addEventListener("click", function() {
+            if (passwordField.value !== "") {
+                alert(
+                    "Password has been automatically set to your SURNAME in CAPITAL LETTERS.\n\nPlease enter the same password in the Confirm Password field."
+                    );
             }
         });
 
@@ -2932,7 +2737,7 @@
         }
 
         // ============================================================
-        // PAGE LOAD – with verify button listener
+        // PAGE LOAD
         // ============================================================
         if (hasDevicePaid()) {
             document.getElementById('welcome-page').classList.add('hidden');
@@ -2944,11 +2749,10 @@
             }
         }
 
-        // Show/hide verify button on matric input
+        // Show/hide verify button
         document.addEventListener('DOMContentLoaded', function() {
             const matricInput = document.getElementById('paymentMatric');
             const verifyBtn = document.getElementById('verifyPaymentBtn');
-            
             if (matricInput && verifyBtn) {
                 matricInput.addEventListener('input', function() {
                     const matric = this.value.trim().toUpperCase();
@@ -2961,91 +2765,107 @@
             }
         });
 
-        window.addEventListener('load', function() {
-            // Ensure all Matric inputs force uppercase
-            document.querySelectorAll('input[type="text"]').forEach(input => {
-                if (input.id && (input.id.includes('matric') || input.id.includes('Matric'))) {
-                    input.addEventListener('input', function() {
-                        this.value = this.value.toUpperCase();
-                    });
+        // ============================================================
+        // AUTH STATE LISTENER
+        // ============================================================
+        auth.onAuthStateChanged(async function(user) {
+            if (user) {
+                const userDoc = await withRetry(() => db.collection('users').doc(user.uid).get());
+                if (!userDoc.exists) {
+                    await auth.signOut();
+                    localStorage.removeItem('melox_paid');
+                    showWelcome();
+                    return;
                 }
-            });
 
-            auth.onAuthStateChanged(async function(user) {
-                if (user) {
-                    const userDoc = await withRetry(() => db.collection('users').doc(user.uid).get());
-                    if (!userDoc.exists) {
-                        await auth.signOut();
-                        localStorage.removeItem('melox_paid');
-                        showWelcome();
-                        return;
+                const userData = userDoc.data();
+                const userRole = userData.role || 'student';
+
+                if (userRole === 'admin') {
+                    currentUser = {
+                        role: 'admin',
+                        id: user.uid,
+                        email: userData.email || user.email,
+                        fullName: userData.fullName || 'Admin'
+                    };
+                    document.getElementById('welcome-page').classList.add('hidden');
+                    showSection('admin-dashboard');
+                    showAdminTab('activities');
+                    check200LevelDeleted();
+                    hideLoading();
+                    return;
+                }
+
+                currentUser = userData;
+                currentUser.id = user.uid;
+
+                const paid = await checkUserPaid(currentUser.id, currentUser.matricNumber);
+                if (paid) {
+                    document.getElementById('welcome-page').classList.add('hidden');
+                    document.getElementById('student-name').textContent = currentUser.fullName || 'Student';
+                    loadCourses();
+                    showSection('student-dashboard');
+                    if (!currentUser.faculty) {
+                        document.getElementById('faculty-modal').style.display = 'flex';
                     }
-                    
-                    const userData = userDoc.data();
-                    const userRole = userData.role || 'student';
-                    
-                    // 🔑 CHECK IF ADMIN FIRST – skip payment check
-                    if (userRole === 'admin') {
-                        currentUser = {
-                            role: 'admin',
-                            id: user.uid,
-                            email: userData.email || user.email,
-                            fullName: userData.fullName || 'Admin'
-                        };
-                        document.getElementById('welcome-page').classList.add('hidden');
-                        showSection('admin-dashboard');
-                        showAdminTab('activities');
-                        check200LevelDeleted();
-                        hideLoading();
-                        return;
-                    }
-                    
-                    // 👨‍🎓 REGULAR STUDENT – check payment
-                    currentUser = userData;
-                    currentUser.id = user.uid;
-                    
-                    const paid = await checkUserPaid(currentUser.id, currentUser.matricNumber);
-                    if (paid) {
-                        document.getElementById('welcome-page').classList.add('hidden');
-                        document.getElementById('student-name').textContent = currentUser.fullName || 'Student';
-                        loadCourses();
-                        showSection('student-dashboard');
-                        if (!currentUser.faculty) {
-                            document.getElementById('faculty-modal').style.display = 'flex';
-                        }
-                        checkGlobalLock();
+                    checkGlobalLock();
+                } else {
+                    await auth.signOut();
+                    localStorage.removeItem('melox_paid');
+                    showWelcome();
+                }
+            } else {
+                const localPaid = localStorage.getItem('melox_paid');
+                if (localPaid === 'true') {
+                    document.getElementById('welcome-page').classList.add('hidden');
+                    const accountCreated = localStorage.getItem('meloxAccountCreated');
+                    if (accountCreated === 'yes') {
+                        showSection('login-section');
                     } else {
-                        await auth.signOut();
-                        localStorage.removeItem('melox_paid');
-                        showWelcome();
+                        showSection('signup-section');
                     }
                 } else {
-                    const localPaid = localStorage.getItem('melox_paid');
-                    if (localPaid === 'true') {
-                        document.getElementById('welcome-page').classList.add('hidden');
-                        const accountCreated = localStorage.getItem('meloxAccountCreated');
-                        if (accountCreated === 'yes') {
-                            showSection('login-section');
-                        } else {
-                            showSection('signup-section');
-                        }
-                    } else {
-                        showWelcome();
-                    }
+                    showWelcome();
                 }
-                hideLoading();
-            });
+            }
+            // Hide loading if still visible (after Firebase responds)
+            hideLoading();
         });
+
+        // Hide loading after 5 seconds as fallback
+        setTimeout(hideLoading, 5000);
 
         function showWelcome() {
             document.getElementById('welcome-page').classList.remove('hidden');
             document.getElementById('signup-section').classList.add('hidden');
             document.getElementById('login-section').classList.add('hidden');
-            hideLoading();
         }
 
-        console.log('✅ MELOX PRE EXAM 2.0 – Extremely fast with offline persistence & caching.');
-        console.log('✅ Network status detection active.');
+        // ============================================================
+        // EXPOSE FUNCTIONS TO GLOBAL SCOPE
+        // ============================================================
+        window.showSection = showSection;
+        window.logout = logout;
+        window.saveFaculty = saveFaculty;
+        window.closePaymentPopupAndProceed = closePaymentPopupAndProceed;
+        window.verifyPendingPayment = verifyPendingPayment;
+        window.searchStudent = searchStudent;
+        window.clearSearch = clearSearch;
+        window.deleteAll200LevelUsers = deleteAll200LevelUsers;
+        window.toggleGlobalLock = toggleGlobalLock;
+        window.prevQuestion = prevQuestion;
+        window.nextQuestion = nextQuestion;
+        window.submitQuiz = submitQuiz;
+        window.viewAnswers = viewAnswers;
+        window.showAdminTab = showAdminTab;
+        window.uploadQuestionBank = uploadQuestionBank;
+        window.publishQuiz = publishQuiz;
+        window.initPayment = initPayment;
+        window.checkPaymentAndStart = checkPaymentAndStart;
+        window.startCountdown = startCountdown;
+
+        console.log('✅ MELOX PRE EXAM 2.0 – Slow network optimized.');
+        console.log('✅ Loading overlay will auto-hide after 3 seconds.');
     </script>
 </body>
 </html>
