@@ -5,596 +5,534 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MELOX PRE EXAM 2.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Load Firebase with faster CDN (Cloudflare) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://checkout.squadco.com/widget/squad.min.js"></script>
     <style>
-   :root {
-    --primary: #007bff;
-    --yellow: #ffc107;
-    --yellow-dark: #e0a800;
-    --green: #28a745;
-    --red: #dc3545;
-    --gray: #6c757d;
-    --light: #f8f9fa;
-    --border: #dee2e6;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html, body {
-    height: 100%;
-    overflow-x: hidden;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f0f2f5;
-    color: #212529;
-    line-height: 1.45;
-    font-size: 15px;
-    min-height: 100vh;
-}
-
-header {
-    background: var(--yellow);
-    color: #212529;
-    text-align: center;
-    padding: 0.8rem 1rem 1.1rem;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-}
-
-.logo {
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-    border-radius: 50%;
-    border: 4px solid white;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    margin: 0 auto 0.5rem;
-    display: block;
-}
-
-header h1 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-
-header h1 i {
-    margin-right: 8px;
-}
-
-.container {
-    max-width: 100%;
-    margin: 0.6rem 0.7rem 1rem;
-    padding: 1.1rem 1rem;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-    min-height: calc(100vh - 160px);
-}
-
-h2 {
-    color: var(--primary);
-    text-align: center;
-    font-size: 1.25rem;
-    margin: 0.4rem 0 1rem;
-}
-
-h2 i {
-    margin-right: 8px;
-}
-
-.hidden { display: none !important; }
-
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-input, select {
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.97rem;
-    background: #fdfdfd;
-}
-
-input:focus, select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2.5px rgba(0,123,255,0.15);
-}
-
-button {
-    padding: 0.85rem;
-    font-size: 1.05rem;
-    font-weight: 600;
-    background: var(--yellow);
-    color: #212529;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-button i {
-    margin-right: 8px;
-}
-
-button:hover {
-    background: var(--yellow-dark);
-}
-
-button.blue {
-    background: var(--primary);
-    color: white;
-}
-
-button.green {
-    background: var(--green);
-    color: white;
-}
-
-button.danger {
-    background: var(--red);
-    color: white;
-}
-
-button.danger:hover {
-    background: #c82333;
-}
-
-#timer {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: var(--red);
-    text-align: center;
-    margin: 0.6rem 0;
-    padding: 0.4rem;
-    background: #fff5f5;
-    border-radius: 8px;
-}
-
-#timer i {
-    margin-right: 8px;
-}
-
-#question-progress {
-    font-size: 0.95rem;
-    color: #555;
-    text-align: center;
-    margin-bottom: 0.5rem;
-}
-
-#question-progress i {
-    margin-right: 6px;
-}
-
-#question-text {
-    font-size: 1.05rem;
-    margin: 0.8rem 0 1.1rem;
-}
-
-.options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-}
-
-.option-label {
-    display: flex;
-    align-items: center;
-    padding: 0.9rem 1rem;
-    background: var(--light);
-    border: 1.5px solid var(--border);
-    border-radius: 9px;
-    cursor: pointer;
-    font-size: 0.98rem;
-    min-height: 48px;
-}
-
-.option-label:hover {
-    background: #e9ecef;
-}
-
-input[type="radio"] {
-    margin-right: 0.8rem;
-    accent-color: var(--primary);
-    transform: scale(1.25);
-}
-
-.option-label.selected {
-    background: #e6ffed;
-    border-color: var(--green);
-}
-
-.navigation {
-    display: flex;
-    gap: 0.7rem;
-    margin-top: 1.3rem;
-}
-
-.navigation button {
-    flex: 1;
-    padding: 0.85rem;
-    font-size: 1rem;
-}
-
-#submit-btn {
-    background: var(--green) !important;
-}
-
-#results-card {
-    background: #f8f9fa;
-    padding: 1.3rem 1rem;
-    border-radius: 10px;
-    margin: 1rem 0;
-    border: 1px solid var(--border);
-}
-
-.result-row {
-    display: flex;
-    justify-content: space-between;
-    margin: 0.6rem 0;
-    font-size: 1.02rem;
-}
-
-.result-row i {
-    margin-right: 6px;
-}
-
-#loading {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    z-index: 9999;
-    transition: opacity 0.3s;
-}
-
-#loading.hidden {
-    display: none !important;
-}
-
-#loading i {
-    margin-right: 12px;
-}
-
-.admin-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin: 1rem 0;
-}
-
-.admin-nav button {
-    flex: 1 1 45%;
-    min-width: 110px;
-}
-
-.admin-nav button i {
-    margin-right: 8px;
-}
-
-.team-card{
-    background:#f5f5f5;
-    padding:15px 25px;
-    border-radius:10px;
-    text-align:center;
-    min-width:120px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
-}
-
-.team-card h4{
-    margin:0;
-    color:var(--green);
-}
-
-.team-card h4 i {
-    margin-right: 6px;
-}
-
-.team-card p{
-    font-size:0.85rem;
-    color:#555;
-}
-
-#faculty-modal, #channel-lock-screen {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    color: white;
-}
-
-.modal-content, .lock-content {
-    background: white;
-    color: #212529;
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 90%;
-    width: 420px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-
-.modal-content h2 i, .lock-content h2 i {
-    margin-right: 10px;
-}
-
-.modal-content select, .lock-content button {
-    width: 100%;
-    margin: 1.2rem 0;
-    padding: 1rem;
-    font-size: 1.1rem;
-}
-
-#countdown-lock {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--red);
-    margin: 1.5rem 0;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin: 1.5rem 0;
-}
-
-.stat-card {
-    background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 10px;
-    padding: 1.2rem;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.stat-card h4 { margin: 0 0 0.6rem; color: var(--primary); font-size: 1.1rem; }
-.stat-card h4 i { margin-right: 6px; }
-.stat-card p { font-size: 1.8rem; font-weight: bold; margin: 0; }
-
-@media (max-width: 600px) {
-    header { padding: 0.7rem 0.8rem 0.9rem; }
-    .logo { width: 65px; height: 65px; margin-bottom: 0.4rem; }
-    .container { margin: 0.5rem 0.6rem 0.8rem; padding: 1rem 0.9rem; }
-    h2 { font-size: 1.18rem; margin: 0.3rem 0 0.9rem; }
-    form { gap: 0.65rem; }
-    input, select, button { padding: 0.75rem 0.9rem; font-size: 0.95rem; }
-    .options { gap: 0.6rem; }
-    .option-label { padding: 0.85rem 0.95rem; font-size: 0.96rem; }
-    .navigation { gap: 0.6rem; margin-top: 1.1rem; }
-    #question-text { font-size: 1.02rem; margin: 0.7rem 0; }
-    #timer { font-size: 1.2rem; margin: 0.5rem 0; }
-}
-
-.nav-text {
-    cursor: pointer;
-    color: #007BFF;
-    text-decoration: underline;
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: inherit;
-}
-
-.nav-text i {
-    margin-right: 6px;
-}
-
-.nav-text:hover {
-    color: #0056b3;
-}
-
-.notice-card{
-    background:#fff3cd;
-    padding:18px 25px;
-    border-radius:10px;
-    text-align:center;
-    max-width:420px;
-    border:1px solid #ffeeba;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
-}
-
-.notice-card h4 i {
-    margin-right: 8px;
-}
-
-.notice-card p{
-    font-size:0.9rem;
-    color:#6c5700;
-    line-height:1.5;
-}
-
-.notice-card a{
-    color:#0a7cff;
-    font-weight:600;
-    text-decoration:underline;
-}
-
-.notice-card a i {
-    margin-right: 6px;
-}
-
-.delete-btn {
-    background: #dc3545;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin: 10px 0;
-}
-
-.delete-btn i {
-    margin-right: 8px;
-}
-
-.delete-btn:hover {
-    background: #c82333;
-}
-
-.delete-btn:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-}
-
-#welcome-page {
-    text-align: center;
-    padding: 1rem 0;
-}
-
-#welcome-page .message {
-    background: #fff0f0;
-    border-left: 6px solid #dc3545;
-    padding: 1.2rem;
-    border-radius: 8px;
-    margin: 1.5rem 0;
-    text-align: left;
-}
-
-#welcome-page .message p {
-    margin: 0.8rem 0;
-    font-size: 1.05rem;
-    line-height: 1.6;
-}
-
-#welcome-page .message strong {
-    color: #dc3545;
-    font-size: 1.2rem;
-}
-
-#welcome-page .message i {
-    margin-right: 6px;
-}
-
-#welcome-page .pay-section {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 10px;
-    margin: 1.5rem 0;
-}
-
-#welcome-page .pay-section h3 i {
-    margin-right: 8px;
-}
-
-#welcome-page input {
-    width: 100%;
-    max-width: 300px;
-    margin: 0.5rem auto;
-}
-
-#welcome-page .whatsapp-btn {
-    display: inline-block;
-    background: #25D366;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-top: 1rem;
-    transition: 0.2s;
-    font-size: 1.05rem;
-}
-
-#welcome-page .whatsapp-btn i {
-    margin-right: 10px;
-}
-
-#welcome-page .whatsapp-btn:hover {
-    background: #128C7E;
-}
-
-#paymentButtonContainer button {
-    min-width: 180px;
-}
-
-#paymentButtonContainer button i {
-    margin-right: 8px;
-}
-
-/* Payment Popup Modal */
-#payment-popup {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-}
-#payment-popup .popup-content {
-    background: white;
-    color: #212529;
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    position: relative;
-}
-#payment-popup .popup-content h2 {
-    color: var(--primary);
-    margin-bottom: 1rem;
-}
-#payment-popup .popup-content h2 i {
-    margin-right: 10px;
-}
-#payment-popup .popup-content p {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    margin: 0.8rem 0;
-    text-align: left;
-}
-#payment-popup .popup-content .highlight {
-    color: #dc3545;
-    font-weight: bold;
-}
-#payment-popup .popup-content button {
-    margin-top: 1.5rem;
-    padding: 0.8rem 2rem;
-    font-size: 1.1rem;
-}
-#payment-popup .popup-content button i {
-    margin-right: 8px;
-}
-/* Matric format helper */
-.matric-format-hint {
-    font-size: 0.85rem;
-    color: #666;
-    margin-top: 2px;
-}
-.matric-format-hint i {
-    margin-right: 4px;
-}
+        /* Your existing styles (keeping them exactly as they were) */
+        :root {
+            --primary: #007bff;
+            --yellow: #ffc107;
+            --yellow-dark: #e0a800;
+            --green: #28a745;
+            --red: #dc3545;
+            --gray: #6c757d;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #212529;
+            line-height: 1.45;
+            font-size: 15px;
+            min-height: 100vh;
+        }
+        header {
+            background: var(--yellow);
+            color: #212529;
+            text-align: center;
+            padding: 0.8rem 1rem 1.1rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            margin: 0 auto 0.5rem;
+            display: block;
+        }
+        header h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        header h1 i {
+            margin-right: 8px;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0.6rem 0.7rem 1rem;
+            padding: 1.1rem 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+            min-height: calc(100vh - 160px);
+        }
+        h2 {
+            color: var(--primary);
+            text-align: center;
+            font-size: 1.25rem;
+            margin: 0.4rem 0 1rem;
+        }
+        h2 i {
+            margin-right: 8px;
+        }
+        .hidden { display: none !important; }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        input, select {
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.97rem;
+            background: #fdfdfd;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2.5px rgba(0,123,255,0.15);
+        }
+        button {
+            padding: 0.85rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            background: var(--yellow);
+            color: #212529;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button i {
+            margin-right: 8px;
+        }
+        button:hover {
+            background: var(--yellow-dark);
+        }
+        button.blue {
+            background: var(--primary);
+            color: white;
+        }
+        button.green {
+            background: var(--green);
+            color: white;
+        }
+        button.danger {
+            background: var(--red);
+            color: white;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        #timer {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--red);
+            text-align: center;
+            margin: 0.6rem 0;
+            padding: 0.4rem;
+            background: #fff5f5;
+            border-radius: 8px;
+        }
+        #timer i {
+            margin-right: 8px;
+        }
+        #question-progress {
+            font-size: 0.95rem;
+            color: #555;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        #question-progress i {
+            margin-right: 6px;
+        }
+        #question-text {
+            font-size: 1.05rem;
+            margin: 0.8rem 0 1.1rem;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1rem;
+            background: var(--light);
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 0.98rem;
+            min-height: 48px;
+        }
+        .option-label:hover {
+            background: #e9ecef;
+        }
+        input[type="radio"] {
+            margin-right: 0.8rem;
+            accent-color: var(--primary);
+            transform: scale(1.25);
+        }
+        .option-label.selected {
+            background: #e6ffed;
+            border-color: var(--green);
+        }
+        .navigation {
+            display: flex;
+            gap: 0.7rem;
+            margin-top: 1.3rem;
+        }
+        .navigation button {
+            flex: 1;
+            padding: 0.85rem;
+            font-size: 1rem;
+        }
+        #submit-btn {
+            background: var(--green) !important;
+        }
+        #results-card {
+            background: #f8f9fa;
+            padding: 1.3rem 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 1px solid var(--border);
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.6rem 0;
+            font-size: 1.02rem;
+        }
+        .result-row i {
+            margin-right: 6px;
+        }
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            z-index: 9999;
+            transition: opacity 0.3s;
+        }
+        #loading.hidden {
+            display: none !important;
+        }
+        #loading i {
+            margin-right: 12px;
+        }
+        .admin-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin: 1rem 0;
+        }
+        .admin-nav button {
+            flex: 1 1 45%;
+            min-width: 110px;
+        }
+        .admin-nav button i {
+            margin-right: 8px;
+        }
+        .team-card {
+            background: #f5f5f5;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .team-card h4 {
+            margin: 0;
+            color: var(--green);
+        }
+        .team-card h4 i {
+            margin-right: 6px;
+        }
+        .team-card p {
+            font-size: 0.85rem;
+            color: #555;
+        }
+        #faculty-modal, #channel-lock-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+        }
+        .modal-content, .lock-content {
+            background: white;
+            color: #212529;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        .modal-content h2 i, .lock-content h2 i {
+            margin-right: 10px;
+        }
+        .modal-content select, .lock-content button {
+            width: 100%;
+            margin: 1.2rem 0;
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+        #countdown-lock {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--red);
+            margin: 1.5rem 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .stat-card h4 { margin: 0 0 0.6rem; color: var(--primary); font-size: 1.1rem; }
+        .stat-card h4 i { margin-right: 6px; }
+        .stat-card p { font-size: 1.8rem; font-weight: bold; margin: 0; }
+        @media (max-width: 600px) {
+            header { padding: 0.7rem 0.8rem 0.9rem; }
+            .logo { width: 65px; height: 65px; margin-bottom: 0.4rem; }
+            .container { margin: 0.5rem 0.6rem 0.8rem; padding: 1rem 0.9rem; }
+            h2 { font-size: 1.18rem; margin: 0.3rem 0 0.9rem; }
+            form { gap: 0.65rem; }
+            input, select, button { padding: 0.75rem 0.9rem; font-size: 0.95rem; }
+            .options { gap: 0.6rem; }
+            .option-label { padding: 0.85rem 0.95rem; font-size: 0.96rem; }
+            .navigation { gap: 0.6rem; margin-top: 1.1rem; }
+            #question-text { font-size: 1.02rem; margin: 0.7rem 0; }
+            #timer { font-size: 1.2rem; margin: 0.5rem 0; }
+        }
+        .nav-text {
+            cursor: pointer;
+            color: #007BFF;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: inherit;
+        }
+        .nav-text i {
+            margin-right: 6px;
+        }
+        .nav-text:hover {
+            color: #0056b3;
+        }
+        .notice-card {
+            background: #fff3cd;
+            padding: 18px 25px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 420px;
+            border: 1px solid #ffeeba;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .notice-card h4 i {
+            margin-right: 8px;
+        }
+        .notice-card p {
+            font-size: 0.9rem;
+            color: #6c5700;
+            line-height: 1.5;
+        }
+        .notice-card a {
+            color: #0a7cff;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+        .notice-card a i {
+            margin-right: 6px;
+        }
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .delete-btn i {
+            margin-right: 8px;
+        }
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        .delete-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        #welcome-page {
+            text-align: center;
+            padding: 1rem 0;
+        }
+        #welcome-page .message {
+            background: #fff0f0;
+            border-left: 6px solid #dc3545;
+            padding: 1.2rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        #welcome-page .message p {
+            margin: 0.8rem 0;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        #welcome-page .message strong {
+            color: #dc3545;
+            font-size: 1.2rem;
+        }
+        #welcome-page .message i {
+            margin-right: 6px;
+        }
+        #welcome-page .pay-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+        #welcome-page .pay-section h3 i {
+            margin-right: 8px;
+        }
+        #welcome-page input {
+            width: 100%;
+            max-width: 300px;
+            margin: 0.5rem auto;
+        }
+        #welcome-page .whatsapp-btn {
+            display: inline-block;
+            background: #25D366;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 1rem;
+            transition: 0.2s;
+            font-size: 1.05rem;
+        }
+        #welcome-page .whatsapp-btn i {
+            margin-right: 10px;
+        }
+        #welcome-page .whatsapp-btn:hover {
+            background: #128C7E;
+        }
+        #paymentButtonContainer button {
+            min-width: 180px;
+        }
+        #paymentButtonContainer button i {
+            margin-right: 8px;
+        }
+        #payment-popup {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        #payment-popup .popup-content {
+            background: white;
+            color: #212529;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        #payment-popup .popup-content h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        #payment-popup .popup-content h2 i {
+            margin-right: 10px;
+        }
+        #payment-popup .popup-content p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 0.8rem 0;
+            text-align: left;
+        }
+        #payment-popup .popup-content .highlight {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        #payment-popup .popup-content button {
+            margin-top: 1.5rem;
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+        }
+        #payment-popup .popup-content button i {
+            margin-right: 8px;
+        }
+        .matric-format-hint {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 2px;
+        }
+        .matric-format-hint i {
+            margin-right: 4px;
+        }
+        /* Network status indicator */
+        #networkStatus {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            z-index: 9999;
+            pointer-events: none;
+            display: none;
+        }
+        #networkStatus i {
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body>
     <div id="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+
+    <!-- Network status indicator -->
+    <div id="networkStatus"><i class="fas fa-wifi"></i> <span id="networkType">Loading...</span></div>
 
     <!-- Payment Popup Modal -->
     <div id="payment-popup">
@@ -653,7 +591,6 @@ input[type="radio"] {
     </header>
 
     <div class="container">
-
         <!-- ========== WELCOME / PAYMENT PAGE ========== -->
         <section id="welcome-page">
             <h2><i class="fas fa-hand-wave"></i> Welcome Back!</h2>
@@ -773,7 +710,6 @@ input[type="radio"] {
                     <strong id="feedback" style="color: var(--green);">Loading feedback...</strong>
                 </div>
             </div>
-            <!-- ===== PROJECT TEAM (Polokay & BTO only) ===== -->
             <div id="team-section" style="margin-top:2rem;">
                 <h3 style="text-align:center;"><i class="fas fa-users"></i> Project Team</h3>
                 <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:1rem;">
@@ -870,10 +806,66 @@ input[type="radio"] {
         const db = firebase.firestore();
 
         // ============================================================
+        // PERFORMANCE OPTIMIZATIONS – Enable offline persistence
+        // ============================================================
+        db.enablePersistence({ synchronizeTabs: true })
+            .then(() => console.log('✅ Firestore offline persistence enabled'))
+            .catch(err => console.warn('⚠️ Persistence not enabled:', err));
+
+        // Use long polling and increase cache size for slow networks
+        db.settings({
+            experimentalForceLongPolling: true,
+            cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+        });
+
+        // ============================================================
+        // NETWORK SPEED DETECTION
+        // ============================================================
+        function getNetworkStatus() {
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (!connection) return 'unknown';
+            const type = connection.effectiveType;
+            if (type === 'slow-2g' || type === '2g') return 'very-slow';
+            if (type === '3g' && connection.rtt > 400) return 'slow';
+            if (type === '3g') return 'medium';
+            return 'fast';
+        }
+
+        function updateNetworkIndicator() {
+            const el = document.getElementById('networkType');
+            const status = getNetworkStatus();
+            const icon = document.getElementById('networkStatus');
+            const map = {
+                'very-slow': '🐢 Very Slow (2G)',
+                'slow': '🐌 Slow (3G)',
+                'medium': '📶 Medium (3G+)',
+                'fast': '⚡ Fast (4G/5G)',
+                'unknown': '📶 Unknown'
+            };
+            if (el) el.textContent = map[status] || 'Unknown';
+            if (icon) icon.style.display = 'block';
+            // If very slow, show a persistent loading message
+            if (status === 'very-slow') {
+                document.getElementById('loading').innerHTML = `
+                    <div style="text-align:center; padding:2rem;">
+                        <i class="fas fa-wifi" style="font-size:3rem; color:#ffc107;"></i>
+                        <h3>Your network is very slow</h3>
+                        <p>Please wait while we load the platform...</p>
+                        <p style="font-size:0.8rem; color:#999;">This may take 30-60 seconds on 2G/3G networks.</p>
+                        <button onclick="location.reload()" class="blue" style="margin-top:1rem; padding:0.5rem 2rem;">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        // Show network status
+        setTimeout(updateNetworkIndicator, 500);
+
+        // ============================================================
         // VALIDATE MATRIC FORMAT (strict)
         // ============================================================
         function isValidMatric(matric) {
-            // Must be exactly: 3 uppercase letters, /, 2 digits, /, 4 digits
             return /^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric);
         }
 
@@ -881,22 +873,20 @@ input[type="radio"] {
         // NETWORK & LOADING ERROR HANDLER – Show offline page
         // ============================================================
         let offlinePageShowing = false;
-
         function showOfflinePage() {
             if (offlinePageShowing) return;
             offlinePageShowing = true;
             localStorage.setItem('melox_redirect_after_online', window.location.href);
             window.location.href = window.location.origin + '/offline.html';
         }
-
         window.addEventListener('offline', showOfflinePage);
         if (!navigator.onLine) showOfflinePage();
 
-        // Timeout for Firebase operations (fast fail)
+        // Timeout for Firebase operations (increased to 25s for slow networks)
         const originalFetch = window.fetch;
         window.fetch = function(...args) {
             const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Request timeout')), 12000);
+                setTimeout(() => reject(new Error('Request timeout')), 25000);
             });
             return Promise.race([
                 originalFetch.apply(this, args),
@@ -907,19 +897,13 @@ input[type="radio"] {
             });
         };
 
-        // Fast fail for Firestore .get()
+        // Fast fail for Firestore .get() with retry
         const originalCollection = db.collection;
         db.collection = function(name) {
             const collectionRef = originalCollection.call(this, name);
             const originalGet = collectionRef.get;
             collectionRef.get = function() {
-                const timeoutPromise = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error('Firestore timeout')), 12000);
-                });
-                return Promise.race([
-                    originalGet.call(this),
-                    timeoutPromise
-                ]).catch(function(error) {
+                return originalGet.call(this).catch(function(error) {
                     if (!navigator.onLine || error.message.includes('timeout')) showOfflinePage();
                     throw error;
                 });
@@ -929,6 +913,56 @@ input[type="radio"] {
 
         console.log('✅ Fast fail & offline handler installed.');
 
+        // ============================================================
+        // CACHE HELPER – localStorage for courses
+        // ============================================================
+        const COURSES_CACHE_KEY = 'melox_courses_cache';
+        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+        function getCachedCourses() {
+            try {
+                const raw = localStorage.getItem(COURSES_CACHE_KEY);
+                if (!raw) return null;
+                const data = JSON.parse(raw);
+                if (Date.now() - data.timestamp < CACHE_TTL) {
+                    return data.courses;
+                }
+                return null;
+            } catch { return null; }
+        }
+
+        function setCachedCourses(courses) {
+            try {
+                localStorage.setItem(COURSES_CACHE_KEY, JSON.stringify({
+                    courses: courses,
+                    timestamp: Date.now()
+                }));
+            } catch {}
+        }
+
+        // ============================================================
+        // RETRY WRAPPER FOR FIREBASE OPERATIONS
+        // ============================================================
+        async function withRetry(fn, maxRetries = 3, delay = 1000) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    return await fn();
+                } catch (err) {
+                    if (err.message && (err.message.includes('network') || err.message.includes('timeout') || err.code === 'auth/network-request-failed')) {
+                        console.log(`🔄 Retry ${i+1}/${maxRetries} after ${delay}ms`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // exponential backoff
+                    } else {
+                        throw err;
+                    }
+                }
+            }
+            throw new Error('Operation failed after multiple retries.');
+        }
+
+        // ============================================================
+        // REST OF YOUR CODE (keep existing functions, only override loadCourses)
+        // ============================================================
         let currentUser = null;
         let currentQuiz = null;
         let currentQuestions = [];
@@ -955,7 +989,7 @@ input[type="radio"] {
         // CACHED PAYMENT CHECK (cache for 10 minutes) & localStorage flag
         // ============================================================
         const PAYMENT_CACHE_KEY = 'melox_payment_cache';
-        const PAYMENT_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+        const PAYMENT_CACHE_TTL = 10 * 60 * 1000;
 
         function hasDevicePaid() {
             return localStorage.getItem('melox_paid') === 'true';
@@ -986,7 +1020,6 @@ input[type="radio"] {
             } catch {}
         }
 
-        // On page load, immediately hide welcome if device already paid
         if (hasDevicePaid()) {
             document.getElementById('welcome-page').classList.add('hidden');
             const accountCreated = localStorage.getItem('meloxAccountCreated');
@@ -1002,29 +1035,31 @@ input[type="radio"] {
         // ============================================================
         async function checkUserPaid(userId, matric) {
             if (!userId && !matric) return false;
-            // Always use uppercase for matric
             const upperMatric = matric ? matric.toUpperCase() : null;
-            // Try cache first
             if (upperMatric) {
                 const cached = getCachedPayment(upperMatric);
                 if (cached !== null) return cached;
             }
             try {
                 if (userId) {
-                    const snap = await db.collection('maintenancePayments')
-                        .where('userId', '==', userId)
-                        .where('status', '==', 'success')
-                        .get();
+                    const snap = await withRetry(() => 
+                        db.collection('maintenancePayments')
+                            .where('userId', '==', userId)
+                            .where('status', '==', 'success')
+                            .get()
+                    );
                     if (!snap.empty) {
                         if (upperMatric) setCachedPayment(upperMatric, true);
                         return true;
                     }
                 }
                 if (upperMatric) {
-                    const snap = await db.collection('maintenancePayments')
-                        .where('matric', '==', upperMatric)
-                        .where('status', '==', 'success')
-                        .get();
+                    const snap = await withRetry(() =>
+                        db.collection('maintenancePayments')
+                            .where('matric', '==', upperMatric)
+                            .where('status', '==', 'success')
+                            .get()
+                    );
                     const paid = !snap.empty;
                     setCachedPayment(upperMatric, paid);
                     return paid;
@@ -1051,7 +1086,7 @@ input[type="radio"] {
         if (paymentMatricInput) {
             paymentMatricInput.addEventListener('input', debounce(function() {
                 const matric = this.value.trim().toUpperCase();
-                this.value = matric; // force uppercase
+                this.value = matric;
                 const container = document.getElementById('paymentButtonContainer');
                 const statusEl = document.getElementById('paymentStatus');
                 const loadingEl = document.getElementById('paymentLoading');
@@ -1065,7 +1100,6 @@ input[type="radio"] {
                     return;
                 }
 
-                // Strict format validation
                 if (!isValidMatric(matric)) {
                     loadingEl.style.display = 'none';
                     statusEl.textContent = '⚠️ Invalid format. Must be: ABC/99/9999 (e.g. CSP/23/9123)';
@@ -1082,20 +1116,17 @@ input[type="radio"] {
         }
 
         async function checkMatricStatus(matric) {
-            // matric is already uppercase from the input handler
             const container = document.getElementById('paymentButtonContainer');
             const statusEl = document.getElementById('paymentStatus');
             const loadingEl = document.getElementById('paymentLoading');
 
             try {
-                // Check user existence (using uppercase matric)
-                const userSnap = await db.collection('users')
-                    .where('matricNumber', '==', matric)
-                    .get();
+                const userSnap = await withRetry(() =>
+                    db.collection('users').where('matricNumber', '==', matric).get()
+                );
                 const userExists = !userSnap.empty;
                 let userId = userExists ? userSnap.docs[0].id : null;
 
-                // Check payment (cached, using uppercase matric)
                 const paid = await checkUserPaid(userId, matric);
                 loadingEl.style.display = 'none';
 
@@ -1123,7 +1154,6 @@ input[type="radio"] {
                     `;
                     document.getElementById('goToLoginBtn').onclick = onClickAction;
 
-                    // Auto-redirect
                     setTimeout(() => {
                         document.getElementById('welcome-page').classList.add('hidden');
                         if (userExists) {
@@ -1185,7 +1215,6 @@ input[type="radio"] {
             document.getElementById('payment-popup').style.display = 'none';
             const matric = document.getElementById('payment-popup').dataset.matric;
             if (matric) {
-                // Validate again before proceeding
                 if (!isValidMatric(matric)) {
                     alert('Invalid Matric format. Please use format: ABC/99/9999 (e.g. CSP/23/9123)');
                     return;
@@ -1239,16 +1268,8 @@ input[type="radio"] {
                             console.log('💰 Squad onSuccess triggered!');
                             console.log('📦 Full response:', JSON.stringify(response, null, 2));
                             
-                            // Extract transaction details
-                            const txRef = response.transaction_ref || 
-                                          response.reference || 
-                                          ("SQ-" + Date.now());
-                            
-                            const receivedAmount = response.transaction_amount || 
-                                                  response.amount || 
-                                                  response.formattedTransactionAmount || 0;
-                            
-                            // Check if payment is valid (50000 kobo = ₦500)
+                            const txRef = response.transaction_ref || response.reference || ("SQ-" + Date.now());
+                            const receivedAmount = response.transaction_amount || response.amount || response.formattedTransactionAmount || 0;
                             const isValidPayment = receivedAmount >= amountInKobo;
                             
                             if (isValidPayment) {
@@ -1256,7 +1277,6 @@ input[type="radio"] {
                                 statusEl.style.color = '#666';
                                 
                                 try {
-                                    // Save to Firestore with retry logic
                                     let saved = false;
                                     let retryCount = 0;
                                     const maxRetries = 3;
@@ -1293,15 +1313,11 @@ input[type="radio"] {
                                             btn.disabled = false;
                                             btn.textContent = '✅ Paid';
                                         }
-                                        
-                                        // Re-check matric status
                                         document.getElementById('paymentMatric').dispatchEvent(new Event('input'));
-                                        
-                                        // Redirect after 2s
                                         setTimeout(async () => {
-                                            const userSnap = await db.collection('users')
-                                                .where('matricNumber', '==', matric)
-                                                .get();
+                                            const userSnap = await withRetry(() =>
+                                                db.collection('users').where('matricNumber', '==', matric).get()
+                                            );
                                             const exists = !userSnap.empty;
                                             document.getElementById('welcome-page').classList.add('hidden');
                                             if (exists) {
@@ -1313,7 +1329,6 @@ input[type="radio"] {
                                             }
                                         }, 2000);
                                     } else {
-                                        // If all retries failed, save to localStorage for manual fix
                                         localStorage.setItem('melox_pending_payment', JSON.stringify({
                                             matric: matric,
                                             amount: amountInKobo,
@@ -1328,7 +1343,6 @@ input[type="radio"] {
                                         }
                                         console.log('💾 Payment saved to localStorage for manual fix.');
                                     }
-                                    
                                 } catch (err) {
                                     console.error('❌ Critical error saving payment:', err);
                                     statusEl.textContent = '❌ Payment successful but failed to save. Please contact support with your Matric number.';
@@ -1338,9 +1352,7 @@ input[type="radio"] {
                                         btn.textContent = '✅ Paid (Contact Support)';
                                     }
                                 }
-                                
                             } else {
-                                // Payment amount doesn't match
                                 console.warn('⚠️ Payment amount mismatch:', receivedAmount, 'expected:', amountInKobo);
                                 statusEl.textContent = '⚠️ Payment amount mismatch. Please try again.';
                                 statusEl.style.color = 'red';
@@ -1387,7 +1399,6 @@ input[type="radio"] {
                     return;
                 }
                 
-                // Check if payment exists in Firestore
                 const paid = await checkUserPaid(null, matric);
                 
                 if (paid) {
@@ -1396,10 +1407,9 @@ input[type="radio"] {
                     localStorage.setItem('melox_paid', 'true');
                     setCachedPayment(matric, true);
                     
-                    // Check if user exists
-                    const userSnap = await db.collection('users')
-                        .where('matricNumber', '==', matric)
-                        .get();
+                    const userSnap = await withRetry(() =>
+                        db.collection('users').where('matricNumber', '==', matric).get()
+                    );
                     const exists = !userSnap.empty;
                     
                     setTimeout(() => {
@@ -1412,12 +1422,10 @@ input[type="radio"] {
                             document.getElementById('matricNumber').value = matric;
                         }
                     }, 1500);
-                    
                 } else {
                     statusEl.textContent = '❌ No payment found for this Matric. Please complete payment.';
                     statusEl.style.color = '#dc3545';
                 }
-                
             } catch (err) {
                 console.error('Verify payment error:', err);
                 statusEl.textContent = '❌ Error verifying payment. Please try again.';
@@ -1440,7 +1448,6 @@ input[type="radio"] {
                 return;
             }
             
-            // Validate format
             if (!/^[A-Z]{3}\/\d{2}\/\d{4}$/.test(matric)) {
                 resultsDiv.style.display = 'block';
                 resultsDiv.innerHTML = `
@@ -1461,12 +1468,9 @@ input[type="radio"] {
             `;
             
             try {
-                // Search in users collection
-                const userSnap = await firebase.firestore()
-                    .collection('users')
-                    .where('matricNumber', '==', matric)
-                    .get();
-                
+                const userSnap = await withRetry(() =>
+                    db.collection('users').where('matricNumber', '==', matric).get()
+                );
                 if (userSnap.empty) {
                     resultsDiv.innerHTML = `
                         <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
@@ -1481,26 +1485,21 @@ input[type="radio"] {
                 const userData = userDoc.data();
                 const userId = userDoc.id;
                 
-                // Check if they have paid
-                const paymentSnap = await firebase.firestore()
-                    .collection('maintenancePayments')
-                    .where('matric', '==', matric)
-                    .where('status', '==', 'success')
-                    .get();
-                
+                const paymentSnap = await withRetry(() =>
+                    db.collection('maintenancePayments')
+                        .where('matric', '==', matric)
+                        .where('status', '==', 'success')
+                        .get()
+                );
                 const hasPaid = !paymentSnap.empty;
-                let paymentData = null;
-                if (hasPaid) {
-                    paymentData = paymentSnap.docs[0].data();
-                }
+                let paymentData = hasPaid ? paymentSnap.docs[0].data() : null;
                 
-                // Get quiz results
-                const quizResultsSnap = await firebase.firestore()
-                    .collection('quizResults')
-                    .where('userId', '==', userId)
-                    .orderBy('timestamp', 'desc')
-                    .get();
-                
+                const quizResultsSnap = await withRetry(() =>
+                    db.collection('quizResults')
+                        .where('userId', '==', userId)
+                        .orderBy('timestamp', 'desc')
+                        .get()
+                );
                 const quizCount = quizResultsSnap.size;
                 const quizResults = [];
                 quizResultsSnap.forEach(doc => {
@@ -1515,15 +1514,11 @@ input[type="radio"] {
                     });
                 });
                 
-                // Build the results HTML
                 let html = `
                     <div style="background: white; border: 1px solid #dee2e6; border-radius: 10px; overflow: hidden;">
-                        <!-- Header -->
                         <div style="background: var(--primary); color: white; padding: 1rem;">
                             <h4 style="margin: 0;"><i class="fas fa-user-graduate"></i> Student Details: ${matric}</h4>
                         </div>
-                        
-                        <!-- User Info -->
                         <div style="padding: 1rem; border-bottom: 1px solid #dee2e6;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                                 <div><strong>Full Name:</strong> ${userData.fullName || 'N/A'}</div>
@@ -1534,16 +1529,12 @@ input[type="radio"] {
                                 <div><strong>User ID:</strong> <span style="font-size: 0.85rem; font-family: monospace;">${userId}</span></div>
                             </div>
                         </div>
-                        
-                        <!-- Timestamps -->
                         <div style="padding: 1rem; border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
                                 <div><strong>Account Created:</strong> ${userData.createdAt?.toDate?.()?.toLocaleString() || 'N/A'}</div>
                                 <div><strong>Last Login:</strong> ${userData.lastLogin?.toDate?.()?.toLocaleString() || 'N/A'}</div>
                             </div>
                         </div>
-                        
-                        <!-- Payment Status -->
                         <div style="padding: 1rem; border-bottom: 1px solid #dee2e6;">
                             <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                                 <strong>Payment Status:</strong>
@@ -1554,13 +1545,10 @@ input[type="radio"] {
                                 ${hasPaid && paymentData ? `<span style="font-size: 0.85rem; color: #666;">Paid on: ${paymentData.paidAt?.toDate?.()?.toLocaleString() || 'N/A'}</span>` : ''}
                             </div>
                         </div>
-                        
-                        <!-- Quiz Results -->
                         <div style="padding: 1rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                 <strong><i class="fas fa-chart-bar"></i> Quiz Results (${quizCount} attempts)</strong>
                             </div>
-                            
                             ${quizCount === 0 ? `
                                 <div style="color: #666; text-align: center; padding: 1rem;">
                                     <i class="fas fa-info-circle"></i> No quiz attempts yet.
@@ -1601,9 +1589,7 @@ input[type="radio"] {
                         </div>
                     </div>
                 `;
-                
                 resultsDiv.innerHTML = html;
-                
             } catch (err) {
                 console.error('Search error:', err);
                 resultsDiv.innerHTML = `
@@ -1644,7 +1630,7 @@ input[type="radio"] {
             showLoading();
 
             try {
-                const usersSnap = await db.collection('users').get();
+                const usersSnap = await withRetry(() => db.collection('users').get());
                 let deletedCount = 0, errorCount = 0;
                 for (const doc of usersSnap.docs) {
                     const data = doc.data();
@@ -1695,7 +1681,6 @@ input[type="radio"] {
                 hideLoading();
                 return alert('Please fill all required fields');
             }
-            // Strict validation
             if (!isValidMatric(matric)) {
                 hideLoading();
                 return alert('Invalid Matric format. Must be: ABC/99/9999 (e.g. CSP/23/9123)');
@@ -1713,20 +1698,22 @@ input[type="radio"] {
             }
 
             try {
-                const cred = await auth.createUserWithEmailAndPassword(matric + '@melox.com', password);
+                const cred = await withRetry(() => auth.createUserWithEmailAndPassword(matric + '@melox.com', password));
                 const uid = cred.user.uid;
-                await db.collection('users').doc(uid).set({
+                await withRetry(() => db.collection('users').doc(uid).set({
                     fullName,
                     matricNumber: matric,
                     level: '100',
                     role: 'student',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                const paymentSnap = await db.collection('maintenancePayments')
-                    .where('matric', '==', matric)
-                    .where('status', '==', 'success')
-                    .get();
+                }));
+                const paymentSnap = await withRetry(() =>
+                    db.collection('maintenancePayments')
+                        .where('matric', '==', matric)
+                        .where('status', '==', 'success')
+                        .get()
+                );
                 if (!paymentSnap.empty) {
                     await db.collection('maintenancePayments').doc(paymentSnap.docs[0].id).update({
                         userId: uid
@@ -1758,9 +1745,9 @@ input[type="radio"] {
             }
 
             try {
-                const cred = await auth.signInWithEmailAndPassword(matric + '@melox.com', pw);
+                const cred = await withRetry(() => auth.signInWithEmailAndPassword(matric + '@melox.com', pw));
                 const userRef = db.collection('users').doc(cred.user.uid);
-                const userDoc = await userRef.get();
+                const userDoc = await withRetry(() => userRef.get());
                 if (!userDoc.exists) {
                     await auth.signOut();
                     hideLoading();
@@ -1784,7 +1771,7 @@ input[type="radio"] {
                     return;
                 }
 
-                await userRef.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
+                await withRetry(() => userRef.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() }));
                 currentUser = userData;
                 currentUser.id = cred.user.uid;
                 document.getElementById('student-name').textContent = currentUser.fullName || 'Student';
@@ -1801,89 +1788,83 @@ input[type="radio"] {
             hideLoading();
         });
 
-// ============================================================
-// ADMIN LOGIN – USING FIREBASE AUTHENTICATION
-// ============================================================
-document.getElementById('admin-login-form')?.addEventListener('submit', async e => {
-    e.preventDefault();
-    showLoading();
-    
-    const password = document.getElementById('adminPassword')?.value || '';
-    const adminEmail = 'admin@melox.com';
-    
-    try {
-        // Try to sign in with Firebase Auth
-        const cred = await auth.signInWithEmailAndPassword(adminEmail, password);
-        const uid = cred.user.uid;
-        
-        // Check if admin document exists in Firestore
-        const adminDoc = await db.collection('users').doc(uid).get();
-        if (!adminDoc.exists) {
-            // Create admin document if it doesn't exist
-            await db.collection('users').doc(uid).set({
-                fullName: 'Melox Admin',
-                email: adminEmail,
-                role: 'admin',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            console.log('✅ Admin document created.');
-        } else {
-            // Update last login
-            await db.collection('users').doc(uid).update({
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-        
-        // Set current user as admin
-        currentUser = { 
-            role: 'admin',
-            id: uid,
-            email: adminEmail
-        };
-        
-        showSection('admin-dashboard');
-        showAdminTab('activities');
-        check200LevelDeleted();
-        hideLoading();
-        
-    } catch (error) {
-        console.error('Admin login error:', error);
-        if (error.code === 'auth/user-not-found') {
-            alert('Admin account not found. Creating one for you...');
-            // Create admin account automatically
+        // ============================================================
+        // ADMIN LOGIN – USING FIREBASE AUTHENTICATION
+        // ============================================================
+        document.getElementById('admin-login-form')?.addEventListener('submit', async e => {
+            e.preventDefault();
+            showLoading();
+            
+            const password = document.getElementById('adminPassword')?.value || '';
+            const adminEmail = 'admin@melox.com';
+            
             try {
-                const newCred = await auth.createUserWithEmailAndPassword(adminEmail, password);
-                await db.collection('users').doc(newCred.user.uid).set({
-                    fullName: 'Melox Admin',
-                    email: adminEmail,
-                    role: 'admin',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                const cred = await withRetry(() => auth.signInWithEmailAndPassword(adminEmail, password));
+                const uid = cred.user.uid;
+                
+                const adminDoc = await withRetry(() => db.collection('users').doc(uid).get());
+                if (!adminDoc.exists) {
+                    await withRetry(() => db.collection('users').doc(uid).set({
+                        fullName: 'Melox Admin',
+                        email: adminEmail,
+                        role: 'admin',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    }));
+                    console.log('✅ Admin document created.');
+                } else {
+                    await withRetry(() => db.collection('users').doc(uid).update({
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    }));
+                }
+                
                 currentUser = { 
                     role: 'admin',
-                    id: newCred.user.uid,
+                    id: uid,
                     email: adminEmail
                 };
+                
                 showSection('admin-dashboard');
                 showAdminTab('activities');
                 check200LevelDeleted();
-                alert('✅ Admin account created! Please login again.');
                 hideLoading();
-            } catch (createErr) {
-                alert('❌ Failed to create admin: ' + createErr.message);
-                hideLoading();
+                
+            } catch (error) {
+                console.error('Admin login error:', error);
+                if (error.code === 'auth/user-not-found') {
+                    alert('Admin account not found. Creating one for you...');
+                    try {
+                        const newCred = await withRetry(() => auth.createUserWithEmailAndPassword(adminEmail, password));
+                        await withRetry(() => db.collection('users').doc(newCred.user.uid).set({
+                            fullName: 'Melox Admin',
+                            email: adminEmail,
+                            role: 'admin',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        }));
+                        currentUser = { 
+                            role: 'admin',
+                            id: newCred.user.uid,
+                            email: adminEmail
+                        };
+                        showSection('admin-dashboard');
+                        showAdminTab('activities');
+                        check200LevelDeleted();
+                        alert('✅ Admin account created! Please login again.');
+                        hideLoading();
+                    } catch (createErr) {
+                        alert('❌ Failed to create admin: ' + createErr.message);
+                        hideLoading();
+                    }
+                } else if (error.code === 'auth/wrong-password') {
+                    alert('❌ Incorrect admin password. Please try again.');
+                    hideLoading();
+                } else {
+                    alert('❌ Admin login failed: ' + error.message);
+                    hideLoading();
+                }
             }
-        } else if (error.code === 'auth/wrong-password') {
-            alert('❌ Incorrect admin password. Please try again.');
-            hideLoading();
-        } else {
-            alert('❌ Admin login failed: ' + error.message);
-            hideLoading();
-        }
-    }
-});
+        });
 
         function logout() {
             showLoading();
@@ -1904,32 +1885,32 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         // ============================================================
         // FACULTY SAVE
         // ============================================================
-       async function saveFaculty() {
-    const select = document.getElementById('faculty-select');
-    const faculty = select.value;
-    if (!faculty || !FACULTIES.includes(faculty)) {
-        return alert("Please select a valid faculty.");
-    }
-    try {
-        // Check if user is logged in
-        if (!currentUser || !currentUser.id) {
-            alert('Please login first before selecting faculty.');
-            return;
+        async function saveFaculty() {
+            const select = document.getElementById('faculty-select');
+            const faculty = select.value;
+            if (!faculty || !FACULTIES.includes(faculty)) {
+                return alert("Please select a valid faculty.");
+            }
+            try {
+                if (!currentUser || !currentUser.id) {
+                    alert('Please login first before selecting faculty.');
+                    return;
+                }
+                await withRetry(() =>
+                    db.collection('users').doc(currentUser.id).update({
+                        faculty: faculty,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    })
+                );
+                currentUser.faculty = faculty;
+                document.getElementById('faculty-modal').style.display = 'none';
+                loadCourses();
+                showSection('student-dashboard');
+            } catch (err) {
+                console.error('Save faculty error:', err);
+                alert("Error saving faculty: " + err.message);
+            }
         }
-        
-        await db.collection('users').doc(currentUser.id).update({
-            faculty: faculty,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        currentUser.faculty = faculty;
-        document.getElementById('faculty-modal').style.display = 'none';
-        loadCourses();
-        showSection('student-dashboard');
-    } catch (err) {
-        console.error('Save faculty error:', err);
-        alert("Error saving faculty: " + err.message);
-    }
-}
 
         // ============================================================
         // GLOBAL LOCK
@@ -1937,12 +1918,14 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         async function toggleGlobalLock(enabled) {
             if (currentUser?.role !== 'admin') return;
             try {
-                await db.collection('config').doc('global').set({
-                    lockEnabled: enabled,
-                    channelLink: CHANNEL_LINK,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedBy: currentUser.id || 'admin'
-                }, { merge: true });
+                await withRetry(() =>
+                    db.collection('config').doc('global').set({
+                        lockEnabled: enabled,
+                        channelLink: CHANNEL_LINK,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: currentUser.id || 'admin'
+                    }, { merge: true })
+                );
                 alert(`Global channel mode ${enabled ? 'ENABLED' : 'DISABLED'}`);
             } catch (err) {
                 alert("Failed to update: " + err.message);
@@ -1951,7 +1934,9 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
 
         async function checkGlobalLock() {
             try {
-                const configSnap = await db.collection('config').doc('global').get();
+                const configSnap = await withRetry(() =>
+                    db.collection('config').doc('global').get()
+                );
                 if (!configSnap.exists || configSnap.data().lockEnabled !== true) {
                     document.getElementById('channel-lock-screen').style.display = 'none';
                     return;
@@ -1988,31 +1973,45 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         }
 
         // ============================================================
-        // LOAD COURSES (optimized – batch queries)
+        // LOAD COURSES (optimized – batch queries + cache)
         // ============================================================
         async function loadCourses() {
             const list = document.getElementById('course-list');
             if (!list) return;
-            list.innerHTML = '<p style="text-align:center; color:#555;"><i class="fas fa-spinner fa-spin"></i> Loading available pre-exams...</p>';
 
+            // Try loading from cache first
+            const cached = getCachedCourses();
+            if (cached) {
+                console.log('✅ Loaded courses from cache');
+                renderCourses(cached);
+                // Still fetch in background to update cache
+                fetchCoursesInBackground();
+                return;
+            }
+
+            // No cache – load from server
+            list.innerHTML = '<p style="text-align:center; color:#555;"><i class="fas fa-spinner fa-spin"></i> Loading available pre-exams...</p>';
+            await fetchCoursesInBackground();
+        }
+
+        async function fetchCoursesInBackground() {
             try {
-                const quizzesSnap = await db.collection('quizzes')
-                    .where('status', '==', 'published')
-                    .where('level', '==', '100')
-                    .get();
+                const quizzesSnap = await withRetry(() =>
+                    db.collection('quizzes')
+                        .where('status', '==', 'published')
+                        .where('level', '==', '100')
+                        .get()
+                );
 
                 if (quizzesSnap.empty) {
+                    const list = document.getElementById('course-list');
                     list.innerHTML = '<p style="text-align:center; color:#666; padding:2rem;"><i class="fas fa-info-circle"></i> No pre-exams available at this time.</p>';
                     return;
                 }
 
                 const [resultsSnap, paymentsSnap] = await Promise.all([
-                    db.collection('quizResults')
-                        .where('userId', '==', currentUser.id)
-                        .get(),
-                    db.collection('payments')
-                        .where('userId', '==', currentUser.id)
-                        .get()
+                    withRetry(() => db.collection('quizResults').where('userId', '==', currentUser.id).get()),
+                    withRetry(() => db.collection('payments').where('userId', '==', currentUser.id).get())
                 ]);
 
                 const attemptMap = {};
@@ -2029,9 +2028,8 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
                     paidMap[qid] = true;
                 });
 
-                list.innerHTML = '';
+                const courses = [];
                 const nowTime = Date.now();
-
                 for (const doc of quizzesSnap.docs) {
                     const d = doc.data();
                     const quizId = doc.id;
@@ -2039,16 +2037,6 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
                     const hasPaid = !!paidMap[quizId];
                     const releaseTime = d.releaseTime || 0;
                     const isAvailableNow = nowTime >= releaseTime;
-
-                    const card = document.createElement('div');
-                    card.style.cssText = `
-                        padding: 1.2rem;
-                        border: 1px solid #dee2e6;
-                        border-radius: 12px;
-                        background: white;
-                        margin-bottom: 1.2rem;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                    `;
 
                     let statusHTML = '';
                     let buttonHTML = '';
@@ -2088,7 +2076,7 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
                             : `<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-credit-card"></i> ₦100</span>`;
                     }
 
-                    card.innerHTML = `
+                    const cardHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
                             <h3 style="margin:0; font-size:1.15rem;"><i class="fas fa-book"></i> ${d.courseName || 'Pre-Exam'}</h3>
                             ${paidBadge}
@@ -2099,16 +2087,43 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
                         ${statusHTML}
                         ${buttonHTML}
                     `;
-                    list.appendChild(card);
+                    courses.push(cardHTML);
                 }
+
+                // Cache the courses
+                setCachedCourses(courses);
+
+                // Render them
+                renderCourses(courses);
+
             } catch (err) {
+                console.error('loadCourses error:', err);
+                const list = document.getElementById('course-list');
                 list.innerHTML = `
                     <p style="color:#dc3545; text-align:center; padding:2rem;">
                         <i class="fas fa-exclamation-circle"></i> Sorry, couldn't load pre-exams right now.<br>Please try again later.
                     </p>
                 `;
-                console.error("loadCourses error:", err);
             }
+        }
+
+        function renderCourses(courses) {
+            const list = document.getElementById('course-list');
+            if (!list) return;
+            list.innerHTML = '';
+            courses.forEach(html => {
+                const div = document.createElement('div');
+                div.style.cssText = `
+                    padding: 1.2rem;
+                    border: 1px solid #dee2e6;
+                    border-radius: 12px;
+                    background: white;
+                    margin-bottom: 1.2rem;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                `;
+                div.innerHTML = html;
+                list.appendChild(div);
+            });
         }
 
         // ============================================================
@@ -2147,17 +2162,19 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         // CHECK PAYMENT & START QUIZ
         // ============================================================
         async function checkPaymentAndStart(quizId) {
-            const doc = await db.collection('quizzes').doc(quizId).get();
+            const doc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
             if (!doc.exists) {
                 alert("Quiz not found");
                 return;
             }
             const quiz = doc.data();
 
-            const resultCheck = await db.collection("quizResults")
-                .where("userId", "==", currentUser.id)
-                .where("quizId", "==", quizId)
-                .get();
+            const resultCheck = await withRetry(() =>
+                db.collection("quizResults")
+                    .where("userId", "==", currentUser.id)
+                    .where("quizId", "==", quizId)
+                    .get()
+            );
             const attempts = resultCheck.size;
             if (attempts >= 2) {
                 alert("You have already used your 2 attempts. Please view your previous result.");
@@ -2179,10 +2196,12 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
             }
 
             if (quiz.payment === "YES") {
-                const paidSnap = await db.collection("payments")
-                    .where("userId", "==", currentUser.id)
-                    .where("quizId", "==", quizId)
-                    .get();
+                const paidSnap = await withRetry(() =>
+                    db.collection("payments")
+                        .where("userId", "==", currentUser.id)
+                        .where("quizId", "==", quizId)
+                        .get()
+                );
                 if (!paidSnap.empty) {
                     startQuiz(quizId);
                     return;
@@ -2267,87 +2286,88 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         // START QUIZ
         // ============================================================
         async function startQuiz(quizId) {
-    showLoading();
-    try {
-        const quizDoc = await db.collection('quizzes').doc(quizId).get();
-        if (!quizDoc.exists) throw new Error("Quiz not found");
-        const quizData = quizDoc.data();
+            showLoading();
+            try {
+                const quizDoc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
+                if (!quizDoc.exists) throw new Error("Quiz not found");
+                const quizData = quizDoc.data();
 
-        const resultCheck = await db.collection("quizResults")
-            .where("userId", "==", currentUser.id)
-            .where("quizId", "==", quizId)
-            .get();
-        const attempts = resultCheck.size;
-        
-        // ===== CHECK FOR UNLIMITED ATTEMPTS =====
-        // Check if user has unlimitedAttempts flag
-        const userDoc = await db.collection('users').doc(currentUser.id).get();
-        const userData = userDoc.data();
-        const hasUnlimited = userData.unlimitedAttempts === true;
-        const maxAttempts = userData.maxAttempts || 2;
-        
-        if (!hasUnlimited && attempts >= maxAttempts) {
-            hideLoading();
-            alert(`You have already used your maximum of ${maxAttempts} attempts for this pre-exam.`);
-            if (resultCheck.docs.length > 0) {
-                const latestResult = resultCheck.docs
-                    .sort((a, b) => (b.data().timestamp?.seconds || 0) - (a.data().timestamp?.seconds || 0))[0];
-                if (confirm("Would you like to view your most recent result?")) {
-                    showOldResult(latestResult.data());
+                const resultCheck = await withRetry(() =>
+                    db.collection("quizResults")
+                        .where("userId", "==", currentUser.id)
+                        .where("quizId", "==", quizId)
+                        .get()
+                );
+                const attempts = resultCheck.size;
+                
+                const userDoc = await withRetry(() => db.collection('users').doc(currentUser.id).get());
+                const userData = userDoc.data();
+                const hasUnlimited = userData.unlimitedAttempts === true;
+                const maxAttempts = userData.maxAttempts || 2;
+                
+                if (!hasUnlimited && attempts >= maxAttempts) {
+                    hideLoading();
+                    alert(`You have already used your maximum of ${maxAttempts} attempts for this pre-exam.`);
+                    if (resultCheck.docs.length > 0) {
+                        const latestResult = resultCheck.docs
+                            .sort((a, b) => (b.data().timestamp?.seconds || 0) - (a.data().timestamp?.seconds || 0))[0];
+                        if (confirm("Would you like to view your most recent result?")) {
+                            showOldResult(latestResult.data());
+                        }
+                    }
+                    return;
                 }
+                
+                if (hasUnlimited && attempts > 0) {
+                    const remaining = 20 - attempts;
+                    console.log(`📊 ${currentUser.fullName} has ${remaining} attempts remaining (unlimited mode)`);
+                }
+
+                if (quizData.payment === "YES") {
+                    const paidSnap = await withRetry(() =>
+                        db.collection("payments")
+                            .where("userId", "==", currentUser.id)
+                            .where("quizId", "==", quizId)
+                            .get()
+                    );
+                    if (paidSnap.empty) {
+                        hideLoading();
+                        alert("This pre-exam requires payment. Please complete payment first.");
+                        return;
+                    }
+                }
+
+                currentQuiz = quizData;
+                currentQuiz.id = quizId;
+                currentQuestions = currentQuiz.questions || [];
+                if (currentQuestions.length === 0) {
+                    throw new Error("No questions available in this quiz");
+                }
+                currentQuestionIndex = 0;
+                selectedAnswers = new Array(currentQuestions.length).fill(null);
+                quizStartTime = Date.now();
+
+                document.getElementById('quiz-course-name').textContent = currentQuiz.courseName || 'Pre-Exam';
+                document.getElementById('q-total').textContent = currentQuestions.length;
+                showSection('quiz-section');
+                startTimer();
+                loadQuestion();
+
+                if (hasUnlimited && attempts >= 19) {
+                    setTimeout(() => {
+                        alert(`⚠️ This is your ${attempts + 1}st attempt. You have ${20 - attempts - 1} attempts remaining.`);
+                    }, 800);
+                } else if (attempts === 1 && !hasUnlimited) {
+                    setTimeout(() => {
+                        alert("This is your second and final attempt. Good luck!");
+                    }, 800);
+                }
+            } catch (err) {
+                alert(err.message || "Failed to start the quiz. Please try again.");
+                console.error("startQuiz error:", err);
             }
-            return;
+            hideLoading();
         }
-        
-        // If unlimited, show remaining attempts (optional)
-        if (hasUnlimited && attempts > 0) {
-            const remaining = 20 - attempts;
-            console.log(`📊 ${currentUser.fullName} has ${remaining} attempts remaining (unlimited mode)`);
-        }
-
-        if (quizData.payment === "YES") {
-            const paidSnap = await db.collection("payments")
-                .where("userId", "==", currentUser.id)
-                .where("quizId", "==", quizId)
-                .get();
-            if (paidSnap.empty) {
-                hideLoading();
-                alert("This pre-exam requires payment. Please complete payment first.");
-                return;
-            }
-        }
-
-        currentQuiz = quizData;
-        currentQuiz.id = quizId;
-        currentQuestions = currentQuiz.questions || [];
-        if (currentQuestions.length === 0) {
-            throw new Error("No questions available in this quiz");
-        }
-        currentQuestionIndex = 0;
-        selectedAnswers = new Array(currentQuestions.length).fill(null);
-        quizStartTime = Date.now();
-
-        document.getElementById('quiz-course-name').textContent = currentQuiz.courseName || 'Pre-Exam';
-        document.getElementById('q-total').textContent = currentQuestions.length;
-        showSection('quiz-section');
-        startTimer();
-        loadQuestion();
-
-        if (hasUnlimited && attempts >= 19) {
-            setTimeout(() => {
-                alert(`⚠️ This is your ${attempts + 1}st attempt. You have ${20 - attempts - 1} attempts remaining.`);
-            }, 800);
-        } else if (attempts === 1 && !hasUnlimited) {
-            setTimeout(() => {
-                alert("This is your second and final attempt. Good luck!");
-            }, 800);
-        }
-    } catch (err) {
-        alert(err.message || "Failed to start the quiz. Please try again.");
-        console.error("startQuiz error:", err);
-    }
-    hideLoading();
-}
 
         // ============================================================
         // TIMER
@@ -2396,7 +2416,7 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         // ============================================================
         async function showOldResult(data) {
             try {
-                const quizDoc = await db.collection('quizzes').doc(data.quizId).get();
+                const quizDoc = await withRetry(() => db.collection('quizzes').doc(data.quizId).get());
                 if (!quizDoc.exists) {
                     alert("Quiz data not found");
                     return;
@@ -2623,14 +2643,14 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
                 const todayEndTs   = firebase.firestore.Timestamp.fromDate(todayEnd);
 
                 Promise.all([
-                    db.collection('users').get(),
-                    db.collection('users').where('createdAt', '>=', todayStartTs).where('createdAt', '<=', todayEndTs).get(),
-                    db.collection('users').where('lastLogin', '>=', todayStartTs).where('lastLogin', '<=', todayEndTs).get(),
-                    db.collection('quizResults').where('timestamp', '>=', todayStartTs).where('timestamp', '<=', todayEndTs).get(),
-                    db.collection('users').get(),
-                    db.collection('users').get(),
-                    db.collection('users').where('level', '==', '100').get(),
-                    db.collection('users').where('level', '==', '200').get()
+                    withRetry(() => db.collection('users').get()),
+                    withRetry(() => db.collection('users').where('createdAt', '>=', todayStartTs).where('createdAt', '<=', todayEndTs).get()),
+                    withRetry(() => db.collection('users').where('lastLogin', '>=', todayStartTs).where('lastLogin', '<=', todayEndTs).get()),
+                    withRetry(() => db.collection('quizResults').where('timestamp', '>=', todayStartTs).where('timestamp', '<=', todayEndTs).get()),
+                    withRetry(() => db.collection('users').get()),
+                    withRetry(() => db.collection('users').get()),
+                    withRetry(() => db.collection('users').where('level', '==', '100').get()),
+                    withRetry(() => db.collection('users').where('level', '==', '200').get())
                 ])
                 .then(async ([total, newToday, logins, quizzes, allUsers, allForIdle, lvl100, lvl200]) => {
                     const facultyStats = {};
@@ -2679,7 +2699,7 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
                     tableHTML += `</tbody></table></div>`;
 
                     const hasQuiz = new Set();
-                    (await db.collection('quizResults').get()).docs.forEach(d => hasQuiz.add(d.data().userId));
+                    (await withRetry(() => db.collection('quizResults').get())).docs.forEach(d => hasQuiz.add(d.data().userId));
                     const idleCount = allForIdle.docs.filter(doc => !hasQuiz.has(doc.id)).length;
 
                     cont.innerHTML = `
@@ -2710,7 +2730,7 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
             }
             else if (tab === 'set-quiz') {
                 cont.innerHTML = '<p>Loading banks...</p>';
-                db.collection('questionBank').get().then(snap => {
+                withRetry(() => db.collection('questionBank').get()).then(snap => {
                     if (snap.empty) {
                         cont.innerHTML = '<p style="color:red;">No banks uploaded yet</p>';
                         return;
@@ -2731,68 +2751,70 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
                 });
             }
             else if (tab === 'payments') {
-                // Show maintenance payments (₦500)
                 cont.innerHTML = '<h3><i class="fas fa-money-bill-wave"></i> Maintenance Payments (₦500)</h3><p>Loading stats...</p>';
-                db.collection('maintenancePayments')
-                    .where('status', '==', 'success')
-                    .get()
-                    .then(async (snap) => {
-                        const totalPaid = snap.size;
-                        const totalRevenue = totalPaid * 500;
+                withRetry(() =>
+                    db.collection('maintenancePayments')
+                        .where('status', '==', 'success')
+                        .get()
+                )
+                .then(async (snap) => {
+                    const totalPaid = snap.size;
+                    const totalRevenue = totalPaid * 500;
 
-                        // Faculty breakdown
-                        const facultyCounts = {};
-                        FACULTIES.forEach(f => facultyCounts[f] = 0);
-                        let unknown = 0;
+                    const facultyCounts = {};
+                    FACULTIES.forEach(f => facultyCounts[f] = 0);
+                    let unknown = 0;
 
-                        for (const doc of snap.docs) {
-                            const data = doc.data();
-                            let userId = data.userId;
-                            let matric = data.matric;
-                            let faculty = null;
+                    for (const doc of snap.docs) {
+                        const data = doc.data();
+                        let userId = data.userId;
+                        let matric = data.matric;
+                        let faculty = null;
 
-                            if (userId) {
-                                const userDoc = await db.collection('users').doc(userId).get();
-                                if (userDoc.exists) {
-                                    faculty = userDoc.data().faculty;
-                                }
-                            } else if (matric) {
-                                const userSnap = await db.collection('users')
-                                    .where('matricNumber', '==', matric)
-                                    .get();
-                                if (!userSnap.empty) {
-                                    faculty = userSnap.docs[0].data().faculty;
-                                }
+                        if (userId) {
+                            const userDoc = await withRetry(() => db.collection('users').doc(userId).get());
+                            if (userDoc.exists) {
+                                faculty = userDoc.data().faculty;
                             }
-                            if (faculty && facultyCounts.hasOwnProperty(faculty)) {
-                                facultyCounts[faculty]++;
-                            } else {
-                                unknown++;
+                        } else if (matric) {
+                            const userSnap = await withRetry(() =>
+                                db.collection('users')
+                                    .where('matricNumber', '==', matric)
+                                    .get()
+                            );
+                            if (!userSnap.empty) {
+                                faculty = userSnap.docs[0].data().faculty;
                             }
                         }
+                        if (faculty && facultyCounts.hasOwnProperty(faculty)) {
+                            facultyCounts[faculty]++;
+                        } else {
+                            unknown++;
+                        }
+                    }
 
-                        let facultyHTML = '<h4><i class="fas fa-university"></i> Breakdown by Faculty</h4><ul style="list-style:none; padding:0;">';
-                        let totalWithFaculty = 0;
-                        FACULTIES.forEach(f => {
-                            const count = facultyCounts[f];
-                            totalWithFaculty += count;
-                            facultyHTML += `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>${f}</strong>: ${count} paid</li>`;
-                        });
-                        facultyHTML += `<li style="padding:4px 0; font-style:italic;">Unknown Faculty: ${unknown}</li>`;
-                        facultyHTML += '</ul>';
-
-                        cont.innerHTML = `
-                            <div class="stats-grid">
-                                <div class="stat-card"><h4><i class="fas fa-users"></i> Total Paid</h4><p>${totalPaid}</p></div>
-                                <div class="stat-card"><h4><i class="fas fa-money-bill-wave"></i> Total Revenue</h4><p>₦${totalRevenue}</p></div>
-                            </div>
-                            ${facultyHTML}
-                        `;
-                    })
-                    .catch(err => {
-                        cont.innerHTML = `<p style="color:red;">Failed to load payment stats: ${err.message}</p>`;
-                        console.error(err);
+                    let facultyHTML = '<h4><i class="fas fa-university"></i> Breakdown by Faculty</h4><ul style="list-style:none; padding:0;">';
+                    let totalWithFaculty = 0;
+                    FACULTIES.forEach(f => {
+                        const count = facultyCounts[f];
+                        totalWithFaculty += count;
+                        facultyHTML += `<li style="padding:4px 0; border-bottom:1px solid #eee;"><strong>${f}</strong>: ${count} paid</li>`;
                     });
+                    facultyHTML += `<li style="padding:4px 0; font-style:italic;">Unknown Faculty: ${unknown}</li>`;
+                    facultyHTML += '</ul>';
+
+                    cont.innerHTML = `
+                        <div class="stats-grid">
+                            <div class="stat-card"><h4><i class="fas fa-users"></i> Total Paid</h4><p>${totalPaid}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-money-bill-wave"></i> Total Revenue</h4><p>₦${totalRevenue}</p></div>
+                        </div>
+                        ${facultyHTML}
+                    `;
+                })
+                .catch(err => {
+                    cont.innerHTML = `<p style="color:red;">Failed to load payment stats: ${err.message}</p>`;
+                    console.error(err);
+                });
             }
         }
 
@@ -2802,7 +2824,7 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         async function loadQuestionBanks(){
             const list=document.getElementById('bank-list');
             if(!list) return;
-            const snaps=await db.collection('questionBank').get();
+            const snaps=await withRetry(() => db.collection('questionBank').get());
             list.innerHTML='';
             snaps.forEach(doc=>{
                 const div=document.createElement('div');
@@ -2865,7 +2887,7 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
             const releaseTime=document.getElementById('releaseTime').value;
             if(!id) return alert("Select bank");
             if(!releaseTime) return alert("Set release date & time");
-            const doc=await db.collection('questionBank').doc(id).get();
+            const doc=await withRetry(() => db.collection('questionBank').doc(id).get());
             const releaseDate = new Date(releaseTime);
             const releaseTimestamp = releaseDate.getTime();
             await db.collection('quizzes').add({
@@ -2940,80 +2962,80 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
         });
 
         window.addEventListener('load', function() {
-    // Ensure all Matric inputs force uppercase
-    document.querySelectorAll('input[type="text"]').forEach(input => {
-        if (input.id && (input.id.includes('matric') || input.id.includes('Matric'))) {
-            input.addEventListener('input', function() {
-                this.value = this.value.toUpperCase();
+            // Ensure all Matric inputs force uppercase
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                if (input.id && (input.id.includes('matric') || input.id.includes('Matric'))) {
+                    input.addEventListener('input', function() {
+                        this.value = this.value.toUpperCase();
+                    });
+                }
             });
-        }
-    });
 
-    auth.onAuthStateChanged(async function(user) {
-        if (user) {
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (!userDoc.exists) {
-                await auth.signOut();
-                localStorage.removeItem('melox_paid');
-                showWelcome();
-                return;
-            }
-            
-            const userData = userDoc.data();
-            const userRole = userData.role || 'student';
-            
-            // 🔑 CHECK IF ADMIN FIRST – skip payment check
-            if (userRole === 'admin') {
-                currentUser = {
-                    role: 'admin',
-                    id: user.uid,
-                    email: userData.email || user.email,
-                    fullName: userData.fullName || 'Admin'
-                };
-                document.getElementById('welcome-page').classList.add('hidden');
-                showSection('admin-dashboard');
-                showAdminTab('activities');
-                check200LevelDeleted();
-                hideLoading();
-                return;
-            }
-            
-            // 👨‍🎓 REGULAR STUDENT – check payment
-            currentUser = userData;
-            currentUser.id = user.uid;
-            
-            const paid = await checkUserPaid(currentUser.id, currentUser.matricNumber);
-            if (paid) {
-                document.getElementById('welcome-page').classList.add('hidden');
-                document.getElementById('student-name').textContent = currentUser.fullName || 'Student';
-                loadCourses();
-                showSection('student-dashboard');
-                if (!currentUser.faculty) {
-                    document.getElementById('faculty-modal').style.display = 'flex';
-                }
-                checkGlobalLock();
-            } else {
-                await auth.signOut();
-                localStorage.removeItem('melox_paid');
-                showWelcome();
-            }
-        } else {
-            const localPaid = localStorage.getItem('melox_paid');
-            if (localPaid === 'true') {
-                document.getElementById('welcome-page').classList.add('hidden');
-                const accountCreated = localStorage.getItem('meloxAccountCreated');
-                if (accountCreated === 'yes') {
-                    showSection('login-section');
+            auth.onAuthStateChanged(async function(user) {
+                if (user) {
+                    const userDoc = await withRetry(() => db.collection('users').doc(user.uid).get());
+                    if (!userDoc.exists) {
+                        await auth.signOut();
+                        localStorage.removeItem('melox_paid');
+                        showWelcome();
+                        return;
+                    }
+                    
+                    const userData = userDoc.data();
+                    const userRole = userData.role || 'student';
+                    
+                    // 🔑 CHECK IF ADMIN FIRST – skip payment check
+                    if (userRole === 'admin') {
+                        currentUser = {
+                            role: 'admin',
+                            id: user.uid,
+                            email: userData.email || user.email,
+                            fullName: userData.fullName || 'Admin'
+                        };
+                        document.getElementById('welcome-page').classList.add('hidden');
+                        showSection('admin-dashboard');
+                        showAdminTab('activities');
+                        check200LevelDeleted();
+                        hideLoading();
+                        return;
+                    }
+                    
+                    // 👨‍🎓 REGULAR STUDENT – check payment
+                    currentUser = userData;
+                    currentUser.id = user.uid;
+                    
+                    const paid = await checkUserPaid(currentUser.id, currentUser.matricNumber);
+                    if (paid) {
+                        document.getElementById('welcome-page').classList.add('hidden');
+                        document.getElementById('student-name').textContent = currentUser.fullName || 'Student';
+                        loadCourses();
+                        showSection('student-dashboard');
+                        if (!currentUser.faculty) {
+                            document.getElementById('faculty-modal').style.display = 'flex';
+                        }
+                        checkGlobalLock();
+                    } else {
+                        await auth.signOut();
+                        localStorage.removeItem('melox_paid');
+                        showWelcome();
+                    }
                 } else {
-                    showSection('signup-section');
+                    const localPaid = localStorage.getItem('melox_paid');
+                    if (localPaid === 'true') {
+                        document.getElementById('welcome-page').classList.add('hidden');
+                        const accountCreated = localStorage.getItem('meloxAccountCreated');
+                        if (accountCreated === 'yes') {
+                            showSection('login-section');
+                        } else {
+                            showSection('signup-section');
+                        }
+                    } else {
+                        showWelcome();
+                    }
                 }
-            } else {
-                showWelcome();
-            }
-        }
-        hideLoading();
-    });
-});
+                hideLoading();
+            });
+        });
 
         function showWelcome() {
             document.getElementById('welcome-page').classList.remove('hidden');
@@ -3022,9 +3044,8 @@ document.getElementById('admin-login-form')?.addEventListener('submit', async e 
             hideLoading();
         }
 
-        console.log('✅ MELOX PRE EXAM 2.0 – Matric format enforced (ABC/99/9999), uppercase only.');
-        console.log('✅ Payment fixes applied: retry, backup, verify button.');
-        console.log('✅ Student Search added to Admin Panel.');
+        console.log('✅ MELOX PRE EXAM 2.0 – Extremely fast with offline persistence & caching.');
+        console.log('✅ Network status detection active.');
     </script>
 </body>
-</html>    
+</html>
