@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
     <style>
-        /* ===== COMPLETE STYLES (minimal, fast) ===== */
+        /* ===== COMPLETE STYLES ===== */
         :root {
             --primary: #007bff;
             --yellow: #ffc107;
@@ -387,7 +387,7 @@
 </head>
 <body>
 
-    <!-- ===== LOADING OVERLAY (will auto-hide after 3s) ===== -->
+    <!-- ===== LOADING OVERLAY ===== -->
     <div id="loading">
         <div style="text-align:center;">
             <i class="fas fa-spinner fa-spin" style="font-size:3rem;"></i>
@@ -637,29 +637,7 @@
 
     <script>
         // ============================================================
-        // CRITICAL: HIDE LOADING AFTER 3 SECONDS (EVEN IF FIREBASE FAILS)
-        // ============================================================
-        const loadingEl = document.getElementById('loading');
-        let loadingHidden = false;
-
-        function hideLoading() {
-            if (loadingHidden) return;
-            loadingHidden = true;
-            loadingEl.classList.add('hidden');
-        }
-
-        // Auto-hide loading after 3 seconds (page is visible)
-        setTimeout(hideLoading, 3000);
-
-        // Show retry button if loading takes too long (after 8 seconds)
-        setTimeout(() => {
-            if (!loadingHidden) {
-                document.getElementById('retryBtn').style.display = 'inline-block';
-            }
-        }, 8000);
-
-        // ============================================================
-        // FIREBASE CONFIG
+        // FIREBASE CONFIG & SETTINGS
         // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyBQzBX4m70zI-koaHJlWEYsRSU2MBnXwwk",
@@ -674,9 +652,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // ============================================================
-        // FIRESTORE SETTINGS (ONCE, BEFORE ANY OTHER CALL)
-        // ============================================================
         db.settings({
             experimentalForceLongPolling: true,
             cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
@@ -685,6 +660,31 @@
         db.enablePersistence({ synchronizeTabs: true })
             .then(() => console.log('✅ Offline persistence enabled'))
             .catch(err => console.warn('⚠️ Persistence not enabled:', err));
+
+        // ============================================================
+        // LOADING OVERLAY (show/hide functions – FIXED)
+        // ============================================================
+        const loadingEl = document.getElementById('loading');
+        let loadingHidden = false;
+
+        function showLoading() {
+            loadingEl.classList.remove('hidden');
+            loadingHidden = false;
+        }
+
+        function hideLoading() {
+            if (loadingHidden) return;
+            loadingHidden = true;
+            loadingEl.classList.add('hidden');
+        }
+
+        // Auto-hide loading after 3 seconds (slow network fallback)
+        setTimeout(hideLoading, 3000);
+        setTimeout(() => {
+            if (!loadingHidden) {
+                document.getElementById('retryBtn').style.display = 'inline-block';
+            }
+        }, 8000);
 
         // ============================================================
         // GLOBALS
@@ -764,14 +764,15 @@
         }
 
         // ============================================================
-        // RETRY WRAPPER (with shorter timeout for slow networks)
+        // RETRY WRAPPER
         // ============================================================
         async function withRetry(fn, maxRetries = 2, delay = 2000) {
             for (let i = 0; i < maxRetries; i++) {
                 try {
                     return await fn();
                 } catch (err) {
-                    if (err.message && (err.message.includes('network') || err.message.includes('timeout') || err.code === 'auth/network-request-failed')) {
+                    if (err.message && (err.message.includes('network') || err.message.includes('timeout') || err.code ===
+                            'auth/network-request-failed')) {
                         console.log(`🔄 Retry ${i + 1}/${maxRetries}`);
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 1.5;
@@ -1075,7 +1076,8 @@
                                     if (saved) {
                                         localStorage.setItem('melox_paid', 'true');
                                         setCachedPayment(matric, true);
-                                        statusEl.textContent = '✅ Payment successful! You can now login or sign up.';
+                                        statusEl.textContent =
+                                            '✅ Payment successful! You can now login or sign up.';
                                         statusEl.style.color = 'green';
                                         if (btn) {
                                             btn.disabled = false;
@@ -1398,6 +1400,7 @@
             btn.textContent = '⏳ Deleting...';
             status.innerHTML = 'Processing...';
             status.style.color = 'orange';
+            showLoading();
 
             try {
                 const usersSnap = await withRetry(() => db.collection('users').get());
@@ -1431,13 +1434,15 @@
                 btn.disabled = false;
                 alert('Error deleting: ' + err.message);
             }
+            hideLoading();
         }
 
         // ============================================================
-        // SIGNUP
+        // SIGNUP (FIXED: stays logged in, shows faculty modal)
         // ============================================================
         document.getElementById('signup-form')?.addEventListener('submit', async e => {
             e.preventDefault();
+            showLoading();
             const first = document.getElementById('firstName')?.value.trim() || '';
             const middle = document.getElementById('middleName')?.value.trim() || '';
             const last = document.getElementById('lastName')?.value.trim().toUpperCase() || '';
@@ -1447,20 +1452,21 @@
             const confirm = document.getElementById('confirmPassword')?.value || '';
 
             if (!matric || !password || !confirm) {
-                alert('Please fill all required fields');
-                return;
+                hideLoading();
+                return alert('Please fill all required fields');
             }
             if (!isValidMatric(matric)) {
-                alert('Invalid Matric format. Must be: ABC/99/9999 (e.g. CSP/23/9123)');
-                return;
+                hideLoading();
+                return alert('Invalid Matric format. Must be: ABC/99/9999 (e.g. CSP/23/9123)');
             }
             if (password !== confirm) {
-                alert("Passwords don't match!");
-                return;
+                hideLoading();
+                return alert("Passwords don't match!");
             }
 
             const paid = await checkUserPaid(null, matric);
             if (!paid) {
+                hideLoading();
                 alert('You must pay the one-time maintenance fee of ₦500 before signing up.');
                 return;
             }
@@ -1468,6 +1474,7 @@
             try {
                 const cred = await withRetry(() => auth.createUserWithEmailAndPassword(matric + '@melox.com', password));
                 const uid = cred.user.uid;
+
                 await withRetry(() => db.collection('users').doc(uid).set({
                     fullName,
                     matricNumber: matric,
@@ -1476,6 +1483,7 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                 }));
+
                 const paymentSnap = await withRetry(() =>
                     db.collection('maintenancePayments')
                     .where('matric', '==', matric)
@@ -1487,12 +1495,27 @@
                         userId: uid
                     });
                 }
-                alert('Account created! Please login.');
+
+                alert('Account created! Please select your faculty.');
+
+                // ✅ KEEP USER LOGGED IN
                 localStorage.setItem('meloxAccountCreated', 'yes');
-                auth.signOut();
-                showSection('login-section');
+                localStorage.setItem('melox_paid', 'true');
+                // Set currentUser so faculty modal works
+                currentUser = {
+                    id: uid,
+                    fullName: fullName,
+                    matricNumber: matric,
+                    level: '100',
+                    role: 'student'
+                };
+                document.getElementById('faculty-modal').style.display = 'flex';
+                hideLoading();
+                // DO NOT sign out
+
             } catch (err) {
                 alert(err.message || 'Signup failed');
+                hideLoading();
             }
         });
 
@@ -1501,10 +1524,12 @@
         // ============================================================
         document.getElementById('login-form')?.addEventListener('submit', async e => {
             e.preventDefault();
+            showLoading();
             let matric = document.getElementById('loginMatric')?.value.trim().toUpperCase() || '';
             const pw = document.getElementById('loginPassword')?.value || '';
 
             if (!isValidMatric(matric)) {
+                hideLoading();
                 alert('Invalid Matric format. Must be: ABC/99/9999');
                 return;
             }
@@ -1515,6 +1540,7 @@
                 const userDoc = await withRetry(() => userRef.get());
                 if (!userDoc.exists) {
                     await auth.signOut();
+                    hideLoading();
                     alert('Your account profile is missing. Please contact support or create a new account.');
                     return;
                 }
@@ -1522,6 +1548,7 @@
                 const userLevel = (userData.level || '').toString().trim();
                 if (userLevel !== '100' && userLevel !== '100 Level') {
                     await auth.signOut();
+                    hideLoading();
                     alert('❌ This platform is exclusively for 100 Level students. Your account is set to: ' +
                         userLevel);
                     return;
@@ -1529,6 +1556,7 @@
                 const paid = await checkUserPaid(cred.user.uid, matric);
                 if (!paid) {
                     await auth.signOut();
+                    hideLoading();
                     alert('You have not paid the maintenance fee of ₦500. Please pay first.');
                     document.getElementById('welcome-page').classList.remove('hidden');
                     return;
@@ -1545,8 +1573,10 @@
                 }
                 document.getElementById('welcome-page').classList.add('hidden');
                 localStorage.setItem('melox_paid', 'true');
+                hideLoading();
             } catch (err) {
                 alert(err.message || 'Login failed');
+                hideLoading();
             }
         });
 
@@ -1627,6 +1657,7 @@
         // LOGOUT
         // ============================================================
         function logout() {
+            showLoading();
             auth.signOut().then(() => {
                 currentUser = null;
                 const paid = localStorage.getItem('melox_paid');
@@ -1638,10 +1669,11 @@
                     document.getElementById('login-section').classList.add('hidden');
                 }
             }).catch(err => alert(err.message));
+            hideLoading();
         }
 
         // ============================================================
-        // FACULTY SAVE
+        // FACULTY SAVE (now works because user is logged in)
         // ============================================================
         async function saveFaculty() {
             const select = document.getElementById('faculty-select');
@@ -1662,8 +1694,14 @@
                 );
                 currentUser.faculty = faculty;
                 document.getElementById('faculty-modal').style.display = 'none';
-                loadCourses();
-                showSection('student-dashboard');
+                // Now show dashboard
+                if (currentUser.role === 'admin') {
+                    showSection('admin-dashboard');
+                    showAdminTab('activities');
+                } else {
+                    loadCourses();
+                    showSection('student-dashboard');
+                }
             } catch (err) {
                 console.error('Save faculty error:', err);
                 alert("Error saving faculty: " + err.message);
@@ -1731,7 +1769,7 @@
         }
 
         // ============================================================
-        // LOAD COURSES
+        // LOAD COURSES (with skeleton)
         // ============================================================
         function renderSkeleton() {
             const list = document.getElementById('course-list');
@@ -2864,8 +2902,8 @@
         window.checkPaymentAndStart = checkPaymentAndStart;
         window.startCountdown = startCountdown;
 
-        console.log('✅ MELOX PRE EXAM 2.0 – Slow network optimized.');
-        console.log('✅ Loading overlay will auto-hide after 3 seconds.');
+        console.log('✅ MELOX PRE EXAM 2.0 – All fixes applied.');
+        console.log('✅ showLoading/hideLoading defined, faculty selection works.');
     </script>
 </body>
 </html>
