@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
     <style>
-        /* ===== SAME STYLES AS YOUR ORIGINAL (kept unchanged) ===== */
+        /* ===== SAME STYLES AS YOUR ORIGINAL ===== */
         :root {
             --primary: #007bff;
             --yellow: #ffc107;
@@ -561,7 +561,8 @@
             </div>
 
             <div class="input-group">
-                <input type="text" id="nameInput" placeholder="Your Full Name (e.g. John Doe)" required />
+                <!-- ===== AUTO-UPPERCASE ON NAME ===== -->
+                <input type="text" id="nameInput" placeholder="Your Full Name (e.g. JOHN DOE)" required oninput="this.value = this.value.toUpperCase();" />
             </div>
             <div class="input-group">
                 <input type="text" id="pinInput" placeholder="4‑digit PIN (e.g. 1234)" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required />
@@ -700,7 +701,7 @@
         }
 
         // ===== GLOBALS =====
-        let currentUser = null; // { id: "John1234", fullName: "John Doe", level: "200", paid: true }
+        let currentUser = null;
         let currentQuiz = null;
         let currentQuestions = [];
         let currentQuestionIndex = 0;
@@ -732,11 +733,9 @@
                 const userDoc = await withRetry(() => db.collection('user200').doc(combinedId).get());
 
                 if (userDoc.exists) {
-                    // User exists – check if paid
                     const data = userDoc.data();
                     const paid = data.paid === true;
                     if (paid) {
-                        // Log them in
                         currentUser = {
                             id: combinedId,
                             fullName: data.fullName || name,
@@ -749,7 +748,6 @@
                         showSection('student-dashboard');
                         return;
                     } else {
-                        // User exists but not paid → show payment popup
                         hideLoading();
                         if (confirm('Your account exists but you have not paid the ₦500 fee. Proceed to payment?')) {
                             showPaymentPopup(combinedId, name);
@@ -762,22 +760,18 @@
                         db.collection('user200').doc(combinedId).set({
                             fullName: name,
                             level: '200',
-                            paid: false,               // not yet paid
+                            paid: false,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                             lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                         })
                     );
                     console.log('✅ New user document created:', combinedId);
 
-                    // Now show payment popup
                     hideLoading();
                     if (confirm(`Welcome ${name}! Your account has been created. Please pay the one‑time fee of ₦500 to access all pre‑exams. Proceed?`)) {
                         showPaymentPopup(combinedId, name);
                     } else {
-                        // They can still log in later after payment
                         alert('Your account is saved. You can complete payment later.');
-                        // Optionally log them in as unpaid? Better to stay on login page.
-                        // We'll just keep them on login page.
                         document.getElementById('nameInput').value = '';
                         document.getElementById('pinInput').value = '';
                     }
@@ -790,7 +784,7 @@
             }
         }
 
-        // ===== PAYMENT POPUP (unchanged) =====
+        // ===== PAYMENT POPUP =====
         function showPaymentPopup(combinedId, name) {
             document.getElementById('payment-popup').style.display = 'flex';
             document.getElementById('payment-popup').dataset.combinedId = combinedId;
@@ -822,7 +816,7 @@
             });
         }
 
-        // ===== INITIATE PAYMENT (UPDATED to just update paid flag) =====
+        // ===== INITIATE PAYMENT =====
         function initPayment200(combinedId, name) {
             const amountNaira = 500;
             const amountInKobo = amountNaira * 100;
@@ -849,7 +843,6 @@
 
                         if (receivedAmount >= amountInKobo) {
                             try {
-                                // Save payment record
                                 await withRetry(() =>
                                     db.collection('maintenancePayments').add({
                                         userId: combinedId,
@@ -864,7 +857,6 @@
                                     })
                                 );
 
-                                // ===== UPDATE EXISTING USER DOCUMENT (mark paid) =====
                                 await withRetry(() =>
                                     db.collection('user200').doc(combinedId).update({
                                         paid: true,
@@ -874,7 +866,6 @@
 
                                 alert('✅ Payment successful! You now have full access.');
 
-                                // Auto-login
                                 currentUser = {
                                     id: combinedId,
                                     fullName: name,
@@ -901,7 +892,7 @@
             }
         }
 
-        // ===== LOGOUT (unchanged) =====
+        // ===== LOGOUT =====
         function logout200() {
             if (confirm('Logout?')) {
                 currentUser = null;
@@ -911,7 +902,7 @@
             }
         }
 
-        // ===== LOAD COURSES (unchanged) =====
+        // ===== LOAD COURSES =====
         function renderSkeleton() {
             const list = document.getElementById('course-list');
             let html = '';
@@ -1059,7 +1050,7 @@
             }
         }
 
-        // ===== CHECK PAYMENT & START QUIZ (unchanged) =====
+        // ===== CHECK PAYMENT & START QUIZ =====
         async function checkPaymentAndStart(quizId) {
             const doc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
             if (!doc.exists) {
@@ -1154,7 +1145,7 @@
             startQuiz(quizId);
         }
 
-        // ===== START QUIZ (unchanged) =====
+        // ===== START QUIZ =====
         async function startQuiz(quizId) {
             try {
                 const quizDoc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
@@ -1181,7 +1172,7 @@
             }
         }
 
-        // ===== TIMER (unchanged) =====
+        // ===== TIMER =====
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             const timeLimitMin = Number(currentQuiz?.timeLimit) || 30;
@@ -1210,7 +1201,7 @@
             if (timerInterval) clearInterval(timerInterval);
         }
 
-        // ===== LOAD QUESTION (unchanged) =====
+        // ===== LOAD QUESTION =====
         function loadQuestion() {
             const q = currentQuestions[currentQuestionIndex];
             if (!q) return;
@@ -1263,7 +1254,7 @@
             }
         }
 
-        // ===== SUBMIT QUIZ (unchanged) =====
+        // ===== SUBMIT QUIZ =====
         function submitQuiz() {
             if (!confirm('Submit quiz now? You cannot go back.')) return;
             stopTimer();
@@ -1312,7 +1303,7 @@
             showSection('results-section');
         }
 
-        // ===== VIEW ANSWERS (unchanged) =====
+        // ===== VIEW ANSWERS =====
         function viewAnswers() {
             const container = document.getElementById('answers-container');
             if (!container) return;
@@ -1367,7 +1358,7 @@
         window.submitQuiz = submitQuiz;
         window.viewAnswers = viewAnswers;
 
-        console.log('✅ 200.html loaded successfully (user created on first login attempt).');
+        console.log('✅ 200.html loaded successfully (auto-uppercase + user creation first).');
     </script>
 </body>
 </html>
