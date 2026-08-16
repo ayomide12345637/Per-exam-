@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MELOX PRE EXAM 2.0 – 200 Level</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+    <style>
+        /* ===== EXACT SAME STYLES AS YOUR ORIGINAL ===== */
+        :root {
+            --primary: #007bff;
+            --yellow: #ffc107;
+            --yellow-dark: #e0a800;
+            --green: #28a745;
+            --red: #dc3545;
+            --gray: #6c757d;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #212529;
+            line-height: 1.45;
+            font-size: 15px;
+            min-height: 100vh;
+        }
+        header {
+            background: var(--yellow);
+            color: #212529;
+            text-align: center;
+            padding: 0.8rem 1rem 1.1rem;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            margin: 0 auto 0.5rem;
+            display: block;
+        }
+        header h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        header h1 i {
+            margin-right: 8px;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0.6rem 0.7rem 1rem;
+            padding: 1.1rem 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+            min-height: calc(100vh - 160px);
+        }
+        h2 {
+            color: var(--primary);
+            text-align: center;
+            font-size: 1.25rem;
+            margin: 0.4rem 0 1rem;
+        }
+        h2 i {
+            margin-right: 8px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        input,
+        select {
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.97rem;
+            background: #fdfdfd;
+        }
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2.5px rgba(0, 123, 255, 0.15);
+        }
+        button {
+            padding: 0.85rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            background: var(--yellow);
+            color: #212529;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button i {
+            margin-right: 8px;
+        }
+        button:hover {
+            background: var(--yellow-dark);
+        }
+        button.blue {
+            background: var(--primary);
+            color: white;
+        }
+        button.green {
+            background: var(--green);
+            color: white;
+        }
+        button.danger {
+            background: var(--red);
+            color: white;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        #timer {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--red);
+            text-align: center;
+            margin: 0.6rem 0;
+            padding: 0.4rem;
+            background: #fff5f5;
+            border-radius: 8px;
+        }
+        #timer i {
+            margin-right: 8px;
+        }
+        #question-progress {
+            font-size: 0.95rem;
+            color: #555;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        #question-progress i {
+            margin-right: 6px;
+        }
+        #question-text {
+            font-size: 1.05rem;
+            margin: 0.8rem 0 1.1rem;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1rem;
+            background: var(--light);
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 0.98rem;
+            min-height: 48px;
+        }
+        .option-label:hover {
+            background: #e9ecef;
+        }
+        input[type="radio"] {
+            margin-right: 0.8rem;
+            accent-color: var(--primary);
+            transform: scale(1.25);
+        }
+        .option-label.selected {
+            background: #e6ffed;
+            border-color: var(--green);
+        }
+        .navigation {
+            display: flex;
+            gap: 0.7rem;
+            margin-top: 1.3rem;
+        }
+        .navigation button {
+            flex: 1;
+            padding: 0.85rem;
+            font-size: 1rem;
+        }
+        #submit-btn {
+            background: var(--green) !important;
+        }
+        #results-card {
+            background: #f8f9fa;
+            padding: 1.3rem 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 1px solid var(--border);
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.6rem 0;
+            font-size: 1.02rem;
+        }
+        .result-row i {
+            margin-right: 6px;
+        }
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            z-index: 9999;
+            transition: opacity 0.3s;
+        }
+        #loading.hidden {
+            display: none !important;
+        }
+        #loading i {
+            margin-right: 12px;
+        }
+        .team-card {
+            background: #f5f5f5;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .team-card h4 {
+            margin: 0;
+            color: var(--green);
+        }
+        .team-card h4 i {
+            margin-right: 6px;
+        }
+        .team-card p {
+            font-size: 0.85rem;
+            color: #555;
+        }
+        .notice-card {
+            background: #fff3cd;
+            padding: 18px 25px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 420px;
+            border: 1px solid #ffeeba;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .notice-card h4 i {
+            margin-right: 8px;
+        }
+        .notice-card p {
+            font-size: 0.9rem;
+            color: #6c5700;
+            line-height: 1.5;
+        }
+        .notice-card a {
+            color: #0a7cff;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+        .notice-card a i {
+            margin-right: 6px;
+        }
+        #login200-section {
+            text-align: center;
+            padding: 2rem 0;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+        #login200-section .input-group {
+            margin: 1.2rem 0;
+        }
+        #login200-section input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        #login200-section .pin-hint {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.2rem;
+        }
+        #login200-section button {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+        }
+        .message-box {
+            background: #fff0f0;
+            border-left: 6px solid #dc3545;
+            padding: 1.2rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        .message-box p {
+            margin: 0.8rem 0;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        .message-box strong {
+            color: #dc3545;
+        }
+        #payment-popup {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .popup-content {
+            background: white;
+            color: #212529;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        .popup-content h2 i {
+            margin-right: 10px;
+        }
+        .popup-content .highlight {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .popup-content button {
+            margin-top: 1.5rem;
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+        }
+        .whatsapp-btn {
+            display: inline-block;
+            background: #25D366;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 1rem;
+            transition: 0.2s;
+            font-size: 1.05rem;
+        }
+        .whatsapp-btn i {
+            margin-right: 10px;
+        }
+        .whatsapp-btn:hover {
+            background: #128C7E;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .stat-card h4 {
+            margin: 0 0 0.6rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        .stat-card h4 i {
+            margin-right: 6px;
+        }
+        .stat-card p {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .skeleton-card {
+            padding: 1.2rem;
+            border-radius: 12px;
+            background: white;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #dee2e6;
+            animation: pulse 1.5s infinite;
+        }
+        .skeleton-card .line {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+        .skeleton-card .line.short {
+            width: 60%;
+        }
+        .skeleton-card .line.medium {
+            width: 80%;
+        }
+        @keyframes pulse {
+            0% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.6;
+            }
+        }
+        @media (max-width: 600px) {
+            header {
+                padding: 0.7rem 0.8rem 0.9rem;
+            }
+            .logo {
+                width: 65px;
+                height: 65px;
+                margin-bottom: 0.4rem;
+            }
+            .container {
+                margin: 0.5rem 0.6rem 0.8rem;
+                padding: 1rem 0.9rem;
+            }
+            h2 {
+                font-size: 1.18rem;
+                margin: 0.3rem 0 0.9rem;
+            }
+            form {
+                gap: 0.65rem;
+            }
+            input,
+            select,
+            button {
+                padding: 0.75rem 0.9rem;
+                font-size: 0.95rem;
+            }
+            .options {
+                gap: 0.6rem;
+            }
+            .option-label {
+                padding: 0.85rem 0.95rem;
+                font-size: 0.96rem;
+            }
+            .navigation {
+                gap: 0.6rem;
+                margin-top: 1.1rem;
+            }
+            #question-text {
+                font-size: 1.02rem;
+                margin: 0.7rem 0;
+            }
+            #timer {
+                font-size: 1.2rem;
+                margin: 0.5rem 0;
+            }
+        }
+        .nav-text {
+            cursor: pointer;
+            color: #007BFF;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: inherit;
+        }
+        .nav-text i {
+            margin-right: 6px;
+        }
+        .nav-text:hover {
+            color: #0056b3;
+        }
+        #networkStatus {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            z-index: 9999;
+            pointer-events: none;
+            display: none;
+        }
+        #networkStatus i {
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div id="loading">
+        <div style="text-align:center;">
+            <i class="fas fa-spinner fa-spin" style="font-size:3rem;"></i>
+            <h3 style="margin-top:1rem;">Loading Melox 200...</h3>
+            <p style="font-size:0.9rem; opacity:0.7; margin-top:0.5rem;">Please wait</p>
+        </div>
+    </div>
+
+    <div id="networkStatus"><i class="fas fa-wifi"></i> <span id="networkType">Online</span></div>
+
+    <!-- ===== PAYMENT POPUP ===== -->
+    <div id="payment-popup">
+        <div class="popup-content">
+            <h2><i class="fas fa-credit-card"></i> One‑Time Payment</h2>
+            <p>This is a <span class="highlight">one‑time general payment of ₦500</span> for <strong>all 200‑level courses</strong>.</p>
+            <p>You will <strong>never be asked to pay again</strong> – wait after paying until redirected.</p>
+            <p style="color: #28a745; font-weight: bold;"><i class="fas fa-check-circle"></i> Pay once, access everything.</p>
+            <button class="green" onclick="closePaymentPopupAndProceed()"><i class="fas fa-check"></i> I understand, proceed</button>
+        </div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header>
+        <div class="logo-container">
+            <img src="https://i.imgur.com/sWN7pYD.png" alt="MELOX PRE EXAM Logo" class="logo" loading="lazy" width="70" height="70" />
+        </div>
+        <h1><i class="fas fa-graduation-cap"></i> MELOX PRE EXAM 2.0 – 200 Level</h1>
+    </header>
+
+    <!-- ===== MAIN CONTAINER ===== -->
+    <div class="container">
+
+        <!-- ===== LOGIN / ACCESS PAGE ===== -->
+        <section id="login200-section">
+            <h2><i class="fas fa-sign-in-alt"></i> 200 Level Access</h2>
+            <div class="message-box">
+                <p><strong><i class="fas fa-rocket"></i> Welcome 200‑Level Students!</strong></p>
+                <p>Enter your <strong>Full Name</strong> and your personal <strong>4‑digit PIN</strong>.</p>
+                <p>If this is your first time, you will be prompted to pay a <strong>one‑time fee of ₦500</strong>.</p>
+                <p><i class="fas fa-headset"></i> For complaints, contact <strong>Melox</strong> on WhatsApp.</p>
+                <a href="https://wa.me/2348081531407" target="_blank" class="whatsapp-btn" style="margin:0.5rem auto 0; display:inline-block;">
+                    <i class="fab fa-whatsapp"></i> Contact Melox
+                </a>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="nameInput" placeholder="Your Full Name (e.g. John Doe)" required />
+            </div>
+            <div class="input-group">
+                <input type="text" id="pinInput" placeholder="4‑digit PIN (e.g. 1234)" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" required />
+                <div class="pin-hint"><i class="fas fa-info-circle"></i> Choose any 4 digits (e.g. 1234) – this makes your account unique.</div>
+            </div>
+            <button class="blue" onclick="login200()"><i class="fas fa-arrow-right"></i> Continue</button>
+
+            <p style="margin-top:1.5rem; font-size:0.9rem; color:#666;">
+                <i class="fas fa-arrow-left"></i> Go back to <a href="index.html" style="color:var(--primary);">100‑Level Portal</a>
+            </p>
+        </section>
+
+        <!-- ===== STUDENT DASHBOARD ===== -->
+        <section id="student-dashboard" class="hidden">
+            <h2><i class="fas fa-user-graduate"></i> Welcome, <span id="student-name"></span></h2>
+            <h3><i class="fas fa-book-open"></i> Available Pre‑Exams</h3>
+            <div id="course-list" style="display:grid; gap:1rem;"></div>
+            <button type="button" onclick="logout200()" style="margin-top:1.5rem;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </section>
+
+        <!-- ===== QUIZ ===== -->
+        <section id="quiz-section" class="hidden">
+            <h2 id="quiz-course-name"></h2>
+            <div id="timer"><i class="fas fa-clock"></i> Time remaining: --:--</div>
+            <div id="question-progress"><i class="fas fa-question-circle"></i> Question <span id="question-number">1</span> of <span id="q-total">0</span></div>
+            <div id="question-text"></div>
+            <div class="options" id="options-container"></div>
+            <div class="navigation">
+                <button id="prev-btn" onclick="prevQuestion()"><i class="fas fa-chevron-left"></i> Previous</button>
+                <button id="next-btn" onclick="nextQuestion()">Next <i class="fas fa-chevron-right"></i></button>
+                <button id="submit-btn" class="green hidden" onclick="submitQuiz()"><i class="fas fa-check"></i> Finish & Submit</button>
+            </div>
+        </section>
+
+        <!-- ===== RESULTS ===== -->
+        <section id="results-section" class="hidden">
+            <h2><i class="fas fa-chart-bar"></i> Exam Results</h2>
+            <div id="results-card">
+                <h2 id="result-title">Security and Compliance Fundamentals</h2>
+                <div class="result-row"><span><i class="fas fa-star"></i> Points:</span> <strong><span id="score">0</span> / <span id="total-q">0</span></strong></div>
+                <div class="result-row"><span><i class="fas fa-percent"></i> Percentage:</span> <strong><span id="percentage">0</span>%</strong></div>
+                <div class="result-row"><span><i class="fas fa-hourglass-half"></i> Duration:</span> <strong><span id="duration">--:--</span></strong></div>
+                <div class="result-row" style="margin-top:1.5rem;">
+                    <span><i class="fas fa-comment-dots"></i> Feedback:</span>
+                    <strong id="feedback" style="color:var(--green);">Loading feedback...</strong>
+                </div>
+            </div>
+            <div id="team-section" style="margin-top:2rem;">
+                <h3 style="text-align:center;"><i class="fas fa-users"></i> Project Team</h3>
+                <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap;">
+                    <div class="team-card"><h4><i class="fas fa-user"></i> Polokay</h4><p>Team Member</p></div>
+                    <div class="team-card"><h4><i class="fas fa-user"></i> BTO</h4><p>Team Member</p></div>
+                </div>
+            </div>
+            <div id="exam-notice" style="margin-top:2rem;">
+                <h3 style="text-align:center;"><i class="fas fa-bullhorn"></i> Important Notice</h3>
+                <div style="display:flex; justify-content:center; margin-top:1rem;">
+                    <div class="notice-card">
+                        <h4><i class="fas fa-calendar-alt"></i> Next Exam Update</h4>
+                        <p>The next pre‑exam will be uploaded <strong>one day before your exam</strong>.<br />
+                        For updates, follow our channel: <a href="https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x" target="_blank"><i class="fab fa-whatsapp"></i> Join Now</a></p>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+                <button onclick="showSection('student-dashboard')"><i class="fas fa-arrow-left"></i> Back</button>
+                <button onclick="viewAnswers()" class="blue"><i class="fas fa-eye"></i> View Answers</button>
+            </div>
+            <div id="answers-container" style="margin-top:1rem; display:none;"></div>
+        </section>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- FIREBASE & APPLICATION LOGIC                                     -->
+    <!-- ============================================================ -->
+    <script>
+        // ===== FIREBASE CONFIG =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQzBX4m70zI-koaHJlWEYsRSU2MBnXwwk",
+            authDomain: "melox-pre-exam.firebaseapp.com",
+            projectId: "melox-pre-exam",
+            storageBucket: "melox-pre-exam.firebasestorage.app",
+            messagingSenderId: "461617469136",
+            appId: "1:461617469136:web:7f0f262894f88a89fdf0d5",
+            measurementId: "G-DN7682VZ0T"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        db.settings({
+            experimentalForceLongPolling: true,
+            cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+        });
+        db.enablePersistence({ synchronizeTabs: true })
+            .then(() => console.log('✅ Offline persistence enabled'))
+            .catch(err => console.warn('⚠️ Persistence not enabled:', err));
+
+        // ===== HELPERS =====
+        const loadingEl = document.getElementById('loading');
+
+        function showLoading() {
+            loadingEl.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            loadingEl.classList.add('hidden');
+        }
+        setTimeout(hideLoading, 3000);
+
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            const section = document.getElementById(id);
+            if (section) section.classList.remove('hidden');
+        }
+
+        function withRetry(fn, maxRetries = 2, delay = 2000) {
+            return new Promise((resolve, reject) => {
+                let attempt = 0;
+
+                function doAttempt() {
+                    attempt++;
+                    fn().then(resolve).catch(err => {
+                        if (attempt < maxRetries) {
+                            console.log(`🔄 Retry ${attempt}/${maxRetries}`);
+                            setTimeout(doAttempt, delay);
+                            delay *= 1.5;
+                        } else {
+                            reject(err);
+                        }
+                    });
+                }
+                doAttempt();
+            });
+        }
+
+        // ===== GLOBALS =====
+        let currentUser = null; // { id: "John1234", fullName: "John Doe", level: "200", paid: true }
+        let currentQuiz = null;
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let selectedAnswers = [];
+        let quizStartTime = null;
+        let timerInterval = null;
+
+        const CHANNEL_LINK = "https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x";
+
+        // ===== LOGIN / SIGNUP =====
+        async function login200() {
+            const name = document.getElementById('nameInput').value.trim();
+            const pin = document.getElementById('pinInput').value.trim();
+
+            if (!name) {
+                alert('Please enter your full name.');
+                return;
+            }
+            if (!/^\d{4}$/.test(pin)) {
+                alert('Please enter exactly 4 digits for your PIN.');
+                return;
+            }
+
+            const combinedId = name + pin;
+            showLoading();
+
+            try {
+                // 1. Check if user exists in user200 collection
+                const userDoc = await withRetry(() => db.collection('user200').doc(combinedId).get());
+
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    // Check if they have paid (stored in doc or via maintenancePayments)
+                    const paid = data.paid === true;
+                    if (paid) {
+                        currentUser = {
+                            id: combinedId,
+                            fullName: data.fullName || name,
+                            level: '200',
+                            paid: true
+                        };
+                        document.getElementById('student-name').textContent = currentUser.fullName;
+                        hideLoading();
+                        loadCourses();
+                        showSection('student-dashboard');
+                        return;
+                    } else {
+                        // User exists but hasn't paid
+                        hideLoading();
+                        if (confirm('Your account exists but you have not paid the ₦500 fee. Proceed to payment?')) {
+                            showPaymentPopup(combinedId, name);
+                        }
+                        return;
+                    }
+                } else {
+                    // New user – show payment
+                    hideLoading();
+                    if (confirm(`Welcome ${name}! You need to pay a one‑time fee of ₦500 to access all pre‑exams. Proceed?`)) {
+                        showPaymentPopup(combinedId, name);
+                    }
+                    return;
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                alert('Error logging in: ' + err.message);
+                hideLoading();
+            }
+        }
+
+        // ===== PAYMENT POPUP =====
+        function showPaymentPopup(combinedId, name) {
+            document.getElementById('payment-popup').style.display = 'flex';
+            document.getElementById('payment-popup').dataset.combinedId = combinedId;
+            document.getElementById('payment-popup').dataset.name = name;
+        }
+
+        function closePaymentPopupAndProceed() {
+            document.getElementById('payment-popup').style.display = 'none';
+            const combinedId = document.getElementById('payment-popup').dataset.combinedId;
+            const name = document.getElementById('payment-popup').dataset.name;
+            if (combinedId && name) {
+                loadSquadWidget().then(() => initPayment200(combinedId, name));
+            }
+        }
+
+        function loadSquadWidget() {
+            return new Promise((resolve) => {
+                if (typeof squad !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://checkout.squadco.com/widget/squad.min.js';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = resolve;
+                document.head.appendChild(script);
+                setTimeout(resolve, 5000);
+            });
+        }
+
+        function initPayment200(combinedId, name) {
+            const amountNaira = 500;
+            const amountInKobo = amountNaira * 100;
+
+            if (typeof squad === 'undefined' || typeof squad !== 'function') {
+                alert('Payment widget failed to load. Please refresh and try again.');
+                return;
+            }
+
+            try {
+                const userEmail = combinedId.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() + '@melox200.com';
+                const squadInstance = new squad({
+                    key: "pk_cb3dfacd4666ddefe368d173d1b4a23e840c0f72",
+                    email: userEmail,
+                    amount: amountInKobo,
+                    currency_code: "NGN",
+                    first_name: name.split(' ')[0] || 'Student',
+                    last_name: name.split(' ').slice(1).join(' ') || '200',
+                    onClose: () => {},
+                    onSuccess: async (response) => {
+                        console.log('💰 Squad payment success for 200 level!');
+                        const txRef = response.transaction_ref || response.reference || ("SQ-" + Date.now());
+                        const receivedAmount = response.transaction_amount || response.amount || 0;
+
+                        if (receivedAmount >= amountInKobo) {
+                            try {
+                                // Save payment record
+                                await withRetry(() =>
+                                    db.collection('maintenancePayments').add({
+                                        userId: combinedId,
+                                        level: '200',
+                                        fullName: name,
+                                        amount: amountInKobo,
+                                        currency: "NGN",
+                                        status: "success",
+                                        paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                        transactionRef: txRef,
+                                        squadReference: response.reference || ''
+                                    })
+                                );
+
+                                // Create/update user200 document
+                                await withRetry(() =>
+                                    db.collection('user200').doc(combinedId).set({
+                                        fullName: name,
+                                        level: '200',
+                                        paid: true,
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                                    }, { merge: true })
+                                );
+
+                                alert('✅ Payment successful! You now have full access.');
+
+                                // Auto-login
+                                currentUser = {
+                                    id: combinedId,
+                                    fullName: name,
+                                    level: '200',
+                                    paid: true
+                                };
+                                document.getElementById('student-name').textContent = currentUser.fullName;
+                                document.getElementById('payment-popup').style.display = 'none';
+                                loadCourses();
+                                showSection('student-dashboard');
+                            } catch (err) {
+                                console.error('Error saving payment/user:', err);
+                                alert('Payment was successful but we could not save your record. Please contact support with your Name and PIN.');
+                            }
+                        } else {
+                            alert('Payment amount mismatch. Please try again.');
+                        }
+                    }
+                });
+                squadInstance.setup();
+                squadInstance.open();
+            } catch (err) {
+                alert('Error initializing payment: ' + (err.message || 'Please try again.'));
+            }
+        }
+
+        // ===== LOGOUT =====
+        function logout200() {
+            if (confirm('Logout?')) {
+                currentUser = null;
+                showSection('login200-section');
+                document.getElementById('nameInput').value = '';
+                document.getElementById('pinInput').value = '';
+            }
+        }
+
+        // ===== LOAD COURSES =====
+        function renderSkeleton() {
+            const list = document.getElementById('course-list');
+            let html = '';
+            for (let i = 0; i < 3; i++) {
+                html += `
+                    <div class="skeleton-card">
+                        <div class="line" style="width:70%;"></div>
+                        <div class="line short"></div>
+                        <div class="line medium"></div>
+                        <div class="line" style="width:40%;"></div>
+                    </div>
+                `;
+            }
+            list.innerHTML = html;
+        }
+
+        async function loadCourses() {
+            const list = document.getElementById('course-list');
+            if (!list) return;
+            renderSkeleton();
+
+            try {
+                // Fetch quizzes specifically for level 200
+                const quizzesSnap = await withRetry(() =>
+                    db.collection('quizzes')
+                    .where('level', '==', '200')
+                    .where('status', '==', 'published')
+                    .get()
+                );
+
+                if (quizzesSnap.empty) {
+                    list.innerHTML =
+                        '<p style="text-align:center; color:#666; padding:2rem;"><i class="fas fa-info-circle"></i> No pre‑exams available for 200 level at this time.</p>';
+                    return;
+                }
+
+                // Get results for this user
+                const resultsSnap = await withRetry(() =>
+                    db.collection('quizResults')
+                    .where('userId', '==', currentUser.id)
+                    .get()
+                );
+                const attemptMap = {};
+                resultsSnap.forEach(doc => {
+                    const data = doc.data();
+                    const qid = data.quizId;
+                    attemptMap[qid] = (attemptMap[qid] || 0) + 1;
+                });
+
+                // Get payments for this user (for per-quiz payment if needed)
+                const paymentsSnap = await withRetry(() =>
+                    db.collection('payments')
+                    .where('userId', '==', currentUser.id)
+                    .get()
+                );
+                const paidMap = {};
+                paymentsSnap.forEach(doc => {
+                    const data = doc.data();
+                    const qid = data.quizId;
+                    paidMap[qid] = true;
+                });
+
+                const nowTime = Date.now();
+                const coursesHTML = [];
+
+                for (const doc of quizzesSnap.docs) {
+                    const d = doc.data();
+                    const quizId = doc.id;
+                    const attempts = attemptMap[quizId] || 0;
+                    const hasPaid = !!paidMap[quizId];
+                    const releaseTime = d.releaseTime || 0;
+                    const isAvailableNow = nowTime >= releaseTime;
+
+                    let statusHTML = '';
+                    let buttonHTML = '';
+
+                    if (!isAvailableNow) {
+                        statusHTML =
+                            `<p style="color:#dc3545; font-weight:bold; text-align:center; margin:0.8rem 0;"><i class="fas fa-clock"></i> Opens later</p>`;
+                        buttonHTML =
+                            `<button disabled style="background:#ccc; width:100%;"><i class="fas fa-lock"></i> Locked</button>`;
+                    } else {
+                        if (attempts >= 2) {
+                            statusHTML =
+                                `<p style="color:#dc3545; font-weight:bold; text-align:center;"><i class="fas fa-times-circle"></i> Max 2 attempts used</p>`;
+                            buttonHTML =
+                                `<button disabled style="background:#ccc; width:100%;">No More Attempts</button>`;
+                        } else if (d.payment === "YES" && !hasPaid) {
+                            statusHTML =
+                                `<p style="color:#dc3545; font-weight:bold; text-align:center;"><i class="fas fa-credit-card"></i> ₦100 required</p>`;
+                            buttonHTML =
+                                `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-credit-card"></i> Pay & Start</button>`;
+                        } else {
+                            if (attempts === 1) {
+                                statusHTML =
+                                    `<p style="color:#fd7e14; font-weight:bold; text-align:center;"><i class="fas fa-exclamation-triangle"></i> 1 attempt used – final try</p>`;
+                                buttonHTML =
+                                    `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-play"></i> Start 2nd Attempt</button>`;
+                            } else {
+                                statusHTML =
+                                    `<p style="color:#28a745; font-weight:bold; text-align:center;"><i class="fas fa-check-circle"></i> Ready</p>`;
+                                buttonHTML =
+                                    `<button class="blue" onclick="checkPaymentAndStart('${quizId}')" style="width:100%;"><i class="fas fa-play"></i> Start Pre‑Exam</button>`;
+                            }
+                        }
+                    }
+
+                    let paidBadge = '';
+                    if (d.payment === "YES") {
+                        paidBadge = hasPaid ?
+                            `<span style="background:#28a745; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-check-circle"></i> PAID</span>` :
+                            `<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:6px; font-size:0.85rem; margin-left:8px;"><i class="fas fa-credit-card"></i> ₦100</span>`;
+                    }
+
+                    const cardHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                            <h3 style="margin:0; font-size:1.15rem;"><i class="fas fa-book"></i> ${d.courseName || 'Pre-Exam'}</h3>
+                            ${paidBadge}
+                        </div>
+                        <p style="color:#555; margin:0.4rem 0;">
+                            <i class="fas fa-clock"></i> Duration: ${d.timeLimit || '?'} minutes
+                        </p>
+                        ${statusHTML}
+                        ${buttonHTML}
+                    `;
+                    coursesHTML.push(cardHTML);
+                }
+
+                list.innerHTML = '';
+                coursesHTML.forEach(html => {
+                    const div = document.createElement('div');
+                    div.style.cssText = `
+                        padding: 1.2rem;
+                        border: 1px solid #dee2e6;
+                        border-radius: 12px;
+                        background: white;
+                        margin-bottom: 1.2rem;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                    `;
+                    div.innerHTML = html;
+                    list.appendChild(div);
+                });
+
+            } catch (err) {
+                console.error('loadCourses error:', err);
+                list.innerHTML =
+                    `<p style="color:#dc3545; text-align:center; padding:2rem;">Sorry, couldn't load pre‑exams. Try again later.</p>`;
+            }
+        }
+
+        // ===== CHECK PAYMENT & START QUIZ =====
+        async function checkPaymentAndStart(quizId) {
+            const doc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
+            if (!doc.exists) {
+                alert('Quiz not found');
+                return;
+            }
+            const quiz = doc.data();
+
+            const resultCheck = await withRetry(() =>
+                db.collection("quizResults")
+                .where("userId", "==", currentUser.id)
+                .where("quizId", "==", quizId)
+                .get()
+            );
+            const attempts = resultCheck.size;
+            if (attempts >= 2) {
+                alert('You have used your 2 attempts. View your previous result.');
+                return;
+            }
+
+            const nowTime = Date.now();
+            const release = quiz.releaseTime || 0;
+            if (nowTime < release) {
+                alert('This quiz is not yet available.');
+                return;
+            }
+
+            if (quiz.payment === "YES") {
+                const paidSnap = await withRetry(() =>
+                    db.collection("payments")
+                    .where("userId", "==", currentUser.id)
+                    .where("quizId", "==", quizId)
+                    .get()
+                );
+                if (!paidSnap.empty) {
+                    startQuiz(quizId);
+                    return;
+                }
+
+                const amountNaira = 100;
+                const amountInKobo = amountNaira * 100;
+                if (!confirm(`Pay ₦${amountNaira} to start "${quiz.courseName || 'this pre-exam'}"?`)) return;
+
+                if (typeof squad === 'undefined' || typeof squad !== 'function') {
+                    alert('Payment widget not loaded. Please refresh.');
+                    return;
+                }
+
+                try {
+                    const userEmail = (currentUser.id || 'student') + '@melox200.com';
+                    const squadInstance = new squad({
+                        key: "pk_cb3dfacd4666ddefe368d173d1b4a23e840c0f72",
+                        email: userEmail,
+                        amount: amountInKobo,
+                        currency_code: "NGN",
+                        first_name: currentUser.fullName?.split(' ')[0] || 'Student',
+                        last_name: currentUser.fullName?.split(' ').slice(1).join(' ') || '200',
+                        onClose: () => {},
+                        onSuccess: (response) => {
+                            const txRef = response.transaction_ref || response.reference || ("SQ-" + Date
+                            .now());
+                            const receivedAmount = response.transaction_amount || response.amount || 0;
+                            if (txRef && receivedAmount >= amountInKobo) {
+                                db.collection("payments").add({
+                                    userId: currentUser.id,
+                                    quizId: quizId,
+                                    transactionRef: txRef,
+                                    amount: amountInKobo,
+                                    currency: "NGN",
+                                    status: "success",
+                                    paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    courseName: quiz.courseName || "",
+                                    level: '200'
+                                }).then(() => {
+                                    alert('Payment successful! Starting quiz...');
+                                    startQuiz(quizId);
+                                }).catch(err => {
+                                    alert('Payment saved but quiz could not start. Contact support.');
+                                });
+                            } else {
+                                alert('Payment amount mismatch. Try again.');
+                            }
+                        }
+                    });
+                    squadInstance.setup();
+                    squadInstance.open();
+                } catch (err) {
+                    alert('Error initiating payment: ' + err.message);
+                }
+                return;
+            }
+            startQuiz(quizId);
+        }
+
+        // ===== START QUIZ =====
+        async function startQuiz(quizId) {
+            try {
+                const quizDoc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
+                if (!quizDoc.exists) throw new Error('Quiz not found');
+                const quizData = quizDoc.data();
+
+                currentQuiz = quizData;
+                currentQuiz.id = quizId;
+                currentQuestions = currentQuiz.questions || [];
+                if (currentQuestions.length === 0) throw new Error('No questions in this quiz');
+
+                currentQuestionIndex = 0;
+                selectedAnswers = new Array(currentQuestions.length).fill(null);
+                quizStartTime = Date.now();
+
+                document.getElementById('quiz-course-name').textContent = currentQuiz.courseName || 'Pre-Exam';
+                document.getElementById('q-total').textContent = currentQuestions.length;
+                showSection('quiz-section');
+                startTimer();
+                loadQuestion();
+            } catch (err) {
+                alert(err.message || 'Failed to start quiz.');
+                console.error(err);
+            }
+        }
+
+        // ===== TIMER =====
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            const timeLimitMin = Number(currentQuiz?.timeLimit) || 30;
+            let timeLeft = timeLimitMin * 60;
+            const timerEl = document.getElementById("timer");
+
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+            timerEl.textContent = `Time Left: ${formatTime(timeLeft)}`;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = `Time Left: ${formatTime(timeLeft)}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerEl.textContent = 'Time Left: 00:00';
+                    alert('Time is up!');
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        // ===== LOAD QUESTION =====
+        function loadQuestion() {
+            const q = currentQuestions[currentQuestionIndex];
+            if (!q) return;
+            document.getElementById('question-number').textContent = currentQuestionIndex + 1;
+            document.getElementById('question-text').textContent = q.question || '[Question missing]';
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            ['A', 'B', 'C', 'D'].forEach(letter => {
+                const text = (q[`option${letter}`] || '').trim();
+                if (!text) return;
+                const label = document.createElement('label');
+                label.className = 'option-label';
+                label.innerHTML = `
+                    <input type="radio" name="answer" value="${letter}"
+                        ${selectedAnswers[currentQuestionIndex] === letter ? 'checked' : ''}>
+                    <span>${letter}) ${text}</span>
+                `;
+                label.onclick = () => {
+                    selectedAnswers[currentQuestionIndex] = letter;
+                    container.querySelectorAll('.option-label')
+                        .forEach(l => l.classList.remove('selected'));
+                    label.classList.add('selected');
+                };
+                if (selectedAnswers[currentQuestionIndex] === letter) {
+                    label.classList.add('selected');
+                }
+                container.appendChild(label);
+            });
+
+            document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+            document.getElementById('next-btn')
+                .classList.toggle('hidden', currentQuestionIndex === currentQuestions.length - 1);
+            document.getElementById('submit-btn')
+                .classList.toggle('hidden', currentQuestionIndex !== currentQuestions.length - 1);
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        // ===== SUBMIT QUIZ =====
+        function submitQuiz() {
+            if (!confirm('Submit quiz now? You cannot go back.')) return;
+            stopTimer();
+
+            let score = 0;
+            const total = currentQuestions.length;
+            currentQuestions.forEach((q, i) => {
+                const selected = selectedAnswers[i];
+                const correct = (q.correctOption || '').trim().toUpperCase();
+                if (selected && correct && selected.toUpperCase() === correct) {
+                    score++;
+                }
+            });
+
+            const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : '0.0';
+            const durationSec = Math.floor((Date.now() - quizStartTime) / 1000);
+            const min = String(Math.floor(durationSec / 60)).padStart(2, '0');
+            const sec = String(durationSec % 60).padStart(2, '0');
+
+            document.getElementById('score').textContent = score;
+            document.getElementById('total-q').textContent = total;
+            document.getElementById('percentage').textContent = percentage;
+            document.getElementById('duration').textContent = `${min}:${sec}`;
+
+            const percent = Number(percentage);
+            let feedbackText = percent < 50 ? 'Needs improvement' : percent < 70 ? 'Fair effort' : 'Excellent performance';
+            document.getElementById('feedback').textContent = feedbackText;
+            document.getElementById('result-title').textContent = currentQuiz.courseName || 'Quiz Results';
+
+            if (currentUser?.id && currentQuiz?.id) {
+                db.collection('quizResults').add({
+                    userId: currentUser.id,
+                    level: '200',
+                    quizId: currentQuiz.id,
+                    courseName: currentQuiz.courseName || 'Unnamed Quiz',
+                    score,
+                    percentage: Number(percentage),
+                    totalQuestions: total,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    answers: selectedAnswers,
+                    passed: Number(percentage) >= 50,
+                    durationSeconds: durationSec
+                }).catch(err => console.error('Failed to save result:', err));
+            }
+
+            showSection('results-section');
+        }
+
+        // ===== VIEW ANSWERS =====
+        function viewAnswers() {
+            const container = document.getElementById('answers-container');
+            if (!container) return;
+            container.innerHTML = '';
+            container.style.display = 'block';
+
+            if (!currentQuestions?.length) {
+                container.innerHTML =
+                    '<p style="color:red; text-align:center; padding:1rem;">No questions to show.</p>';
+                return;
+            }
+
+            currentQuestions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.style.cssText =
+                    'padding:12px; margin-bottom:12px; border:1px solid #dee2e6; border-radius:8px; background:#f9f9f9;';
+
+                const userLetter = selectedAnswers[i] || null;
+                const correctLetter = (q.correctOption || '').trim().toUpperCase();
+
+                let userText = 'No selection';
+                let userColor = '#666';
+                if (userLetter) {
+                    const opt = q[`option${userLetter}`] || '[missing]';
+                    userText = `${userLetter}) ${opt}`;
+                    userColor = userLetter.toUpperCase() === correctLetter ? 'green' : 'red';
+                }
+
+                let correctText = '— not set —';
+                if (q[`option${correctLetter}`]) {
+                    correctText = `${correctLetter}) ${q[`option${correctLetter}`]}`;
+                }
+
+                div.innerHTML = `
+                    <p><strong>Q${i+1}:</strong> ${q.question || '[Missing]'}</p>
+                    <p>Your answer: <span style="color:${userColor};font-weight:bold;">${userText}</span></p>
+                    <p>Correct: <strong>${correctText}</strong></p>
+                `;
+                container.appendChild(div);
+            });
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ===== EXPOSE GLOBAL FUNCTIONS =====
+        window.showSection = showSection;
+        window.logout200 = logout200;
+        window.login200 = login200;
+        window.closePaymentPopupAndProceed = closePaymentPopupAndProceed;
+        window.checkPaymentAndStart = checkPaymentAndStart;
+        window.prevQuestion = prevQuestion;
+        window.nextQuestion = nextQuestion;
+        window.submitQuiz = submitQuiz;
+        window.viewAnswers = viewAnswers;
+
+        console.log('✅ 200.html loaded successfully.');
+    </script>
+</body>
+</html>
