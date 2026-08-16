@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
     <style>
-        /* ===== EXACT SAME STYLES AS YOUR ORIGINAL ===== */
+        /* ===== SAME STYLES AS YOUR ORIGINAL (kept unchanged) ===== */
         :root {
             --primary: #007bff;
             --yellow: #ffc107;
@@ -552,7 +552,8 @@
             <div class="message-box">
                 <p><strong><i class="fas fa-rocket"></i> Welcome 200‑Level Students!</strong></p>
                 <p>Enter your <strong>Full Name</strong> and your personal <strong>4‑digit PIN</strong>.</p>
-                <p>If this is your first time, you will be prompted to pay a <strong>one‑time fee of ₦500</strong>.</p>
+                <p>If this is your first time, your account will be created immediately.</p>
+                <p>You will then be prompted to pay a <strong>one‑time fee of ₦500</strong> if not yet paid.</p>
                 <p><i class="fas fa-headset"></i> For complaints, contact <strong>Melox</strong> on WhatsApp.</p>
                 <a href="https://wa.me/2348081531407" target="_blank" class="whatsapp-btn" style="margin:0.5rem auto 0; display:inline-block;">
                     <i class="fab fa-whatsapp"></i> Contact Melox
@@ -709,7 +710,7 @@
 
         const CHANNEL_LINK = "https://whatsapp.com/channel/0029Vb8N6FR6LwHlmAr6aL0x";
 
-        // ===== LOGIN / SIGNUP =====
+        // ===== LOGIN / CREATE USER (UPDATED) =====
         async function login200() {
             const name = document.getElementById('nameInput').value.trim();
             const pin = document.getElementById('pinInput').value.trim();
@@ -731,10 +732,11 @@
                 const userDoc = await withRetry(() => db.collection('user200').doc(combinedId).get());
 
                 if (userDoc.exists) {
+                    // User exists – check if paid
                     const data = userDoc.data();
-                    // Check if they have paid (stored in doc or via maintenancePayments)
                     const paid = data.paid === true;
                     if (paid) {
+                        // Log them in
                         currentUser = {
                             id: combinedId,
                             fullName: data.fullName || name,
@@ -747,7 +749,7 @@
                         showSection('student-dashboard');
                         return;
                     } else {
-                        // User exists but hasn't paid
+                        // User exists but not paid → show payment popup
                         hideLoading();
                         if (confirm('Your account exists but you have not paid the ₦500 fee. Proceed to payment?')) {
                             showPaymentPopup(combinedId, name);
@@ -755,10 +757,29 @@
                         return;
                     }
                 } else {
-                    // New user – show payment
+                    // ===== NEW USER: CREATE DOCUMENT IMMEDIATELY =====
+                    await withRetry(() =>
+                        db.collection('user200').doc(combinedId).set({
+                            fullName: name,
+                            level: '200',
+                            paid: false,               // not yet paid
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        })
+                    );
+                    console.log('✅ New user document created:', combinedId);
+
+                    // Now show payment popup
                     hideLoading();
-                    if (confirm(`Welcome ${name}! You need to pay a one‑time fee of ₦500 to access all pre‑exams. Proceed?`)) {
+                    if (confirm(`Welcome ${name}! Your account has been created. Please pay the one‑time fee of ₦500 to access all pre‑exams. Proceed?`)) {
                         showPaymentPopup(combinedId, name);
+                    } else {
+                        // They can still log in later after payment
+                        alert('Your account is saved. You can complete payment later.');
+                        // Optionally log them in as unpaid? Better to stay on login page.
+                        // We'll just keep them on login page.
+                        document.getElementById('nameInput').value = '';
+                        document.getElementById('pinInput').value = '';
                     }
                     return;
                 }
@@ -769,7 +790,7 @@
             }
         }
 
-        // ===== PAYMENT POPUP =====
+        // ===== PAYMENT POPUP (unchanged) =====
         function showPaymentPopup(combinedId, name) {
             document.getElementById('payment-popup').style.display = 'flex';
             document.getElementById('payment-popup').dataset.combinedId = combinedId;
@@ -801,6 +822,7 @@
             });
         }
 
+        // ===== INITIATE PAYMENT (UPDATED to just update paid flag) =====
         function initPayment200(combinedId, name) {
             const amountNaira = 500;
             const amountInKobo = amountNaira * 100;
@@ -842,15 +864,12 @@
                                     })
                                 );
 
-                                // Create/update user200 document
+                                // ===== UPDATE EXISTING USER DOCUMENT (mark paid) =====
                                 await withRetry(() =>
-                                    db.collection('user200').doc(combinedId).set({
-                                        fullName: name,
-                                        level: '200',
+                                    db.collection('user200').doc(combinedId).update({
                                         paid: true,
-                                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                                         lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                                    }, { merge: true })
+                                    })
                                 );
 
                                 alert('✅ Payment successful! You now have full access.');
@@ -882,7 +901,7 @@
             }
         }
 
-        // ===== LOGOUT =====
+        // ===== LOGOUT (unchanged) =====
         function logout200() {
             if (confirm('Logout?')) {
                 currentUser = null;
@@ -892,7 +911,7 @@
             }
         }
 
-        // ===== LOAD COURSES =====
+        // ===== LOAD COURSES (unchanged) =====
         function renderSkeleton() {
             const list = document.getElementById('course-list');
             let html = '';
@@ -915,7 +934,6 @@
             renderSkeleton();
 
             try {
-                // Fetch quizzes specifically for level 200
                 const quizzesSnap = await withRetry(() =>
                     db.collection('quizzes')
                     .where('level', '==', '200')
@@ -929,7 +947,6 @@
                     return;
                 }
 
-                // Get results for this user
                 const resultsSnap = await withRetry(() =>
                     db.collection('quizResults')
                     .where('userId', '==', currentUser.id)
@@ -942,7 +959,6 @@
                     attemptMap[qid] = (attemptMap[qid] || 0) + 1;
                 });
 
-                // Get payments for this user (for per-quiz payment if needed)
                 const paymentsSnap = await withRetry(() =>
                     db.collection('payments')
                     .where('userId', '==', currentUser.id)
@@ -1043,7 +1059,7 @@
             }
         }
 
-        // ===== CHECK PAYMENT & START QUIZ =====
+        // ===== CHECK PAYMENT & START QUIZ (unchanged) =====
         async function checkPaymentAndStart(quizId) {
             const doc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
             if (!doc.exists) {
@@ -1138,7 +1154,7 @@
             startQuiz(quizId);
         }
 
-        // ===== START QUIZ =====
+        // ===== START QUIZ (unchanged) =====
         async function startQuiz(quizId) {
             try {
                 const quizDoc = await withRetry(() => db.collection('quizzes').doc(quizId).get());
@@ -1165,7 +1181,7 @@
             }
         }
 
-        // ===== TIMER =====
+        // ===== TIMER (unchanged) =====
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             const timeLimitMin = Number(currentQuiz?.timeLimit) || 30;
@@ -1194,7 +1210,7 @@
             if (timerInterval) clearInterval(timerInterval);
         }
 
-        // ===== LOAD QUESTION =====
+        // ===== LOAD QUESTION (unchanged) =====
         function loadQuestion() {
             const q = currentQuestions[currentQuestionIndex];
             if (!q) return;
@@ -1247,7 +1263,7 @@
             }
         }
 
-        // ===== SUBMIT QUIZ =====
+        // ===== SUBMIT QUIZ (unchanged) =====
         function submitQuiz() {
             if (!confirm('Submit quiz now? You cannot go back.')) return;
             stopTimer();
@@ -1296,7 +1312,7 @@
             showSection('results-section');
         }
 
-        // ===== VIEW ANSWERS =====
+        // ===== VIEW ANSWERS (unchanged) =====
         function viewAnswers() {
             const container = document.getElementById('answers-container');
             if (!container) return;
@@ -1351,7 +1367,7 @@
         window.submitQuiz = submitQuiz;
         window.viewAnswers = viewAnswers;
 
-        console.log('✅ 200.html loaded successfully.');
+        console.log('✅ 200.html loaded successfully (user created on first login attempt).');
     </script>
 </body>
 </html>
