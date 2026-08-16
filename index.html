@@ -494,6 +494,16 @@
             <a href="https://wa.me/2348081531407" target="_blank" class="whatsapp-btn">
                 <i class="fab fa-whatsapp"></i> Contact Melox on WhatsApp
             </a>
+
+            <!-- ===== NEW: 200 Level Portal Link ===== -->
+            <div style="margin-top: 2rem; text-align: center; border-top: 1px solid #dee2e6; padding-top: 1.5rem;">
+                <p style="font-size: 1.1rem; font-weight: 500;">
+                    <i class="fas fa-arrow-right"></i> Are you a <strong>200 Level</strong> student?
+                </p>
+                <a href="200.html" style="display: inline-block; background: #007bff; color: white; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; margin-top: 0.5rem;">
+                    <i class="fas fa-graduation-cap"></i> Go to 200 Level Portal
+                </a>
+            </div>
         </section>
 
         <!-- ===== SIGNUP ===== -->
@@ -2476,6 +2486,10 @@
                     withRetry(() => db.collection('users').where('level', '==', '200').get())
                 ])
                 .then(async ([total, newToday, logins, quizzes, allUsers, allForIdle, lvl100, lvl200]) => {
+                    // NEW: fetch user200 collection size
+                    const user200Snap = await withRetry(() => db.collection('user200').get());
+                    const user200Count = user200Snap.size;
+
                     const facultyStats = {};
                     FACULTIES.forEach(f => {
                         facultyStats[f] = { level100: 0, level200: 0 };
@@ -2534,7 +2548,9 @@
                             <div class="stat-card"><h4><i class="fas fa-check-circle"></i> Quizzes Today</h4><p>${quizzes.size}</p></div>
                             <div class="stat-card"><h4><i class="fas fa-bed"></i> Idle Students</h4><p>${idleCount}</p></div>
                             <div class="stat-card"><h4><i class="fas fa-graduation-cap"></i> 100 Level</h4><p>${lvl100.size}</p></div>
-                            <div class="stat-card"><h4><i class="fas fa-user-graduate"></i> 200 Level</h4><p>${lvl200.size}</p></div>
+                            <div class="stat-card"><h4><i class="fas fa-user-graduate"></i> 200 Level (Auth)</h4><p>${lvl200.size}</p></div>
+                            <!-- NEW: 200 Level Name+PIN users -->
+                            <div class="stat-card"><h4><i class="fas fa-id-card"></i> 200 Level (Name+PIN)</h4><p>${user200Count}</p></div>
                         </div>
                         ${tableHTML}
                     `;
@@ -2543,6 +2559,7 @@
                     cont.innerHTML = `<p style="color:red;">Failed to load: ${err.message}</p>`;
                     console.error(err);
                 });
+
             } else if (tab === 'question-bank') {
                 cont.innerHTML = `
                     <input type="file" id="excelFile" accept=".xlsx,.xls">
@@ -2550,27 +2567,37 @@
                     <div id="bank-list"></div>
                 `;
                 loadQuestionBanks();
+
             } else if (tab === 'set-quiz') {
-                cont.innerHTML = '<p>Loading banks...</p>';
-                withRetry(() => db.collection('questionBank').get()).then(snap => {
-                    if (snap.empty) {
-                        cont.innerHTML = '<p style="color:red;">No banks uploaded yet</p>';
-                        return;
-                    }
-                    let html = `<select id="bankSelect"><option value="">Select Bank</option>`;
-                    snap.forEach(d => {
-                        html += `<option value="${d.id}">${d.data().courseName}</option>`;
-                    });
-                    html += `</select>
-                        <select id="quizLevel">
-                            <option value="100">100 Level</option>
+                // ===== UPDATED: include Level dropdown and load banks =====
+                cont.innerHTML = `
+                    <div id="set-quiz-form" style="margin-top: 1rem;">
+                        <select id="bankSelect" style="width:100%; padding:0.8rem; margin-bottom:0.8rem;">
+                            <option value="">Select Question Bank</option>
                         </select>
-                        <label>Release Date & Time (Nigeria)</label>
-                        <input type="datetime-local" id="releaseTime">
-                        <button onclick="publishQuiz()"><i class="fas fa-cloud-upload-alt"></i> Publish Quiz</button>
-                    `;
-                    cont.innerHTML = html;
-                });
+                        <select id="quizLevel" style="width:100%; padding:0.8rem; margin-bottom:0.8rem;">
+                            <option value="100">100 Level</option>
+                            <option value="200">200 Level</option>
+                        </select>
+                        <label style="display:block; margin:0.5rem 0 0.2rem;">Release Date & Time (Nigeria)</label>
+                        <input type="datetime-local" id="releaseTime" style="width:100%; padding:0.8rem; margin-bottom:0.8rem;">
+                        <button onclick="publishQuiz()" style="width:100%;"><i class="fas fa-cloud-upload-alt"></i> Publish Quiz</button>
+                    </div>
+                `;
+
+                // Load banks into the dropdown
+                withRetry(() => db.collection('questionBank').get())
+                    .then(snap => {
+                        const select = document.getElementById('bankSelect');
+                        snap.forEach(d => {
+                            const opt = document.createElement('option');
+                            opt.value = d.id;
+                            opt.textContent = d.data().courseName;
+                            select.appendChild(opt);
+                        });
+                    })
+                    .catch(err => cont.innerHTML += `<p style="color:red;">Error loading banks: ${err.message}</p>`);
+
             } else if (tab === 'payments') {
                 cont.innerHTML =
                 '<h3><i class="fas fa-money-bill-wave"></i> Maintenance Payments (₦500)</h3><p>Loading stats...</p>';
@@ -2722,23 +2749,27 @@
             });
         }
 
+        // ===== UPDATED publishQuiz to read level from dropdown =====
         async function publishQuiz() {
-            const id = document.getElementById('bankSelect').value;
-            const level = '100';
+            const bankId = document.getElementById('bankSelect').value;
+            const level = document.getElementById('quizLevel').value;   // <-- NEW
             const releaseTime = document.getElementById('releaseTime').value;
-            if (!id) return alert("Select bank");
-            if (!releaseTime) return alert("Set release date & time");
-            const doc = await withRetry(() => db.collection('questionBank').doc(id).get());
+
+            if (!bankId) return alert('Select a question bank.');
+            if (!releaseTime) return alert('Set a release date and time.');
+
+            const doc = await withRetry(() => db.collection('questionBank').doc(bankId).get());
             const releaseDate = new Date(releaseTime);
             const releaseTimestamp = releaseDate.getTime();
+
             await db.collection('quizzes').add({
                 ...doc.data(),
-                level: '100',
+                level: level,   // <-- NEW
                 status: 'published',
                 releaseTime: releaseTimestamp,
                 publishedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            alert("Quiz Published!");
+            alert(`✅ Quiz published for Level ${level}!`);
         }
 
         // ============================================================
